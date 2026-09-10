@@ -34,24 +34,25 @@ export const WalletWidget = ({ credits, walletLoading }: WalletWidgetProps) => {
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <button
-          className="group relative flex shrink-0 items-center gap-1.5 rounded-md border border-emerald-500/25 bg-gradient-to-r from-emerald-500/5 to-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold transition-all duration-200 hover:border-emerald-500/40 hover:bg-emerald-500/15 hover:shadow-lg hover:shadow-emerald-500/10"
-        >
-          <IndianRupee className="h-3.5 w-3.5 text-emerald-400" />
-          {walletLoading ? (
-            <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />
-          ) : (
-            <span className="tabular-nums text-emerald-300">₹{credits.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-          )}
-          <RefreshCw
-            className="h-3 w-3 text-emerald-400/70 transition-transform duration-300 group-hover:rotate-180 group-hover:text-emerald-300"
-            onClick={(e) => {
-              e.stopPropagation();
-              dispatch(fetchWalletBalance());
-            }}
-          />
-        </button>
+      <PopoverTrigger
+        className="group relative flex shrink-0 items-center gap-1.5 rounded-md border border-emerald-500/25 bg-gradient-to-r from-emerald-500/5 to-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold transition-all duration-200 hover:border-emerald-500/40 hover:bg-emerald-500/15 hover:shadow-lg hover:shadow-emerald-500/10"
+      >
+        <IndianRupee className="h-3.5 w-3.5 text-emerald-400" />
+        {walletLoading ? (
+          <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />
+        ) : (
+          <span className="tabular-nums text-emerald-300">
+            ₹{credits.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </span>
+        )}
+        <RefreshCw
+          className="h-3 w-3 text-emerald-400/70 transition-transform duration-300 group-hover:rotate-180 group-hover:text-emerald-300"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            dispatch(fetchWalletBalance());
+          }}
+        />
       </PopoverTrigger>
 
       <PopoverContent className="w-[calc(100vw-1rem)] rounded-xl border border-slate-700/40 bg-gradient-to-b from-slate-900/95 to-slate-900/90 p-0 shadow-2xl sm:w-96">

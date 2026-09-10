@@ -62,17 +62,19 @@ export default function CustomSelect<T extends OptionType>({
 
     return (
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn("justify-between", className)}
-          >
-            {selectedLabel}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
+        <PopoverTrigger
+          render={
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className={cn("justify-between", className)}
+            >
+              {selectedLabel}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          }
+        />
         <PopoverContent className={cn("p-0", className)}>
           <Command className="max-h-60 overflow-y-auto">
             <CommandInput placeholder="Search..." />
