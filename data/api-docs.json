@@ -1,0 +1,3550 @@
+[
+  {
+  "endpoint": "/api/v1/inspect/aadhaar-link-check",
+  "title": "Aadhaar Link Check",
+  "description": "Verify whether a mobile number or email address is linked to the specified Aadhaar number.In body type must be MOBILE or EMAIL.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/aadhaar-link-check' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"aadhaar_number\": \"234567xxxxxx\", \"type\": \"MOBILE\", \"value\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Aadhaar link check completed"
+        },
+        "responseData": {
+          "aadhaar_number": "XXXXXXXX0123",
+          "value": "98XXXXX210",
+          "is_linked": true,
+          "name_on_aadhaar": "Rohan Sharma",
+          "checked_at": "2026-09-03T10:15:00Z"
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/aadhaar-link-check-v2",
+  "title": "Aadhaar Link Check V2",
+  "description": "Verify mobile or email linkage with Aadhaar using name and date of birth.In body type must be MOBILE or EMAIL.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/aadhaar-link-check-v2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"aadhaar_name\": \"John Doe\", \"dob\": \"01/01/1990\", \"type\": \"MOBILE\", \"value\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Aadhaar link check completed"
+        },
+        "responseData": {
+          "aadhaar_number": "XXXXXXXX0123",
+          "value": "98XXXXX210",
+          "is_linked": true,
+          "name_on_aadhaar": "John Doe",
+          "checked_at": "2026-09-03T10:15:00Z"
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/aadhaar-to-pan-info",
+  "title": "Aadhaar To Pan",
+  "description": "Retrieve the PAN linked to the provided Aadhaar number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/aadhaar-to-pan-info' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"aadhaar_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN details fetched successfully"
+        },
+        "responseData": {
+          "aadhaar_number": "XXXXXXXXX012",
+          "pan_number": "ABCDE1234F",
+          "name": "John Doe",
+          "date_of_birth": "01/01/1990",
+          "linked_status": "ACTIVE"
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/inspect/aadhaar-to-pan-v2",
+  "title": "Aadhaar To Pan V2",
+  "description": "Retrieve the PAN linked to the given Aadhaar number with enhanced accuracy.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/aadhaar-to-pan-v2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"aadhaar_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN details fetched successfully"
+        },
+        "responseData": {
+          "aadhaar_number": "XXXXXXXXX012",
+          "pan_number": "ABCDE1234F",
+          "name": "John Doe",
+          "date_of_birth": "01/01/1990",
+          "linked_status": "ACTIVE",
+          "last_updated": "2026-09-03T10:15:00Z"
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/inspect/aadhaar-verify",
+  "title": "Aadhaar Verify",
+  "description": "Validate Aadhaar authenticity and retrieve basic demographic details.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/aadhaar-verify' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"aadhaar_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Aadhaar verified successfully"
+        },
+        "responseData": {
+          "aadhaar_number": "XXXXXXXXX012",
+          "name": "John Doe",
+          "date_of_birth": "01/01/1990",
+          "gender": "Male",
+          "state": "Delhi",
+          "mobile_number": "98XXXXX210"
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/aadhaar-to-pan-no",
+  "title": "Aadhaar to Pan No",
+  "description": "Retrieve the PAN number linked to the given Aadhaar number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/aadhaar-to-pan-no' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"aadhaar_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN number fetched successfully"
+        },
+        "responseData": {
+          "aadhaar_number": "XXXXXXXXX012",
+          "pan_number": "ABCDE1234F",
+          "name": "John Doe",
+          "date_of_birth": "01/01/1990"
+        }
+      }
+    }
+  }
+}, 
+{
+  "endpoint": "/api/v1/financial/account-validation",
+  "title": "Account Validation",
+  "description": "Validate bank account details using account number and IFSC code.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/account-validation' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"account_number\": \"123456789012\", \"ifsc\": \"HDFC0001234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Account validation successful"
+        },
+        "responseData": {
+          "account_number": "XXXXXXXX9012",
+          "ifsc": "HDFC0001234",
+          "account_holder_name": "John Doe",
+          "bank_name": "HDFC Bank",
+          "branch_name": "Sector 18, Noida",
+          "account_type": "Savings"
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/challan-number-to-challan-details",
+  "title": "Challan Number To Challan Details",
+  "description": "Retrieve comprehensive traffic challan information using challan number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/challan-number-to-challan-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"challan_number\": \"DL0123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "3 challan records found for DL0123456789012",
+          "charged": true,
+          "beforeBalance": 2392.19,
+          "afterBalance": 2391.79,
+          "apiPrice": 0.4,
+          "txnId": "TXN-example1234",
+          "duration": "87ms"
+        },
+        "responseData": {
+          "data": [
+            {
+              "vehicle_number": "DL8CAB1234",
+              "vehicle_class": "M-Cycle/Scooter(2WN)",
+              "state": "Delhi",
+              "chassis_no": "WB30G5104TRB06580",
+              "dl_number": null,
+              "challan_no": "DL0123456789012",
+              "challan_date_time": "2026-03-13 13:46:42",
+              "challan_status": "Pending",
+              "challan_amount": 500,
+              "challan_source": "CCTV",
+              "challan_place": "Sample Road, Delhi",
+              "offences": ["Over Speeding"],
+              "department": "Traffic",
+              "office_name": "Delhi Traffic Police",
+              "area_name": "Central",
+              "area_address": "Traffic Circle",
+              "cin_number": null,
+              "challan_booked_by_officer_username": "officer@example.gov.in",
+              "challan_booked_by_officer_designation": "Head Constable",
+              "accused_type": "owner",
+              "accused_name": "John Doe",
+              "accused_father_name": "Richard Doe",
+              "accused_address": "123 Sample Street, New Delhi-110001",
+              "accused_contact_no": "9812345670",
+              "owner_name": "John Doe",
+              "owner_father_name": "Richard Doe",
+              "owner_address": "123 Sample Street, New Delhi-110001",
+              "owner_contact_no": "9812345670",
+              "payment_date": null,
+              "payment_source": null,
+              "date_of_collected_cash": null,
+              "username_of_person_collected_cash": null,
+              "releasing_officer_name_cashier": null,
+              "court_name": null,
+              "court_stage": "Not In Court",
+              "hearing_date": null,
+              "sent_to_virtual_court": "NO",
+              "court_release_officer_name": null,
+              "court_release_officer_designation": null,
+              "impound_type": null,
+              "impound_place": null,
+              "impounded_doc": null
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/vehicle/vehicle-number-to-checkpost-details",
+  "title": "Checkpost Data",
+  "description": "Retrieve checkpost records and movement history for a given vehicle number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/vehicle-number-to-checkpost-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL8CAB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Checkpost details fetched successfully",
+          "charged": true,
+          "beforeBalance": 1000.0,
+          "afterBalance": 989.0,
+          "apiPrice": 11,
+          "txnId": "TXN-example123456",
+          "duration": "95ms"
+        },
+        "responseData": {
+          "vehicle_number": "DL8CAB1234",
+          "checkpost_records": [
+            {
+              "checkpost_name": "Delhi-Gurgaon Border",
+              "timestamp": "2026-09-03T10:15:00Z",
+              "status": "Cleared",
+              "direction": "Outbound"
+            },
+            {
+              "checkpost_name": "Mumbai Entry Point",
+              "timestamp": "2026-09-02T08:30:00Z",
+              "status": "Cleared",
+              "direction": "Inbound"
+            }
+          ],
+          "total_records": 2
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/financial/cibil",
+  "title": "Cibil",
+  "description": "Retrieve comprehensive credit report and score using name and mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/cibil' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"name\": \"John Doe\", \"mobile_number\": \"9812345670\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "9812345670 fetched from database",
+          "charged": true,
+          "beforeBalance": 7145.4,
+          "afterBalance": 7115.4,
+          "apiPrice": 300,
+          "txnId": "TXN-example123456",
+          "duration": "44ms"
+        },
+        "responseData": {
+          "data": {
+            "name": "John Doe",
+            "mobile": "9812345670",
+            "credit_report": {
+              "HEADER": {
+                "STATUS": "SUCCESS",
+                "REPORT-ID": "CCR260619CR198607092",
+                "DATE-OF-ISSUE": "19-06-2026",
+                "DATE-OF-REQUEST": "19-06-2026"
+              },
+              "SCORES": {
+                "SCORE": {
+                  "SCORE-TYPE": "PERFORM CONSUMER 2.2",
+                  "SCORE-VALUE": "774",
+                  "SCORE-FACTORS": "SF11|SF23|SF33|"
+                }
+              },
+              "TRENDS": {
+                "NAME": "SCORE-HISTORY",
+                "DATES": "31-03-2026|31-12-2025|30-09-2025",
+                "VALUES": "769|769|773",
+                "DESCRIPTION": ""
+              },
+              "REQUEST": {
+                "DOB": "17-03-1984",
+                "pan_number": "ABCDE1234F",
+                "NAME": "John Doe",
+                "PHONE-1": "9812345670",
+                "ADDRESS-1": "123 Sample Street, New Delhi-110001"
+              },
+              "RESPONSES": {
+                "RESPONSE": [
+                  {
+                    "LOAN-DETAILS": {
+                      "ACCT-TYPE": "Credit Card",
+                      "ACCT-NUMBER": "XXXXXXXXXXXX1234",
+                      "CURRENT-BAL": "0",
+                      "CREDIT-LIMIT": "1,00,000",
+                      "DISBURSED-DT": "11-05-2022",
+                      "ACCOUNT-STATUS": "Active",
+                      "LAST-PAYMENT-DATE": "22-05-2026"
+                    }
+                  }
+                ]
+              },
+              "ACCOUNTS-SUMMARY": {
+                "PRIMARY-ACCOUNTS-SUMMARY": {
+                  "PRIMARY-NUMBER-OF-ACCOUNTS": "2",
+                  "PRIMARY-ACTIVE-NUMBER-OF-ACCOUNTS": "1"
+                }
+              },
+              "PERSONAL-INFO-VARIATION": {
+                "NAME-VARIATIONS": {
+                  "VARIATION": [
+                    {
+                      "VALUE": "John Doe",
+                      "REPORTED-DATE": "31-05-2026"
+                    }
+                  ]
+                }
+              }
+            },
+            "credit_report_link": "https://example.com/report.pdf?signature=xyz"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/cibil-v2",
+  "title": "Cibil Data",
+  "description": "Retrieve lightweight credit score and account summary using name and mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/cibil-v2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"name\": \"John Doe\", \"mobile_number\": \"9812345670\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Credit data fetched successfully",
+          "charged": true,
+          "beforeBalance": 5000.0,
+          "afterBalance": 4995.0,
+          "apiPrice": 5,
+          "txnId": "TXN-example123456",
+          "duration": "30ms"
+        },
+        "responseData": {
+          "name": "John Doe",
+          "mobile": "9812345670",
+          "credit_score": 774,
+          "summary": {
+            "total_accounts": 5,
+            "active_accounts": 3,
+            "overdue_accounts": 0,
+            "total_credit_limit": 500000,
+            "total_outstanding": 120000
+          },
+          "last_updated": "2026-09-03T10:15:00Z"
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/gst/mca-data",
+  "title": "Cin to Mca",
+  "description": "Retrieve complete company information from MCA using CIN.In body type must be CIN or COMPANY_NAME.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/mca-data' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"CIN\", \"value\": \"U12345DL2020PTC123456\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "U12345DL2020PTC123456 fetched successfully",
+          "charged": true,
+          "beforeBalance": 33949.2,
+          "afterBalance": 33947.2,
+          "apiPrice": 2,
+          "txnId": "TXN-example123456",
+          "duration": "2.1s"
+        },
+        "responseData": {
+          "data": {
+            "cin": "U12345DL2020PTC123456",
+            "company_name": "Example Private Limited",
+            "company_data": {
+              "cin": "U12345DL2020PTC123456",
+              "company": "EXAMPLE PRIVATE LIMITED",
+              "company_type": "Company",
+              "company_category": "Company limited by shares",
+              "class_of_company": "Private",
+              "date_of_incorporation": "15/01/2020",
+              "email_address": "info@example.com",
+              "authorised_capital": "1000000",
+              "paid_up_capital": "100000",
+              "roc_name": "ROC Delhi",
+              "company_status": "Active",
+              "main_division_description": "COMPUTER PROGRAMMING, CONSULTANCY AND RELATED ACTIVITIES",
+              "mcamds_company_address": [
+                {
+                  "city": "New Delhi",
+                  "state": "Delhi",
+                  "country": "India",
+                  "postal_code": "110001",
+                  "street_address": "123 Sample Street"
+                }
+              ]
+            },
+            "director_data": [
+              {
+                "din": "12345678",
+                "pan_number": "ABCDE1234F",
+                "first_name": "John",
+                "last_name": "Doe",
+                "designation": "Director",
+                "date_of_appointment": "15/01/2020",
+                "address": "456 Another Street, New Delhi"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/company-to-establisment-report",
+  "title": "Company Establishment Report",
+  "description": "Retrieve EPFO establishment details for a given company name.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/company-to-establisment-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"company_name\": \"Example Private Limited\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Establishment details fetched successfully",
+          "charged": true,
+          "beforeBalance": 5000.0,
+          "afterBalance": 4989.0,
+          "apiPrice": 11,
+          "txnId": "TXN-example123456",
+          "duration": "1.2s"
+        },
+        "responseData": {
+          "data": {
+            "establishment_id": "DLCPL1234500000",
+            "establishment_name": "EXAMPLE PRIVATE LIMITED",
+            "address": "123 Sample Street, New Delhi",
+            "office_name": "Delhi",
+            "details": {
+              "establishment_status": {
+                "working_status": "LIVE ESTABLISHMENT",
+                "date_of_coverage": "01-APR-2015"
+              },
+              "establishment_details_form5a": {
+                "pan_status": "VERIFIED",
+                "primary_business_activity": "IT SERVICES",
+                "ownership_type": "PRIVATE LIMITED",
+                "date_of_setup_of_establishment": "01-01-2010"
+              },
+              "identification_codes": {
+                "establishment_id": "DLCPL1234500000",
+                "lin_code": "1234567890"
+              }
+            },
+            "payment_details": [
+              {
+                "trrn": "2606470210533",
+                "date_of_credit": "13-JUN-2026",
+                "amount": "1,11,373",
+                "wage_month": "MAY-26",
+                "no_of_employee": "50",
+                "ecr": "YES"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/company-name-to-gst-report",
+  "title": "Company Name To GST Report",
+  "description": "Retrieve GST registration details using company name.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/company-name-to-gst-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"company_name\": \"Example Ventures Private Limited\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Example Ventures Private Limited data fetched",
+          "charged": true,
+          "beforeBalance": 7105.4,
+          "afterBalance": 7100.4,
+          "apiPrice": 0.4,
+          "txnId": "TXN-example123456",
+          "duration": "1.18s"
+        },
+        "responseData": {
+          "data": [
+            {
+              "company_name": "Example Ventures Private Limited",
+              "gst_number": "27AABCX1234P1ZZ",
+              "pan_number": "AABCX1234P",
+              "category": "Company",
+              "status": "Active"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/gst/company-name-to-cin",
+  "title": "Company Name to CIN",
+  "description": "Retrieve CIN using registered company name.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/company-name-to-cin' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"company_name\": \"Example Enterprises Private Limited\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "CIN details fetched successfully",
+          "charged": true,
+          "beforeBalance": 100.0,
+          "afterBalance": 99.0,
+          "apiPrice": 1,
+          "txnId": "TXN-example123456",
+          "duration": "0.9s"
+        },
+        "responseData": {
+          "data": [
+            {
+              "company_name": "Example Enterprises Private Limited",
+              "cin": "U12345DL2020PTC123456",
+              "registration_number": "123456",
+              "company_status": "Active",
+              "date_of_incorporation": "15/01/2020",
+              "state": "Delhi"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/financial/crif",
+  "title": "Crif",
+  "description": "Retrieve credit score and report from CRIF High Mark using name and mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/crif' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"name\": \"John Doe\", \"mobile_number\": \"981234XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "9812345670 fetched from database",
+          "charged": true,
+          "beforeBalance": 6000.0,
+          "afterBalance": 5988.0,
+          "apiPrice": 12,
+          "txnId": "TXN-example123456",
+          "duration": "55ms"
+        },
+        "responseData": {
+          "data": {
+            "name": "John Doe",
+            "mobile": "9812345670",
+            "credit_score": 742,
+            "credit_report": {
+              "score_type": "CRIF High Mark",
+              "score_value": "742",
+              "loan_accounts": [
+                {
+                  "account_type": "Personal Loan",
+                  "account_status": "Active",
+                  "disbursed_amount": 200000,
+                  "current_balance": 120000,
+                  "last_payment_date": "22-05-2026"
+                },
+                {
+                  "account_type": "Credit Card",
+                  "account_status": "Active",
+                  "credit_limit": 150000,
+                  "current_balance": 35000,
+                  "last_payment_date": "15-05-2026"
+                }
+              ],
+              "inquiry_history": []
+            },
+            "credit_report_link": "https://example.com/crif-report.pdf?signature=xyz"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/inspect/cyber-suspect-check",
+  "title": "Cyber Suspect Check Verify",
+  "description": "Screen mobile number, UPI ID, or email against cybercrime and fraud databases.In body type must be email, upi_id, mobile, bank_account, social_media, website_url.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/cyber-suspect-check' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"mobile\", \"value\": \"9812345670\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Cyber suspect check completed",
+          "charged": true,
+          "beforeBalance": 1000.0,
+          "afterBalance": 999.0,
+          "apiPrice": 1,
+          "txnId": "TXN-example123456",
+          "duration": "200ms"
+        },
+        "responseData": {
+          "query": {
+            "type": "mobile",
+            "value": "9812345670"
+          },
+          "result": {
+            "is_suspect": false,
+            "risk_score": 0.1,
+            "matched_records": [],
+            "checked_at": "2026-09-03T10:15:00Z"
+          }
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/inspect/dl-advance-search",
+  "title": "DL Advance Search",
+  "description": "Retrieve driving licence details using name, DOB, and mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/dl-advance-search' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"name\": \"John Doe\", \"dob\": \"10-10-1990\", \"mobile_number\": \"987654xxxx\", \"relation_name\": \"\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "DL details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "user_dob": "10-10-1990",
+              "dl_number": "DL01 20230012345",
+              "user_full_name": "JOHN DOE",
+              "father_or_husband": "RICHARD DOE"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/financial/digital-payment-analyser",
+  "title": "Digital Payment Analyser",
+  "description": "Retrieve banking and payment information associated with a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/digital-payment-analyser' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Digital payment details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "key": "john.doe@upi",
+              "upi_id": "john.doe@upi",
+              "platform": "PhonePe",
+              "upi_handle": "@ybl",
+              "primary": true,
+              "status": "active",
+              "icon_url": "https://example.com/icons/phonepe.png",
+              "data": {
+                "name": "John Doe",
+                "ifsc": "HDFC0001234",
+                "bank": "HDFC Bank",
+                "account_type": "SAVINGS",
+                "branch": "MUMBAI MAIN",
+                "center": "MUMBAI",
+                "district": "MUMBAI",
+                "state": "MAHARASHTRA",
+                "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+                "contact": "+91987654xxxx",
+                "city": "MUMBAI"
+              }
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/gst/din-to-mca",
+  "title": "DIN To MCA",
+  "description": "Retrieve MCA records and associated companies for a given DIN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/din-to-mca' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"din\": \"01234567\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "DIN details fetched successfully"
+        },
+        "responseData": {
+          "din": "01234567",
+          "name": "John Doe",
+          "director_data": {
+            "first_name": "John",
+            "middle_name": "",
+            "last_name": "Doe",
+            "dob": "01/01/1980",
+            "gender": "Male",
+            "nationality": "Indian"
+          },
+          "associated_companies": [
+            {
+              "cin": "U74999MH2020PTC123456",
+              "company_name": "Demo Private Limited",
+              "designation": "Director",
+              "date_of_appointment": "01/01/2020"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/dark-web/domain-search",
+  "title": "Domain Search Steal Data",
+  "description": "Scan dark web sources for compromised credentials related to a domain.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/dark-web/domain-search' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"domain\": \"example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Domain scan completed"
+        },
+        "responseData": {
+          "domain": "example.com",
+          "total_breaches": 2,
+          "stolen_credentials": [
+            {
+              "email": "john.doe@example.com",
+              "password_hash": "5f4dcc3b5aa765d61d8327deb882cf99",
+              "source": "DemoBreach2024",
+              "breach_date": "01/01/2024"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/driving-license-details",
+  "title": "Driving License Details",
+  "description": "Retrieve complete driving licence information using DL number and DOB.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/driving-license-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"driving_license_number\": \"DL01 20230012345\", \"date_of_birth\": \"10-10-1990\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "DL details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "dl_number": "DL01 20230012345",
+            "user_full_name": "JOHN DOE",
+            "father_or_husband": "RICHARD DOE",
+            "user_dob": "10-10-1990",
+            "user_blood_group": "B+",
+            "user_image": "base64_encoded_image_placeholder",
+            "signature_image": "base64_encoded_signature_placeholder",
+            "issued_date": "01/01/2020",
+            "expiry_date": "01/01/2040",
+            "category": "LMV",
+            "status": "Active",
+            "user_address": [
+              {
+                "type": "Permanent",
+                "completeAddress": "123, Demo Street, Mumbai, Maharashtra - 400001"
+              }
+            ],
+            "vehicle_category_details": [
+              {
+                "cov": "LMV",
+                "description": "Light Motor Vehicle",
+                "issueDate": "01/01/2020",
+                "expiryDate": "01/01/2040"
+              }
+            ],
+            "changes": []
+          }
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/email-to-linkedin",
+  "title": "Email to LinkedIn Profile",
+  "description": "Retrieve LinkedIn profile information associated with an email address.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/email-to-linkedin' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"email\": \"john.doe@example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "LinkedIn profile fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "full_name": "John Doe",
+            "headline": "Senior Software Engineer at Demo Corp",
+            "industry": "Information Technology",
+            "location": "Mumbai, Maharashtra, India",
+            "profile_url": "https://www.linkedin.com/in/johndoe",
+            "profile_picture": "https://example.com/images/john_doe.jpg",
+            "skills": ["JavaScript", "React", "Node.js"]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/uan/uan-to-employment-history-v3",
+  "title": "Employment History V3",
+  "description": "Retrieve complete employment history using UAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-to-employment-history-v3' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Employment history fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "uan_number": "123456789012",
+            "personal_details": {
+              "full_name": "John Doe",
+              "dob": "01/01/1985",
+              "gender": "Male",
+              "father_name": "Richard Doe"
+            },
+            "employment_history": [
+              {
+                "establishment_name": "Demo Private Limited",
+                "member_id": "DLCPM00012340000000001",
+                "joining_date": "01/01/2010",
+                "leaving_date": "31/12/2015",
+                "service_period": "6 years"
+              }
+            ],
+            "changes": []
+          }
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/inspect/esic-data",
+  "title": "ESIC Data",
+  "description": "Retrieve ESIC information using mobile number, bank account, or UAN.In body type must be MOBILE, ACCOUNT_NUMBER, or UAN",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/esic-data' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"MOBILE\", \"value\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "ESIC data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "esic_number": "3100123456001",
+            "employee_name": "John Doe",
+            "dispensary": "Demo Dispensary, Mumbai",
+            "employer_name": "Demo Private Limited",
+            "employer_code": "1234567",
+            "contribution_months": [
+              {
+                "month": "January",
+                "year": 2024,
+                "status": "Paid"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/inspect/fb-details",
+  "title": "Facebook Account Details",
+  "description": "Retrieve Facebook profile information using mobile number or email.In body type must be MOBILE or EMAIL.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/fb-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"MOBILE\", \"value\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Facebook details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "id": "100012345678901",
+              "name": "John Doe",
+              "profile_image_url": "https://example.com/images/facebook_profile.jpg",
+              "platform": "Facebook",
+              "linked": ["987654xxxx", "john.doe@example.com"]
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/fastag-details",
+  "title": "Fastag Details",
+  "description": "Retrieve FASTag information for a vehicle registration number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/fastag-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "FASTag details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "TOTALVALIDTAGS": "1",
+            "VAHAN_CATEGORY": "Private",
+            "OWNER_DETAILS": {
+              "owner_name": "John Doe",
+              "mobile_number": "987654XXXX"
+            },
+            "ANNUAL_PASS_DETAILS": {
+              "PASSID": "PASS123456",
+              "PASSTYPE": "Annual",
+              "PASSSTATUS": "Active",
+              "VEHNUMBERDEC": "DL01AB1234",
+              "VEHICLECLASS": "LMV",
+              "TRIPLIMIT": "Unlimited",
+              "TAGID": "TAG1234567890",
+              "PASSSTARTDATE": "01-01-2024",
+              "PASSENDDATE": "31-12-2024"
+            },
+            "TAGS": [
+              {
+                "TAGID": "TAG1234567890",
+                "REGNUMBER": "DL01AB1234",
+                "BANKNAME": "HDFC Bank",
+                "VEHICLECLASS": "LMV",
+                "ISSUEDATE": "01-01-2024",
+                "EXCCODE": "None",
+                "NPCI_REGNUMBER": "NPCI123456789",
+                "BANKID": "HDFC0001234",
+                "CHIPID": "CHIP123456789",
+                "TAGSTATUS": "Active"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/gst/gst-advance",
+  "title": "GST Advance",
+  "description": "Retrieve comprehensive GST information using GSTIN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "GST details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "gstin": "29ABCDE1234F1Z5",
+            "legal_name": "DEMO PRIVATE LIMITED",
+            "trade_name": "Demo Enterprises",
+            "constitution_of_business": "Private Limited",
+            "gstin_status": "Active",
+            "taxpayer_type": "Regular",
+            "date_of_registration": "01/01/2020",
+            "nature_of_business_activities": ["Retail", "Wholesale"],
+            "annual_aggregate_turnover": "50000000",
+            "gross_total_income": "52000000",
+            "compliance_rating": "5",
+            "state_jurisdiction": ["State - Karnataka"],
+            "centre_jurisdiction": ["Range - Demo"],
+            "contact": {
+              "name": "John Doe",
+              "mobile": "987654xxxx",
+              "email": "john.doe@example.com"
+            },
+            "principal_place_of_business": {
+              "address": "123, Demo Street, Bengaluru, Karnataka - 560001",
+              "email": "contact@demo.com",
+              "mobile": "987654xxxx",
+              "nature_of_business": "Retail"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/inspect/email-verify",
+  "title": "Ghunt Data",
+  "description": "Perform deep email verification and OSINT enrichment using GHunt-style analysis.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/email-verify' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"email\": \"john.doe@example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Email investigation completed"
+        },
+        "responseData": {
+          "data": {
+            "email": "john.doe@example.com",
+            "google_id": "102345678901234567890",
+            "full_name": "John Doe",
+            "profile_picture": "https://example.com/images/google_profile.jpg",
+            "google_services": [
+              { "service": "YouTube", "channel_id": "UC1234567890", "channel_name": "John Doe Channel" },
+              { "service": "Google Maps", "reviews_count": 15 },
+              { "service": "Google Play", "apps_installed": 3 }
+            ],
+            "possible_phone_numbers": ["987654xxxx"],
+            "possible_emails": ["john.doe.alt@example.com"],
+            "last_updated": "2026-09-03T10:15:00Z"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/inspect/github-email-lookup",
+  "title": "Github Email Profile Lookup",
+  "description": "Retrieve GitHub profile information using an email address.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/github-email-lookup' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"email\": \"john.doe@example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "GitHub profile fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "username": "johndoe",
+            "profile_url": "https://github.com/johndoe",
+            "avatar_url": "https://example.com/images/github_avatar.jpg",
+            "bio": "Full Stack Developer | Open Source Contributor",
+            "public_repos": 25,
+            "followers": 120,
+            "following": 80,
+            "created_at": "2015-01-01T00:00:00Z"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/groww-details",
+  "title": "Groww Details",
+  "description": "Retrieve Groww investment account information using PAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/groww-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Groww details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "mobile": "987654xxxx",
+            "kyc_status": "Verified",
+            "message": "Investor found"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/gst/gst-advance-report",
+  "title": "GST Advance Report",
+  "description": "Retrieve comprehensive GST report using GSTIN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "GST report fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "gstin": "29ABCDE1234F1Z5",
+            "legal_name": "DEMO PRIVATE LIMITED",
+            "trade_name": "Demo Enterprises",
+            "gstin_status": "Active",
+            "taxpayer_type": "Regular",
+            "date_of_registration": "01/01/2020",
+            "state_jurisdiction": ["State - Karnataka"],
+            "centre_jurisdiction": ["Range - Demo"],
+            "available_financial_years": [
+              { "year": "2023-2024", "value": "2023-2024" },
+              { "year": "2024-2025", "value": "2024-2025" }
+            ],
+            "filing_table": [
+              {
+                "financial_year": "2024-2025",
+                "tax_period": "April 2024",
+                "return_type": "GSTR-3B",
+                "mode_of_filing": "Online",
+                "date_of_filing": "20/05/2024",
+                "arn": "AA123456789012",
+                "status": "Filed"
+              }
+            ],
+            "liability_paid_percentage": {
+              "current_financial_year": "2024-2025",
+              "current_total_percent": "100"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/gst/gst-advance-report-r1",
+  "title": "GST Advance Report R1",
+  "description": "Generate comprehensive sales report for a GSTIN over a specified period.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report-r1' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"period\": \"YEARLY\", \"from_date\": \"2026\", \"to_date\": \"2027\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "GST sales report fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "sales": [
+              {
+                "gstin": "29ABCDE1234F1Z5",
+                "sector": null,
+                "serialNo": 1,
+                "total_Tax": 125000.50,
+                "tradeName": null,
+                "ismigrated": null,
+                "seller_WARD": "Demo Ward 1",
+                "seller_Gstin": "29XYZAB6789C1Z1",
+                "seller_STATUS": "Active",
+                "taxable_Value": 700000.00,
+                "seller_ADDRESS": "123, Demo Street, Bengaluru, Karnataka - 560001",
+                "seller_DISTRICT": "Bengaluru",
+                "seller_REG_DATE": "01/01/2020",
+                "seller_Trade_Name": "DEMO SUPPLIERS",
+                "seller_CANCEL_DATE": null,
+                "total_Invoice_Value": 825000.50,
+                "seller_APPROVING_AUTHORITY": "STATE"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/gst-advance-report-r2",
+  "title": "GST Advance Report R2",
+  "description": "Generate comprehensive purchase report for a GSTIN over a specified period.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report-r2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"period\": \"YEARLY\", \"from_date\": \"2026\", \"to_date\": \"2027\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "GST purchase report fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "purchases": [
+              {
+                "gstin": "29ABCDE1234F1Z5",
+                "sector": null,
+                "serialNo": 1,
+                "total_Tax": 98000.75,
+                "tradeName": null,
+                "ismigrated": null,
+                "seller_WARD": "Demo Ward 2",
+                "seller_Gstin": "29XYZAB6789C1Z2",
+                "seller_STATUS": "Active",
+                "taxable_Value": 550000.00,
+                "seller_ADDRESS": "456, Demo Avenue, Mumbai, Maharashtra - 400001",
+                "seller_DISTRICT": "Mumbai",
+                "seller_REG_DATE": "01/01/2021",
+                "seller_Trade_Name": "DEMO VENDORS",
+                "seller_CANCEL_DATE": null,
+                "total_Invoice_Value": 648000.75,
+                "seller_APPROVING_AUTHORITY": "STATE"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/gst/gst-details",
+  "title": "GST Details",
+  "description": "Retrieve basic GST registration information using GSTIN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "GST details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "gstin": "29ABCDE1234F1Z5",
+            "lgnm": "DEMO PRIVATE LIMITED",
+            "tradeNam": "Demo Enterprises",
+            "sts": "Active",
+            "taxpayer_type": "Regular",
+            "rgdt": "01/01/2020",
+            "state_jurisdiction": ["State - Karnataka"],
+            "centre_jurisdiction": ["Range - Demo"]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/gst-report",
+  "title": "GST Report",
+  "description": "Generate GST compliance report using GSTIN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "GST report fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "gstin": "29ABCDE1234F1Z5",
+            "financial_year": "2024-2025",
+            "total_tax_paid": "250000",
+            "total_turnover": "5000000",
+            "filing_status": "Filed",
+            "returns_filed": ["GSTR-3B", "GSTR-1"],
+            "last_filed_on": "20/05/2024"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/email-to-register-sites",
+  "title": "Holehe Email to Register Sites",
+  "description": "Check registered accounts for an email across popular platforms.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/email-to-register-sites' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"email\": \"john.doe@example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Registered sites fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            { "platform": "Twitter", "exists": true },
+            { "platform": "Instagram", "exists": false },
+            { "platform": "Pinterest", "exists": true },
+            { "platform": "Spotify", "exists": false }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/dark-web/stealers-data",
+  "title": "Hudsonrock Steal Data",
+  "description": "Retrieve stolen credentials from infostealer malware logs.In body type must be email, username, domain, ip.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/dark-web/stealers-data' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"email\", \"value\": \"john.doe@example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Stealer data fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "email": "john.doe@example.com",
+              "username": "johndoe123",
+              "password": "DemoPassword@123",
+              "domain": "example.com",
+              "ip_address": "192.168.1.1",
+              "infected_at": "01/01/2024"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/hunter-find",
+  "title": "Hunter Find Email Data",
+  "description": "Discover email addresses associated with a domain.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/hunter-find' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"domain\": \"example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Email addresses fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "email": "john.doe@example.com",
+              "name": "John Doe",
+              "source": "website",
+              "confidence_score": 95
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/inspect/hunter-verify",
+  "title": "Hunter Verify Email Data",
+  "description": "Validate email deliverability using Hunter verification.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/hunter-verify' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"email\": \"john.doe@example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Email verified successfully"
+        },
+        "responseData": {
+          "data": {
+            "email": "john.doe@example.com",
+            "status": "valid",
+            "result": "deliverable",
+            "score": 90
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/ifsc-to-bank-details",
+  "title": "IFSC To Bank Details",
+  "description": "Retrieve bank information using IFSC code.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/ifsc-to-bank-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"ifsc_code\": \"HDFC0001234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Bank details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "BANK": "HDFC Bank",
+            "IFSC": "HDFC0001234",
+            "BRANCH": "MUMBAI MAIN",
+            "ADDRESS": "123, Demo Street, Mumbai, Maharashtra - 400001",
+            "CITY": "MUMBAI",
+            "DISTRICT": "MUMBAI",
+            "STATE": "MAHARASHTRA",
+            "CONTACT": "+91987654xxxx",
+            "MICR": "400240001",
+            "ISO3166": "IN-MH",
+            "NEFT": true,
+            "RTGS": true,
+            "IMPS": true,
+            "UPI": true,
+            "SWIFT": "HDFCINBB"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/uan/get-uan-no",
+  "title": "Know UAN Number",
+  "description": "Retrieve UAN associated with a Member ID.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/get-uan-no' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"MEMBER_ID\", \"value\": \"DEMO123456789012345\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "UAN details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "uan": "123456789012",
+              "kyc_status": "Verified",
+              "member_name": "John Doe",
+              "linked_member_ids": ["DLCPM00012340000000001"]
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/kra-data",
+  "title": "KRA Data",
+  "description": "Retrieve KYC Registration Agency records for a PAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/kra-data' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "KRA data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "email": "john.doe@example.com",
+            "mobile": "987654xxxx",
+            "kra_details": {
+              "ipv_flag": "Yes",
+              "kra_name": "Demo KRA",
+              "kyc_date": "01/01/2020",
+              "kyc_mode": "Aadhaar",
+              "kyc_status": "Verified",
+              "kyc_remark": "KYC Completed",
+              "modification_status": "None"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/breach-info",
+  "title": "LeakOsint Breach Data",
+  "description": "Scan breach databases for compromised information.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/breach-info' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"request_body\": \"john.doe@example.com\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Breach data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "List": {
+              "DemoBreach2024": {
+                "breach_date": "01/01/2024",
+                "compromised_data": ["Email", "Password", "IP Address"]
+              }
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/vehicle/mobile-number-to-challan-details",
+  "title": "Mobile Number To Challan Data",
+  "description": "Retrieve traffic challan details for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/mobile-number-to-challan-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Challan details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "challan_number": "CH123456789",
+              "vehicle_number": "DL01AB1234",
+              "owner_name": "John Doe",
+              "offense": "Over Speeding",
+              "fine_amount": "1000",
+              "issued_date": "01/01/2024",
+              "status": "Pending"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/mobile-number-to-rc",
+  "title": "Mobile Number To RC List",
+  "description": "Retrieve list of vehicle RC numbers for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/mobile-number-to-rc' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "RC list fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "vehicle_number": "DL01AB1234",
+              "owner_name": "John Doe",
+              "chassis_number": "CH123456789",
+              "engine_number": "EN987654321",
+              "registration_date": "01/01/2020"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/mobile/mobile-to-account",
+  "title": "Mobile To Account",
+  "description": "Retrieve bank account and UPI details for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-to-account' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Account details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "account_holder_name": "John Doe",
+            "account_number": "123456789012",
+            "account_ifsc": "HDFC0001234",
+            "bank_name": "HDFC Bank",
+            "vpa": "john.doe@upi"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/mobile-to-account-v3",
+  "title": "Mobile To Account V3",
+  "description": "Retrieve detailed bank account information for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/mobile-to-account-v3' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Account details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "vpa_details": {
+              "vpa": "john.doe@upi",
+              "account_holder_name": "John Doe",
+              "platform": "PhonePe",
+              "upi_handle": "@ybl",
+              "icon_url": "https://example.com/icons/phonepe.png"
+            },
+            "bank_details": {
+              "BANK": "HDFC Bank",
+              "IFSC": "HDFC0001234",
+              "BRANCH": "MUMBAI MAIN",
+              "ADDRESS": "123, Demo Street, Mumbai, Maharashtra - 400001",
+              "CITY": "MUMBAI",
+              "STATE": "MAHARASHTRA",
+              "CONTACT": "+91987654xxxx",
+              "MICR": "400240001",
+              "ISO3166": "IN-MH",
+              "NEFT": true,
+              "RTGS": true,
+              "IMPS": true,
+              "UPI": true,
+              "SWIFT": "HDFCINBB"
+            },
+            "account_details": {
+              "account_ifsc": "HDFC0001234",
+              "account_number": "123456789012",
+              "account_type": "SAVINGS"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/mobile-to-verified-upi-ids",
+  "title": "Mobile To All Verified UPI IDs List",
+  "description": "Retrieve all verified UPI handles for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/mobile-to-verified-upi-ids' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Verified UPI IDs fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "upi_id": "john.doe@upi",
+              "account_holder_name": "John Doe",
+              "platform": "PhonePe",
+              "upi_handle": "@ybl",
+              "verification_status": "Verified"
+            },
+            {
+              "upi_id": "john.doe@paytm",
+              "account_holder_name": "John Doe",
+              "platform": "Paytm",
+              "upi_handle": "@paytm",
+              "verification_status": "Verified"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/mobile/mobile-to-dl",
+  "title": "Mobile To DL",
+  "description": "Retrieve driving licence details for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-to-dl' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "DL details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "dl_number": "DL01 20230012345",
+            "user_full_name": "John Doe",
+            "father_or_husband": "Richard Doe",
+            "user_dob": "10-10-1990",
+            "user_blood_group": "B+",
+            "issued_date": "01/01/2020",
+            "expiry_date": "01/01/2040",
+            "category": "LMV",
+            "status": "Active",
+            "user_address": [
+              {
+                "type": "Permanent",
+                "completeAddress": "123, Demo Street, Mumbai, Maharashtra - 400001"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/mobile/mobile-to-nbfc-profile",
+  "title": "Mobile To NBFC Profile",
+  "description": "Retrieve NBFC profile details for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-to-nbfc-profile' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "NBFC profile fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "full_name": "John Doe",
+            "pan_number": "ABCDE1234F",
+            "mobile_number": "987654XXXX",
+            "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+            "linked_services": ["Demo Finance", "Demo Loans"]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/mobile/mobile-to-pan",
+  "title": "Mobile To Pan",
+  "description": "Retrieve PAN details for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-to-pan' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "full_name": "JOHN DOE",
+            "first_name": "JOHN",
+            "middle_name": "",
+            "last_name": "DOE",
+            "date_of_birth": "10-10-1990"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/mobile/mobile-to-profile-advance",
+  "title": "Mobile To Profile Advance",
+  "description": "Retrieve comprehensive profile information for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-to-profile-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Profile details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "IDAndContactInfo": {
+              "IdentityInfo": {
+                "PANId": [
+                  {
+                    "IdNumber": "ABCDE1234F"
+                  }
+                ],
+                "AadhaarId": [
+                  {
+                    "IdNumber": "XXXXXXXX0123"
+                  }
+                ]
+              },
+              "ContactInfo": {
+                "EmailId": ["john.doe@example.com"],
+                "PhoneNumber": ["987654xxxx"]
+              }
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/mobile/mobile-to-rc",
+  "title": "Mobile To RC",
+  "description": "Retrieve vehicle RC details for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-to-rc' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "RC details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "vehicle_number": "DL01AB1234",
+            "owner_name": "John Doe",
+            "chassis_number": "CH123456789",
+            "engine_number": "EN987654321",
+            "fuel_type": "Petrol",
+            "registration_date": "01/01/2020",
+            "fitness_upto": "01/01/2035"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/uan/get-uan-numbers",
+  "title": "Mobile To Uan Numbers",
+  "description": "Retrieve UAN numbers associated with a mobile number.In body type must be MOBILE or ACCOUNT_NUMBER.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/get-uan-numbers' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"MOBILE\", \"value\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "UAN numbers fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "uan_number": "123456789012",
+              "member_name": "John Doe",
+              "kyc_status": "Verified"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/indiamart-full-data",
+  "title": "Mobile to Indiamart Full Data",
+  "description": "Retrieve complete IndiaMART profile information for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/indiamart-full-data' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "IndiaMART data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "profile_type": "Seller",
+            "name": "John Doe",
+            "business_name": "Demo Enterprises",
+            "business_category": "Electronics",
+            "products": ["Mobile Accessories", "LED Lights"],
+            "location": "Mumbai, Maharashtra",
+            "contact_number": "987654xxxx",
+            "registration_date": "01/01/2020"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/indiamart-seller",
+  "title": "Mobile to Indiamart Seller Details",
+  "description": "Retrieve IndiaMART seller details for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/indiamart-seller' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Seller details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "seller_name": "John Doe",
+            "company_name": "Demo Enterprises",
+            "business_category": "Electronics",
+            "location": "Mumbai, Maharashtra",
+            "contact_number": "987654xxxx"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/indiamart-user",
+  "title": "Mobile to Indiamart User Details",
+  "description": "Retrieve IndiaMART user details for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/indiamart-user' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "User details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "user_name": "John Doe",
+            "business_name": "Demo Business",
+            "location": "Mumbai, Maharashtra",
+            "contact_number": "987654xxxx"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/mobile-to-primary-upi-id",
+  "title": "Mobile to Primary UPI ID",
+  "description": "Retrieve primary UPI ID associated with a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/mobile-to-primary-upi-id' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Primary UPI ID fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "vpa": "john.doe@upi",
+            "account_holder_name": "John Doe",
+            "platform": "PhonePe",
+            "verification_status": "Verified"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/mobile/mobile360",
+  "title": "Mobile360",
+  "description": "Retrieve comprehensive 360-degree profile of a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile360' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Mobile360 data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "full_name": "John Doe",
+            "social_profiles": ["Facebook", "Instagram"],
+            "financial_accounts": ["PhonePe", "Paytm"],
+            "delivery_apps": ["Swiggy", "Zomato"],
+            "business_info": {
+              "registered_on": "Indiamart"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/name-to-challan-details",
+  "title": "Name To Challan Data",
+  "description": "Retrieve traffic challan details for a vehicle owner name.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/name-to-challan-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"name\": \"John Doe\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Challan details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "challan_number": "CH123456789",
+              "vehicle_number": "DL01AB1234",
+              "offense": "Over Speeding",
+              "fine_amount": "1000",
+              "issued_date": "01/01/2024",
+              "status": "Pending"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/pan-basic",
+  "title": "Pan Basic",
+  "description": "Retrieve basic PAN card information using PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-basic' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "full_name": "JOHN DOE",
+            "first_name": "JOHN",
+            "middle_name": "",
+            "last_name": "DOE",
+            "date_of_birth": "10-10-1990"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/pan-experian",
+  "title": "Pan Experian",
+  "description": "Retrieve Experian credit information for a PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-experian' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Experian data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "credit_score": 750,
+            "credit_summary": {
+              "total_loans": 3,
+              "active_loans": 1,
+              "closed_loans": 2
+            },
+            "enquiry_history": [
+              { "date": "01/01/2024", "lender": "Demo Bank" }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/pan-info",
+  "title": "Pan Info Data",
+  "description": "Retrieve comprehensive PAN information including address and Aadhaar status.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-info' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN info fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "full_name": "John Doe",
+            "gender": "Male",
+            "email": "john.doe@example.com",
+            "phone_number": "987654xxxx",
+            "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+            "aadhaar_linked": true,
+            "status": "Active"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/pan-info-v2",
+  "title": "Pan Info V2",
+  "description": "Retrieve PAN holder details including name, address, and Aadhaar status.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-info-v2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN info fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "full_name": "John Doe",
+            "first_name": "John",
+            "last_name": "Doe",
+            "dob": "10-10-1990",
+            "gender": "Male",
+            "email": "john.doe@example.com",
+            "phone_number": "987654xxxx",
+            "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+            "aadhaar_linked": true,
+            "status": "Active"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/pan-profile",
+  "title": "Pan Profile",
+  "description": "Retrieve detailed PAN profile including bank details and address.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-profile' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN profile fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "fullname": "John Doe",
+            "father_name": "Richard Doe",
+            "aadhaar_number": "XXXXXXXX0123",
+            "aadhaar_linked": true,
+            "dob": "10-10-1990",
+            "address": {
+              "building_name": "Demo Building",
+              "locality": "Demo Locality",
+              "street_name": "Demo Street",
+              "pincode": "400001",
+              "city": "Mumbai",
+              "state": "Maharashtra",
+              "country": "India"
+            },
+            "mobile": "987654xxxx",
+            "email": "john.doe@example.com",
+            "bank_details": [
+              {
+                "account_number": "123456789012",
+                "ifsc_code": "HDFC0001234",
+                "bank_name": "HDFC Bank",
+                "account_type": "SAVINGS",
+                "used_for_refund": true
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/pan-refund-status",
+  "title": "Pan Refund Status",
+  "description": "Retrieve income tax refund details for a PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-refund-status' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Refund status fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "overview_details": {
+              "name": "John Doe",
+              "pan_number": "ABCDE1234F",
+              "years_with_records": 2,
+              "total_entries": 2,
+              "assessment_years_checked": ["2023-2024", "2024-2025"]
+            },
+            "refund_details": [
+              {
+                "assessment_year": "2024-2025",
+                "entries": [
+                  {
+                    "mode_of_payment": "NECS",
+                    "reference_number": "123456789",
+                    "status": "Refund credited",
+                    "account_number": "XXXXXXXXXXXX1234",
+                    "date": "01/01/2025"
+                  }
+                ]
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/pan-to-din",
+  "title": "Pan To Din",
+  "description": "Retrieve DINs associated with a PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/pan-to-din' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "DIN details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "din": "01234567",
+              "director_name": "John Doe",
+              "company_name": "Demo Private Limited",
+              "date_of_appointment": "01/01/2020"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/pan-to-gst-numbers",
+  "title": "Pan To Gst Numbers",
+  "description": "Retrieve GSTINs registered under a PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/pan-to-gst-numbers' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "GST numbers fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "gstin": "29ABCDE1234F1Z5",
+              "business_name": "DEMO PRIVATE LIMITED",
+              "state_code": "29",
+              "status": "Active"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/pan-to-insurance",
+  "title": "Pan To Insurance",
+  "description": "Retrieve insurance policy details for a PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-to-insurance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Insurance details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "insurer": "Demo Insurance Co.",
+              "policy_number": "POL123456789",
+              "policy_type": "Life",
+              "premium_amount": "50000",
+              "policy_status": "Active"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/pan-track-status",
+  "title": "Pan Track Status",
+  "description": "Retrieve PAN application status using PAN and DOB.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-track-status' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"date_of_birth\": \"10-10-1990\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN status fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "overview_details": {
+              "name": "John Doe",
+              "pan_number": "ABCDE1234F",
+              "date_of_birth": "10-10-1990",
+              "email": "john.doe@example.com",
+              "mobile": "987654xxxx",
+              "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+              "pincode": "400001"
+            },
+            "track_details": {
+              "application_coupon_number": "U-123456789",
+              "application_type": "New PAN Card",
+              "region": "WESTERN REGION",
+              "message": "Application processed successfully and PAN card dispatched"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/panallinone",
+  "title": "PanAllInOne",
+  "description": "Retrieve complete PAN information including accounts and policies.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/panallinone' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN all-in-one data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "full_name": "John Doe",
+            "dob": "10-10-1990",
+            "gender": "Male",
+            "email": "john.doe@example.com",
+            "mobile": "987654xxxx",
+            "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+            "aadhaar_linked": true,
+            "bank_accounts": [
+              {
+                "bank_name": "HDFC Bank",
+                "account_number": "123456789012",
+                "ifsc": "HDFC0001234"
+              }
+            ],
+            "insurance_policies": [
+              {
+                "insurer": "Demo Insurance Co.",
+                "policy_number": "POL123456789"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/puc-advance-history",
+  "title": "Pucc Advance History",
+  "description": "Retrieve PUCC history for a vehicle number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/puc-advance-history' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PUCC history fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "test_date": "01/01/2024",
+              "valid_until": "01/07/2024",
+              "emission_level": "0.05",
+              "test_centre": "Demo Testing Centre",
+              "certificate_number": "PUC123456789",
+              "result": "PASS"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/puc-details-issue-advance",
+  "title": "Pucc Details Issue Advance",
+  "description": "Retrieve advanced PUCC issuance details for a vehicle number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/puc-details-issue-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PUCC details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "certificate_number": "PUC123456789",
+            "vehicle_number": "DL01AB1234",
+            "issue_date": "01/01/2024",
+            "valid_until": "01/07/2024",
+            "emission_level": "0.05",
+            "test_centre": "Demo Testing Centre",
+            "result": "PASS"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+  {
+  "endpoint": "/api/v1/vehicle/puc-details-verify",
+  "title": "Pucc Details Verify",
+  "description": "Verify PUCC details using vehicle and certificate number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/puc-details-verify' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"certificate_number\": \"PUC123456789\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PUCC verification successful"
+        },
+        "responseData": {
+          "data": {
+            "vehicle_number": "DL01AB1234",
+            "certificate_number": "PUC123456789",
+            "verification_status": "Verified",
+            "emission_level": "0.05",
+            "valid_until": "01/07/2024",
+            "test_centre": "Demo Testing Centre"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/rc-details",
+  "title": "RC Details",
+  "description": "Retrieve complete RC information for a vehicle number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/rc-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "RC details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "vehicle_number": "DL01AB1234",
+            "owner_name": "John Doe",
+            "chassis_number": "CH123456789",
+            "engine_number": "EN987654321",
+            "fuel_type": "Petrol",
+            "vehicle_class": "LMV",
+            "registration_date": "01/01/2020",
+            "fitness_upto": "01/01/2035",
+            "insurance_valid_upto": "01/01/2025"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/rc-details-advance",
+  "title": "RC Details Advance",
+  "description": "Retrieve advanced RC information for a vehicle number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/rc-details-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "RC details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "vehicle_number": "DL01AB1234",
+            "owner_name": "John Doe",
+            "chassis_number": "CH123456789",
+            "engine_number": "EN987654321",
+            "fuel_type": "Petrol",
+            "vehicle_class": "LMV",
+            "registration_date": "01/01/2020",
+            "fitness_upto": "01/01/2035",
+            "insurance_valid_upto": "01/01/2025",
+            "financed": false
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/rc-to-owner-details",
+  "title": "RC To Owner Details",
+  "description": "Retrieve vehicle owner information using vehicle number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/rc-to-owner-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Owner details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "owner_name": "John Doe",
+            "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+            "mobile_number": "987654XXXX",
+            "email": "john.doe@example.com"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/search-company-din-list",
+  "title": "Search Company Din List",
+  "description": "Retrieve list of directors for a company.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/search-company-din-list' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"company_name\": \"DEMO PRIVATE LIMITED\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Director list fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "din": "01234567",
+              "director_name": "John Doe",
+              "designation": "Director",
+              "date_of_appointment": "01/01/2020"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/mobile-to-account-v2",
+  "title": "Self Mobile To Account",
+  "description": "Retrieve bank account details for the authenticated user's mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/mobile-to-account-v2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654XXXX\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Account details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "account_holder_name": "John Doe",
+            "account_number": "123456789012",
+            "account_ifsc": "HDFC0001234",
+            "bank_name": "HDFC Bank",
+            "vpa": "john.doe@upi"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/trucaller-verify",
+  "title": "Trucaller Verify",
+  "description": "Validate phone numbers using Truecaller-style OSINT.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/trucaller-verify' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Phone number verified"
+        },
+        "responseData": {
+          "data": {
+            "mobile_number": "987654XXXX",
+            "name": "John Doe",
+            "location": "Mumbai, Maharashtra",
+            "carrier": "Demo Telecom",
+            "verification_status": "Verified"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/uan/uan-advance",
+  "title": "Uan Advance",
+  "description": "Retrieve comprehensive EPFO information using UAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "UAN details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "uan": "123456789012",
+            "personal_details": {
+              "name": "John Doe",
+              "dob": "10-10-1990",
+              "gender": "Male",
+              "father_name": "Richard Doe"
+            },
+            "bank_details": {
+              "bank_acc_no": "123456789012",
+              "bank_ifsc": "HDFC0001234",
+              "name_as_on_bank": "John Doe"
+            },
+            "aadhaar_details": {
+              "aadhaar": "XXXXXXXX0123",
+              "name_as_on_aadhaar": "John Doe"
+            },
+            "pan_details": {
+              "pan_number": "ABCDE1234F",
+              "name_as_on_pan": "John Doe"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/uan/uan-profile",
+  "title": "Uan Profile",
+  "description": "Retrieve basic EPFO profile information using UAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-profile' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "UAN profile fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "uan": "123456789012",
+            "full_name": "John Doe",
+            "dob": "10-10-1990",
+            "gender": "Male",
+            "kyc_status": "Verified"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/uan/uan-to-employment-profile-lookup",
+  "title": "Uan To Employee Profile Lookup",
+  "description": "Retrieve detailed employment profile using UAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-to-employment-profile-lookup' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Employment profile fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "uan": "123456789012",
+            "full_name": "John Doe",
+            "employment_history": [
+              {
+                "establishment_name": "Demo Private Limited",
+                "member_id": "DLCPM00012340000000001",
+                "joining_date": "01/01/2010",
+                "leaving_date": "31/12/2015"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/uan/uan-to-employment-history",
+  "title": "Uan To Employment History",
+  "description": "Retrieve EPFO employment history using UAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-to-employment-history' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Employment history fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "uan": "123456789012",
+            "employment_history": [
+              {
+                "employer_name": "Demo Private Limited",
+                "member_id": "DLCPM00012340000000001",
+                "joining_date": "01/01/2010",
+                "leaving_date": "31/12/2015"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/uan/uan-to-employment-history-v1",
+  "title": "Uan To Employment History V1",
+  "description": "Retrieve basic EPFO employment history using UAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-to-employment-history-v1' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Employment history fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "establishment_name": "Demo Private Limited",
+              "member_id": "DLCPM00012340000000001",
+              "service_period": "6 years"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/uan/uan-to-employment-history-v2",
+  "title": "Uan To Employment History V2",
+  "description": "Retrieve improved EPFO employment history using UAN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-to-employment-history-v2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"123456789012\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Employment history fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "uan": "123456789012",
+            "employment_history": [
+              {
+                "establishment_name": "Demo Private Limited",
+                "member_id": "DLCPM00012340000000001",
+                "joining_date": "01/01/2010",
+                "leaving_date": "31/12/2015",
+                "service_period": "6 years"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/udyam-advance",
+  "title": "Udyam Advance",
+  "description": "Retrieve advanced Udyam registration details.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/udyam-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"udyam_registration_number\": \"UDYAM-MH-01-0000001\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Udyam details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "udyam_registration_number": "UDYAM-MH-01-0000001",
+            "enterprise_name": "Demo Enterprises",
+            "organisation_type": "Private Limited",
+            "major_activity": "Manufacturing",
+            "social_category": "General",
+            "gender": "Male",
+            "date_of_incorporation": "01/01/2020",
+            "official_address": {
+              "city": "Mumbai",
+              "state": "Maharashtra",
+              "district": "Mumbai",
+              "pin": "400001"
+            },
+            "nic_codes": [
+              {
+                "activity": "Demo Activity"
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/udyam-report",
+  "title": "Udyam Report",
+  "description": "Retrieve comprehensive Udyam report.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/udyam-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"udyam_registration_number\": \"UDYAM-MH-01-0000001\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Udyam report fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "udyam_registration_number": "UDYAM-MH-01-0000001",
+            "enterprise_name": "Demo Enterprises",
+            "enterprise_type": "Micro",
+            "total_turnover": "10000000",
+            "investment_in_plant_machinery": "5000000",
+            "financial_year": "2024-2025"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/gst/udyam-list",
+  "title": "Udyam Numbers List",
+  "description": "Retrieve list of Udyam Registration Numbers.In body type must be PAN, MOBILE, EMAIL, COMPANY_NAME.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/udyam-list' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"PAN\", \"value\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Udyam list fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "udyam_registration_no": "UDYAM-MH-01-0000001",
+              "enterprise_name": "Demo Enterprises"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/upi-id-payment-analyser",
+  "title": "Upi Id To Digital Payment Analyser",
+  "description": "Retrieve digital payment information for a UPI ID.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/upi-id-payment-analyser' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"upi_id\": \"john.doe@upi\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "UPI details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "key": "john.doe@upi",
+            "upi_id": "john.doe@upi",
+            "platform": "PhonePe",
+            "upi_handle": "@ybl",
+            "status": "active",
+            "icon_url": "https://example.com/icons/phonepe.png",
+            "data": {
+              "name": "John Doe",
+              "ifsc": "HDFC0001234",
+              "bank": "HDFC Bank",
+              "account_type": "SAVINGS",
+              "branch": "MUMBAI MAIN",
+              "center": "MUMBAI",
+              "district": "MUMBAI",
+              "state": "MAHARASHTRA",
+              "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+              "contact": "+91987654xxxx",
+              "city": "MUMBAI"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/upi-to-account",
+  "title": "Upi To Account",
+  "description": "Retrieve bank account details for a UPI ID.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/upi-to-account' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"upi_id\": \"john.doe@upi\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Account details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "digital_payment_details": {
+              "account_holder_name": "John Doe",
+              "digital_payment_id": "john.doe@upi"
+            },
+            "account_details": {
+              "account_number": "123456789012",
+              "account_ifsc": "HDFC0001234"
+            },
+            "bank_details": {
+              "BANK": "HDFC Bank",
+              "BRANCH": "MUMBAI MAIN",
+              "ADDRESS": "123, Demo Street, Mumbai, Maharashtra - 400001",
+              "CITY": "MUMBAI",
+              "STATE": "MAHARASHTRA"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/vehicle-number-to-challan-details",
+  "title": "Vehicle Number To Challan Data",
+  "description": "Retrieve traffic challan details for a vehicle number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/vehicle-number-to-challan-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Challan details fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "challan_number": "CH123456789",
+              "vehicle_number": "DL01AB1234",
+              "offense": "Over Speeding",
+              "fine_amount": "1000",
+              "issued_date": "01/01/2024",
+              "status": "Pending"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/vehicle/vehicle-number-to-vehicle-details",
+  "title": "Vehicle Number to Vehicle Details",
+  "description": "Retrieve complete vehicle information for a registration number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/vehicle/vehicle-number-to-vehicle-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"vehicle_number\": \"DL01AB1234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Vehicle details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "vehicle_number": "DL01AB1234",
+            "make": "Maruti Suzuki",
+            "model": "Swift",
+            "fuel_type": "Petrol",
+            "engine_number": "EN987654321",
+            "chassis_number": "CH123456789",
+            "registration_date": "01/01/2020",
+            "owner_name": "John Doe"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/financial/verify-upi-id",
+  "title": "Verify UPI ID",
+  "description": "Validate whether a UPI ID is valid and registered with a bank.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/verify-upi-id' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"upi_id\": \"john.doe@upi\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "UPI ID verified"
+        },
+        "responseData": {
+          "success": true,
+          "message": "Valid UPI ID",
+          "data": {
+            "upi_id": "john.doe@upi",
+            "registered": true
+          }
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/voter-details",
+  "title": "Voter Holder Details",
+  "description": "Retrieve voter information using EPIC (Voter ID) number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/voter-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"epic_number\": \"ABC1234567\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Voter details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "personal_details": {
+              "epic_number": "ABC1234567",
+              "full_name": "John Doe",
+              "gender": "Male",
+              "age": 35
+            },
+            "location_details": {
+              "state_name": "Maharashtra",
+              "district": "Mumbai",
+              "assembly_constituency": "Demo Constituency"
+            },
+            "polling_station_details": {
+              "polling_station": "Demo School",
+              "polling_station_address": "123, Demo Street"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+ {
+  "endpoint": "/api/v1/inspect/whatsapp-profile",
+  "title": "Whatsapp Profile",
+  "description": "Retrieve WhatsApp profile information for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/whatsapp-profile' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "WhatsApp profile fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "about": "Demo status",
+            "image_url": "https://example.com/images/whatsapp_profile.jpg",
+            "last_seen": "2026-09-03T10:15:00Z",
+            "timestamp": "2026-09-03T10:15:00Z",
+            "mobile_number": "987654XXXX"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},{
+  "endpoint": "/api/v1/financial/mobile-to-account-v3",
+  "title": "Mobile To Account V3",
+  "description": "Retrieve detailed bank account information for a mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/mobile-to-account-v3' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Account details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "vpa_details": {
+              "vpa": "john.doe@upi",
+              "account_holder_name": "John Doe",
+              "platform": "PhonePe",
+              "upi_handle": "@ybl",
+              "icon_url": "https://example.com/icons/phonepe.png"
+            },
+            "bank_details": {
+              "BANK": "HDFC Bank",
+              "IFSC": "HDFC0001234",
+              "BRANCH": "MUMBAI MAIN",
+              "ADDRESS": "123, Demo Street, Mumbai, Maharashtra - 400001",
+              "CITY": "MUMBAI",
+              "STATE": "MAHARASHTRA",
+              "CONTACT": "+91987654xxxx",
+              "MICR": "400240001",
+              "ISO3166": "IN-MH",
+              "NEFT": true,
+              "RTGS": true,
+              "IMPS": true,
+              "UPI": true,
+              "SWIFT": "HDFCINBB"
+            },
+            "account_details": {
+              "account_ifsc": "HDFC0001234",
+              "account_number": "123456789012",
+              "account_type": "SAVINGS"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/financial/upi-to-account",
+  "title": "Upi To Account",
+  "description": "Retrieve bank account details for a UPI ID.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/upi-to-account' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"upi_id\": \"john.doe@upi\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Account details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "digital_payment_details": {
+              "account_holder_name": "John Doe",
+              "digital_payment_id": "john.doe@upi"
+            },
+            "account_details": {
+              "account_number": "123456789012",
+              "account_ifsc": "HDFC0001234"
+            },
+            "bank_details": {
+              "BANK": "HDFC Bank",
+              "BRANCH": "MUMBAI MAIN",
+              "ADDRESS": "123, Demo Street, Mumbai, Maharashtra - 400001",
+              "CITY": "MUMBAI",
+              "STATE": "MAHARASHTRA"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/gst/din-to-pan",
+  "title": "Din To Pan",
+  "description": "Retrieve PAN associated with a DIN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/din-to-pan' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"din_number\": \"01234567\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "din": "01234567",
+            "pan": "ABCDE1234F",
+            "name": "John Doe",
+            "date_of_birth": "10-10-1990",
+            "aadhaar_linked": true
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/gst/company-name-to-company-contact",
+  "title": "Company Name to Company Contact",
+  "description": "Retrieve company contact details using registered company name.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/company-name-to-company-contact' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"name\": \"Example Private Limited\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "Company contact details fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "company_name": "Example Private Limited",
+            "email": "contact@example.com",
+            "mobile": "9876543210",
+            "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
+            "website": "https://www.example.com"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+}
+]

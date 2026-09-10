@@ -1,0 +1,466 @@
+PROJECT ARCHITECTURE AND DEVELOPMENT GUIDE
+=========================================
+
+Project Name: Scaninfoga Commercial Portal
+Location: D:\commercial_panel\com-panel
+Framework: Next.js 16 (App Router)
+Language: TypeScript
+UI: React 19
+Styling: Tailwind CSS
+State: Redux Toolkit + redux-persist
+Auth: cookie-based session + middleware route protection
+Backend contract: API calls via axios and custom encrypted/decrypted envelope logic
+
+
+1. PROJECT PURPOSE
+------------------
+This project is a commercial operations portal for secure workflow management, user oversight, transaction handling, approval flows, API pricing, monitoring, and admin-like operational control.
+
+The system is designed to behave like a controlled internal business portal, not a public-facing app. It expects secure authenticated access, restricted to allowed user tiers, and role-aware route protection.
+
+The current implementation is a strong foundation for a production-ready internal portal, but it is still a shell that expects real backend APIs and final business workflows to be connected.
+
+
+2. HIGH-LEVEL ARCHITECTURE
+--------------------------
+The app follows a modular Next.js App Router architecture.
+
+Top-level layers:
+- app/ : route pages, layout, root providers, route-level entry points
+- components/ : UI blocks and feature modules
+- lib/ : common utilities, API wrappers, auth helpers, route permissions, constants
+- redux/ : global store, persisted slices, client-side session state
+- actions/ : server actions or business actions
+- public/ : static assets
+- utils/ : helper functions and constants
+- types/ : shared types
+- middleware.ts : server-side route protection for protected routes
+
+Core execution flow:
+1. User loads app root route
+2. Root app checks access token cookie
+3. If token exists, app redirects to dashboard
+4. If not, user lands on auth page
+5. User login via email + MPIN + OTP flow
+6. Session token + user payload saved in cookies
+7. Middleware validates access for protected routes
+8. UI pages consume Redux state and call backend APIs with Authorization header
+
+
+3. STACK AND TECHNOLOGY CHOICES
+------------------------------
+Framework:
+- Next.js 16 with App Router
+- TypeScript strong typing
+- React 19
+
+Styling:
+- Tailwind CSS
+- Utility-first UI pattern
+- Custom component library under components/ui/
+
+State and session:
+- Redux Toolkit
+- redux-persist for persistence
+- cookies-next to store auth cookies
+
+Data access:
+- axios instance in lib/api.ts
+- custom encrypted response handling via lib/crypto.ts
+- clientInfo and auth headers attached to requests
+
+UI patterns:
+- custom UI primitives built on Radix + Tailwind
+- reusable cards, forms, dialogs, popovers, tables, tabs
+
+Auth flow:
+- accessToken cookie
+- user cookie
+- expiresAt cookie
+- middleware route protection
+- role checks via routePermissions
+
+
+4. ROOT PROJECT STRUCTURE
+-------------------------
+At root:
+- app/
+- components/
+- lib/
+- redux/
+- actions/
+- public/
+- styles/
+- types/
+- utils/
+- middleware.ts
+- next.config.ts
+- package.json
+- tsconfig.json
+- tailwind.config.ts
+- postcss.config.mjs
+- eslint.config.mjs
+- next-env.d.ts
+- README.md
+
+Important folders:
+- app/(sidebar)/ : all authenticated pages under a shared shell
+- app/auth : login and auth screens
+- app/unauthorized : restricted access screen
+- components/pages/auth : login, change password, auth-related UI
+- components/pages/dashboard : dashboard screen
+- components/custom : reusable custom UI blocks, sidebar, navbar, note components
+- components/ui : base UI primitives
+- lib/api.ts : all application API requests
+- lib/routePermissions.ts : portal route access policy and allowed tiers
+- redux/userSlice.ts : user session state + cookie syncing
+
+
+5. APP ROUTER STRUCTURE
+----------------------
+The app uses route groups and nested layout patterns.
+
+Important routes:
+- / : root landing page, redirects based on session
+- /auth : login page
+- /dashboard : main dashboard
+- /users : user management screen
+- /users/[user_id] : user detail view
+- /transactions : transaction overview
+- /transactions/[txn_id] : transaction detail view
+- /accept_transaction : approval/accept flow
+- /accept_approvals : approval queue
+- /api_pricing : pricing configuration
+- /monitor_logs : log monitoring
+- /setCredentials : credentials/settings area
+- /unauthorized : blocked-access screen
+
+The route group app/(sidebar)/ is the core internal portal shell. All authenticated operations should live inside this grouped route structure.
+
+This pattern is important because it keeps the public auth shell separate from the authenticated portal shell.
+
+
+6. AUTHENTICATION ARCHITECTURE
+-----------------------------
+Authentication is cookie-based and role-aware.
+
+Stored values:
+- accessToken
+- user
+- expiresAt
+
+The user payload is stored in Redux and persisted to cookies using redux-persist and cookies-next.
+
+Primary auth documents:
+- redux/userSlice.ts
+- components/pages/auth/Login.tsx
+- middleware.ts
+- lib/routePermissions.ts
+- lib/api.ts
+
+Auth process:
+1. User enters email and MPIN
+2. Client calls /api/v1/auth/signin
+3. If OTP required, client requests OTP and then verifies it via /api/v1/auth/signin/verify-otp
+4. On success, it saves session cookies using setCredentials
+5. App redirects to /dashboard or /users depending on routing pattern
+6. Middleware runs on each request and checks access token
+7. Middleware also checks user tier if it is available
+8. Disallowed users are redirected to /unauthorized or /auth
+
+Important design note:
+- This project was built with an internal portal security model, so the backend role/tier is considered the source of truth.
+- The frontend should never trust user role information without normalizing and validating it.
+- Route access logic must remain centralized in lib/routePermissions.ts and middleware.ts.
+
+
+7. ROLE ACCESS MODEL
+--------------------
+The project defines a commercial portal access model where only allowed tiers can access the internal panel.
+
+Allowed user tiers:
+- ADMIN
+- COMMERCIAL
+
+Blocked or restricted tiers:
+- NORMAL
+- COOPERATIVE
+- COOPERATIVE_MEMBER
+
+Route permissions are centralized in lib/routePermissions.ts.
+
+This is a scalable pattern because:
+- one file defines the allowed tiers
+- one file defines route access matrix
+- middleware enforces it consistently for all pages
+- login logic can reject blocked accounts before session creation
+
+Recommended production rule:
+- never hardcode role checks in each page
+- always use a shared permission function or routeAccess mapping
+
+
+8. STATE MANAGEMENT
+-------------------
+Redux is the global state layer.
+
+Structured slices:
+- userSlice.ts : authentication user data, token, expiry
+- infoSlice.ts : general app information
+- walletSlice.ts : wallet status and finance-related state
+- store.ts : root reducer registration
+- persistConfig.ts : persistence configuration for Redux slices
+
+Why this works:
+- session state is preserved across reloads
+- user data is accessible globally
+- auth state is centralized
+
+Important rule:
+- keep global state minimal and serializable
+- do not store large derived data or heavy response blobs in Redux unless necessary
+- use server fetch patterns for complex data-heavy use cases
+
+
+9. API LAYER
+------------
+The API layer is centralized in lib/api.ts.
+
+Responsibilities:
+- build base URL
+- attach Authorization bearer token when present
+- attach client info headers
+- attach encryption headers
+- decrypt encrypted API responses automatically
+- handle 401 logout by redirecting to /auth
+
+This is a production-quality pattern because it centralizes all network concerns.
+
+Important rules:
+- never call axios directly from component files unless absolutely necessary
+- use lib/api.ts as the single integration boundary for back-end calls
+- centralize headers, auth, and response standards in one place
+
+
+10. CUSTOM UI SYSTEM
+--------------------
+The project uses a custom UI layer under components/ui/ and custom components under components/custom/.
+
+UI building blocks include:
+- button.tsx
+- card.tsx
+- dialog.tsx
+- form.tsx
+- input.tsx
+- table.tsx
+- tabs.tsx
+- badge.tsx
+- separator.tsx
+- popover.tsx
+- loader.tsx
+- custom-progress.tsx
+
+Then there are app-specific wrappers:
+- sidebar.tsx
+- navbar.tsx
+- modal.tsx
+- note-form.tsx
+- notes.tsx
+- pagination.tsx
+- view-dialog.tsx
+
+This is a good scalable pattern because it separates atomic UI building blocks from feature-level composition.
+
+
+11. PAGE LAYER ARCHITECTURE
+--------------------------
+Feature pages are grouped under components/pages/*.
+
+This approach keeps page logic separate from generic shared components.
+
+Examples:
+- components/pages/auth/Login.tsx
+- components/pages/auth/ChangePassword.tsx
+- components/pages/dashboard/Dashboard.tsx
+- components/pages/users/Users.tsx
+- components/pages/users/UserDetails.tsx
+- components/pages/transactions/Transactions.tsx
+- components/pages/transactions/TransactionDetail.tsx
+- components/pages/accept_transaction/AcceptTransaction.tsx
+- components/pages/accept_approvals/AcceptApprovals.tsx
+- components/pages/api_pricing/ApiPricing.tsx
+- components/pages/monitor_logs/MonitorLogs.tsx
+- components/pages/setCredentials/setCredentials.tsx
+
+This creates good separation between:
+- route structure
+- user-facing page logic
+- reusable components
+- business data fetch logic
+
+
+12. CODE QUALITY AND SCALABILITY RULES
+--------------------------------------
+These are the rules a senior developer would enforce in this project.
+
+A. Keep business logic out of UI files
+- UI components should render data and delegate logic to hooks or action functions.
+- do not write backend-fetch logic directly into page components if it can be abstracted.
+
+B. Use central auth rules
+- never duplicate role checks across screens
+- route permissions must be centralized
+- role parsing must happen in a shared helper
+
+C. Keep API boundaries clean
+- all API calls go via lib/api.ts
+- do not call axios in route files, pages, or components directly
+
+D. Prefer shared component composition
+- build from components/ui and custom reusable blocks
+- avoid copying identical element patterns across features
+
+E. Keep route protection at middleware level
+- do not rely solely on UI hiding buttons to enforce security
+- security must be enforced in the server/middleware layer
+
+F. Keep session and token logic in one place
+- use redux/userSlice.ts and lib/api.ts as the central source of truth
+
+G. Normalize backend payloads before using them
+- backend contracts vary across APIs
+- normalize tier and role fields before using them in UI logic
+
+H. Use typed data models
+- do not use any for real business objects
+- prefer explicit interfaces and shared types from types/ or lib/types.ts if needed
+
+I. Keep route groups meaningful
+- app/(sidebar)/ should contain all secure operations
+- public pages should remain outside the protected shell
+
+J. Protect against stale cookies
+- always remove session cookies on logout or 401
+- keep expiry aligned with backend expiry values
+
+
+13. SECURITY RULES
+------------------
+This project must follow a few production-grade security principles:
+
+- Only authenticated users can access the internal app shell
+- Authorized user tiers must be checked in middleware
+- A token must always be present before protected requests are allowed
+- 401 responses should trigger logout and redirect to /auth
+- Do not rely on frontend hiding elements as the only layer of security
+- Any admin-like or sensitive areas must enforce server-side permission checks
+- Cookie data should be minimal; do not store unnecessary secrets in client cookies
+- If backend sends tier information, normalize and validate it before trusting it
+
+
+14. PRODUCTION READINESS CHECKLIST
+----------------------------------
+This project is close to a strong internal portal foundation, but here is the production checklist a senior dev would enforce before release:
+
+- Real backend API contract alignment complete
+- All mocked or placeholder content removed or clearly separated
+- Real route/page permissions validated against backend roles
+- All modules have real data fetching contracts instead of dummy placeholder logic
+- Loader states and error states completed for all critical pages
+- Audit logging added for approvals and sensitive actions
+- Server-side role enforcement verified for every protected endpoint
+- Expiration and session invalidation tested end-to-end
+- Access control tested for ADMIN and COMMERCIAL only
+- Unauthorized screen verified for blocked roles
+- Global API error handling reviewed across all modules
+- Build, lint, and type-check pass in CI
+
+
+15. CURRENT PROJECT STATE
+------------------------
+As of now, the project is in a strong starter-to-production-staged structure:
+- solid app shell and route layout
+- polished login flow
+- session persistence and middleware checks
+- role-aware access preparation
+- commercial portal branding and layout skeleton
+- routes ready for real business modules
+
+However, it still requires final productization:
+- real backend response contract verification
+- real data connections for each page
+- actual business logic for approvals, pricing, logs, and user actions
+- final permission policies mapped against backend user tiers
+- cleaning and replacing placeholder content with real modules
+
+
+16. HOW TO ADD A NEW MODULE SAFELY
+----------------------------------
+Use this process:
+
+1. Define route in app/ or app/(sidebar)/
+2. Create page component in components/pages/<feature>/
+3. Build reusable subcomponents in components/custom or components/ui as needed
+4. Use lib/api.ts for backend integration
+5. Add any permission or route access in lib/routePermissions.ts
+6. Add Redux slice only if global state is truly required
+7. Validate all access rules through middleware and login guard
+8. Run type-check and lint before completion
+
+
+17. KEY FILE MAP
+----------------
+Most important files for understanding the system:
+
+- package.json : scripts and dependencies
+- app/layout.tsx : root layout and global metadata
+- app/page.tsx : root redirect logic
+- app/provider.tsx : provider composition
+- app/unauthorized/page.tsx : blocked access page
+- middleware.ts : server-side auth and route protection
+- lib/api.ts : central API wrapper
+- lib/routePermissions.ts : route access policy and allowed tiers
+- lib/crypto.ts : encrypted response helpers
+- redux/store.ts : Redux store configuration
+- redux/userSlice.ts : auth state and cookie persistence
+- components/pages/auth/Login.tsx : login + OTP flow
+- components/custom/navbar.tsx : top navigation
+- components/custom/custom/sidebar.tsx : main sidebar navigation
+- components/ui/* : shared foundational UI components
+
+
+18. FINAL SENIOR-LEVEL SUMMARY
+-----------------------------
+This project is a Next.js commercial operations portal built with a clean route-based architecture and strong modular composition. It is structured well for growth, with separated concerns across app, components, lib, and redux. The auth layer is implemented reasonably well, and the project already shows a proper pattern for session cookies, route enforcement, and UI layering.
+
+The project is not just a generic dashboard; it is specifically designed to serve a secure commercial/internal workflow. Its biggest production requirement is to align the backend role payload contract tightly with frontend permission checks and to replace the remaining placeholder screens with actual business logic once the backend is final.
+
+In short:
+- architecture is modular and scalable
+- auth and session flow are structured correctly
+- protection model is centralized and production-minded
+- remaining work is final backend contract alignment and real feature implementation
+
+
+19. RECOMMENDED NEXT STEPS
+-------------------------
+1. Finalize auth response contract with backend
+2. Validate actual role values from real login payload
+3. Replace placeholder route pages with real features
+4. Add server-side API protection for each sensitive route
+5. Add CI checks and environment validation
+6. Review security and session expiry logic
+7. Clean up any remaining dummy or unused files from earlier iterations
+
+
+20. PRACTICAL RULE TO REMEMBER
+-----------------------------
+The most important principle for this project is:
+
+Never trust UI visibility alone for security.
+Always enforce route and permission logic in middleware and shared auth layer.
+
+That is the difference between a demo app and a secure production portal.
+
+
+END OF PROJECT GUIDE
