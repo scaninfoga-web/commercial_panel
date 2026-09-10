@@ -4,7 +4,9 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 import {
   LayoutDashboard,
   ChevronLeft,
@@ -14,7 +16,12 @@ import {
   BookTextIcon,
   FileChartColumnIcon,
   X,
+  Settings,
+  User,
+  Crown,
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface SidebarLink {
   title: string;
@@ -34,7 +41,9 @@ const sidebarGroups: SidebarGroup[] = [
   },
   {
     label: "Management",
-    links: [{ title: "Manage API Keys", icon: KeyRound, href: "/manage_api_keys" }],
+    links: [
+      { title: "Manage API Keys", icon: KeyRound, href: "/manage_api_keys" },
+    ],
   },
   {
     label: "Activities",
@@ -50,6 +59,87 @@ const sidebarGroups: SidebarGroup[] = [
   },
 ];
 
+interface SidebarAvatarProps {
+  /** Uploaded photo first, UIDAI Aadhaar photo second — see `avatarSrc`. */
+  src: string | null;
+  initials: string;
+  name: string;
+  /** Sizing for the tile; the rail and expanded states share this. */
+  className: string;
+  sizes: string;
+}
+
+/**
+ * The user tile's avatar. Falls back to gradient initials both when no photo
+ * is on the account and when the one that is there fails to load — this sits
+ * in the chrome of every page, so a dead CDN URL must not leave a blank disc.
+ *
+ * This component is intentionally "dumb": it just renders whatever `src`/
+ * `initials` it's handed. The hydration-safety gate lives one level up, in
+ * `Sidebar`, so every Redux-derived value (avatar, name, tier, email) is
+ * gated by a single `mounted` flag instead of being patched piecemeal.
+ */
+function SidebarAvatar({
+  src,
+  initials,
+  name,
+  className,
+  sizes,
+}: SidebarAvatarProps): JSX.Element {
+  const [failed, setFailed] = useState(false);
+
+  // A new photo (fresh KYC capture) deserves another attempt.
+  useEffect(() => setFailed(false), [src]);
+
+  if (!src || failed) {
+    return (
+      <div
+        className={cn(
+          "flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg",
+          className,
+        )}
+      >
+        <span className="text-xs font-bold">{initials || "U"}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-full border border-emerald-500/40 bg-slate-950 shadow-lg ring-1 ring-emerald-400/20",
+        className,
+      )}
+    >
+      <Image
+        src={src}
+        alt={name}
+        fill
+        unoptimized
+        sizes={sizes}
+        className="object-cover"
+        onError={() => setFailed(true)}
+      />
+    </div>
+  );
+}
+
+const getTierColor = (tier?: string) => {
+  switch (tier?.toUpperCase()) {
+    case "ADMIN":
+      return "bg-gradient-to-r from-emerald-400 to-emerald-600 text-white border-emerald-300";
+    case "COMMERCIAL":
+      return "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white border-yellow-300";
+    case "COOPERATIVE":
+      return "bg-gradient-to-r from-blue-400 to-blue-600 text-white border-blue-300";
+    case "COOPERATIVE_MEMBER":
+      return "bg-gradient-to-r from-purple-500 to-indigo-600 text-white border-purple-400";
+    case "NORMAL":
+    default:
+      return "bg-gradient-to-r from-gray-400 to-gray-600 text-white border-gray-300";
+  }
+};
+
 interface SidebarProps {
   /**
    * Desktop (>= md): true = collapsed to icon-rail, false = expanded.
@@ -64,11 +154,28 @@ const MOBILE_BREAKPOINT = 768; // matches Tailwind's `md`
 const getIsMobile = () =>
   typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT;
 
+const contentSpring = {
+  type: "spring" as const,
+  stiffness: 280,
+  damping: 26,
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   const pathname = usePathname();
+  const userData = useSelector((state: RootState) => state.user.user);
+
   // Lazy-initialized so the very first render already knows the viewport size —
   // avoids a flash of the wrong layout (desktop rail) on mobile before hydration.
   const [isMobile, setIsMobile] = useState(getIsMobile);
+
+  // Client-only flag — flips to true one tick after hydration completes.
+  // `userData` comes from Redux, which is empty on the server but already
+  // rehydrated (via redux-persist) by the time the client does its very
+  // first render. Every value derived from it below is gated on `mounted`
+  // so the server HTML and the client's first paint stay byte-identical;
+  // the swap to the real avatar/name/tier happens only after hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
@@ -112,6 +219,24 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   const showLabels = isMobile ? true : !collapsed;
   const isRail = !isMobile && collapsed;
 
+  const rawInitials = userData?.name
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Everything below is gated on `mounted` — until then we render the same
+  // generic placeholders the server does, so nothing derived from Redux can
+  // mismatch during hydration.
+  const fullName = mounted ? userData?.name || "User" : "User";
+  const initials = mounted ? rawInitials || "U" : "U";
+  const avatarSrc = mounted
+    ? userData?.profile_image || userData?.aadhaar_image || null
+    : null;
+  const tier = mounted ? userData?.tier : undefined;
+  const email = mounted ? userData?.email || "No email" : "No email";
+
   return (
     <>
       {/* Backdrop — mobile only, shown while the drawer is open */}
@@ -147,7 +272,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
         >
           <button
             onClick={onToggle}
-            aria-label={isMobile ? "Close menu" : collapsed ? "Expand menu" : "Collapse menu"}
+            aria-label={
+              isMobile ? "Close menu" : collapsed ? "Expand menu" : "Collapse menu"
+            }
             className="rounded-xl p-2 text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
           >
             {isMobile ? (
@@ -247,6 +374,159 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
             </div>
           ))}
         </nav>
+
+        {/* User Section */}
+        <div className="shrink-0 border-t border-slate-800/30 px-3 pt-4">
+          <Link
+            href="/profile"
+            className={cn(
+              "flex items-center gap-3 rounded-xl p-2 transition-colors duration-200 hover:bg-white/5",
+              !showLabels && "justify-center",
+            )}
+          >
+            <div className="relative shrink-0">
+              <SidebarAvatar
+                src={avatarSrc}
+                initials={initials}
+                name={fullName}
+                className="h-10 w-10"
+                sizes="40px"
+              />
+              <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#05070B] bg-green-500" />
+            </div>
+
+            <motion.div
+              animate={{
+                opacity: showLabels ? 1 : 0,
+                x: showLabels ? 0 : -16,
+                filter: showLabels ? "blur(0px)" : "blur(6px)",
+              }}
+              transition={{
+                ...contentSpring,
+                opacity: {
+                  duration: 0.28,
+                  ease: [0.4, 0, 0.2, 1],
+                  delay: showLabels ? 0.08 : 0,
+                },
+                filter: {
+                  duration: 0.22,
+                  delay: showLabels ? 0.06 : 0,
+                },
+              }}
+              className={cn(
+                "min-w-0 flex-1",
+                !showLabels && "pointer-events-none absolute",
+              )}
+            >
+              <div className="mb-0.5 flex items-center gap-2">
+                <span className="truncate text-sm font-medium text-white">
+                  {fullName}
+                </span>
+                <Badge
+                  className={cn(
+                    getTierColor(tier),
+                    "shrink-0 px-1.5 py-0 text-[9px] shadow-sm",
+                  )}
+                >
+                  <Crown className="mr-0.5 h-2.5 w-2.5" />
+                  <span className="uppercase tracking-wide">
+                    {tier || "Free"}
+                  </span>
+                </Badge>
+              </div>
+              <div className="truncate text-xs text-slate-400">{email}</div>
+            </motion.div>
+          </Link>
+
+          {/* Action buttons — expanded state */}
+          <motion.div
+            animate={{
+              opacity: showLabels ? 1 : 0,
+              y: showLabels ? 0 : 10,
+              filter: showLabels ? "blur(0px)" : "blur(6px)",
+            }}
+            transition={{
+              ...contentSpring,
+              opacity: {
+                duration: 0.3,
+                ease: [0.4, 0, 0.2, 1],
+                delay: showLabels ? 0.12 : 0,
+              },
+              y: {
+                ...contentSpring,
+                delay: showLabels ? 0.1 : 0,
+              },
+              filter: {
+                duration: 0.25,
+                delay: showLabels ? 0.1 : 0,
+              },
+            }}
+            className={cn(
+              "mt-2 gap-2 pb-4",
+              showLabels ? "flex" : "pointer-events-none absolute opacity-0",
+            )}
+          >
+            <Link href="/profile" className="flex-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-full rounded-xl border-slate-700/50 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-400"
+              >
+                <User className="mr-1.5 h-3.5 w-3.5" />
+                Profile
+              </Button>
+            </Link>
+            <Link href="/subscriptions" className="flex-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-full rounded-xl border-slate-700/50 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-cyan-500/50 hover:bg-cyan-500/10 hover:text-cyan-400"
+              >
+                <Settings className="mr-1.5 h-3.5 w-3.5" />
+                Plans
+              </Button>
+            </Link>
+          </motion.div>
+
+          {/* Collapsed settings icon — rail state only */}
+          <motion.div
+            animate={{
+              opacity: showLabels ? 0 : 1,
+              scale: showLabels ? 0.85 : 1,
+              filter: showLabels ? "blur(4px)" : "blur(0px)",
+            }}
+            transition={{
+              ...contentSpring,
+              opacity: {
+                duration: 0.25,
+                ease: [0.4, 0, 0.2, 1],
+                delay: showLabels ? 0 : 0.15,
+              },
+              scale: {
+                ...contentSpring,
+                delay: showLabels ? 0 : 0.12,
+              },
+              filter: {
+                duration: 0.2,
+                delay: showLabels ? 0 : 0.1,
+              },
+            }}
+            className={cn(
+              "mt-2 justify-center pb-4",
+              showLabels ? "pointer-events-none absolute" : "flex",
+            )}
+          >
+            <Link href="/subscriptions">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-xl text-slate-400 hover:bg-white/5 hover:text-cyan-400"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </Link>
+          </motion.div>
+        </div>
 
         {/* Bottom brand */}
         <AnimatePresence>
