@@ -68,7 +68,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-const REFRESH_INTERVAL_MS = 5000;
+const REFRESH_INTERVAL_MS = 120000; // 2 minutes
 const FILTER_DEBOUNCE_MS = 400;
 const SEARCH_DEBOUNCE_MS = 150;
 const TABLE_SKELETON_ROWS = 8;
@@ -694,54 +694,59 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10">
-            <Activity className="h-6 w-6 text-emerald-400" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
-   <span className="text-emerald-400">Welcome,</span>{" "}
-   <span className="text-amber-400">
-      {isMounted ? user?.name?.split(" ")[0] || "User" : "Guest"}
-   </span>
-   <span className="mx-2 text-zinc-600">|</span>
-   <span className="text-zinc-200">Commercial Dashboard</span>
-</h1>
-            <p className="mt-1 text-sm text-zinc-400">
-              Wallet &amp; transaction analytics.
-            </p>
-          </div>
-        </div>
+<motion.div
+  initial={{ opacity: 0, y: -10 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+>
+  <div className="flex items-center gap-3 sm:gap-4">
+    {/* Advanced Glassmorphic Icon - Mobile par hidden, Desktop par visible */}
+    <div className="relative hidden h-11 w-11 sm:flex sm:h-12 sm:w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 shadow-[0_8px_20px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm">
+      {/* Glow ring behind icon */}
+      <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 blur-md"></div>
+      <Activity className="relative h-5 w-5 sm:h-6 sm:w-6 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+    </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => void loadInitial()}
-            disabled={isRefreshing}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 bg-slate-800/50 text-zinc-400 transition hover:border-emerald-500/30 hover:text-emerald-400 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-            title="Refresh now"
-            aria-label="Refresh now"
-          >
-            <RefreshCw
-              className={cn("h-4 w-4", isRefreshing && "animate-spin")}
-            />
-          </button>
-          <span
-            className="text-xs text-zinc-500"
-            role="status"
-            aria-live="polite"
-          >
-            {lastUpdated
-              ? `Updated ${lastUpdated.toLocaleTimeString()}`
-              : "Not updated yet"}
-          </span>
-        </div>
-      </motion.div>
+    <div className="flex flex-col gap-0.5">
+      <h1 className="flex flex-wrap items-center gap-x-2 text-lg font-semibold tracking-tight text-white sm:text-2xl">
+        <span className="text-emerald-400">Welcome,</span>
+        <span className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]">
+          {isMounted ? user?.name?.split(" ")[0] || "User" : "Guest"}
+        </span>
+        {/* Modern Dot Separator instead of Pipe (|) */}
+        <span className="hidden h-1 w-1 rounded-full bg-zinc-600 sm:inline-block"></span>
+        <span className="text-zinc-100">Commercial Dashboard</span>
+      </h1>
+      <p className="text-xs font-medium text-zinc-400 sm:text-sm">
+        Wallet &amp; transaction analytics.
+      </p>
+    </div>
+  </div>
 
+  {/* Modern Refresh Glass Pill */}
+  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1.5 pr-3 backdrop-blur-sm shadow-sm">
+    <button
+      onClick={() => void loadInitial()}
+      disabled={isRefreshing}
+      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition hover:bg-emerald-500/10 hover:text-emerald-400 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+      title="Auto Refresh (Every 2 minutes)"
+      aria-label="Refresh now"
+    >
+      <RefreshCw
+        className={cn("h-4 w-4", isRefreshing && "animate-spin")}
+      />
+    </button>
+    <span
+      className="text-xs font-medium text-zinc-400"
+      role="status"
+      aria-live="polite"
+    >
+      {lastUpdated
+        ? `Auto Update in minutes ${lastUpdated.toLocaleTimeString()}`  // we will show 1 min but real time is 2 min
+        : "Not updated yet"}
+    </span>
+  </div>
+</motion.div>
       {/* Overview Stats */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {showOverviewSkeleton ? (

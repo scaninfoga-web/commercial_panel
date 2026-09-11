@@ -4,8 +4,8 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Scaninfoga User Profile',
-  description: 'Manage your Scaninfoga user profile',
+  title: 'Scaninfoga Commercial Profile',
+  description: 'Manage your Scaninfoga commercial profile',
 };
 
 export default function Page() {

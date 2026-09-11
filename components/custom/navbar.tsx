@@ -14,7 +14,6 @@ import {
   Loader2,
   ArrowDownLeft,
   ArrowUpRight,
-  Menu,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clearSession } from "@/lib/auth";
@@ -34,16 +33,11 @@ import { Button } from "@/components/ui/button";
 
 const VALID_ENVS = ["DEVELOPMENT", "PRODUCTION"] as const;
 
-interface NavbarProps {
-  /** Opens the mobile sidebar drawer. Pass the same setter used for <Sidebar collapsed onToggle />. */
-  onMenuClick?: () => void;
-}
-
-const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
+const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useDispatch<AppDispatch>();
-
+  
   const [token, setToken] = useState<string | null>(null);
   const [env, setEnv] = useState<string>("DEVELOPMENT");
   const [envOpen, setEnvOpen] = useState(false);
@@ -53,7 +47,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
   const wallet = useSelector((state: RootState) => state.wallet);
 
-  // Refs for detecting outside clicks to close dropdowns
   const envRef = useRef<HTMLDivElement>(null);
   const walletRef = useRef<HTMLDivElement>(null);
 
@@ -85,13 +78,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     }
   }, [token, dispatch]);
 
-  // Collects device/location/network info once per session and syncs it into
-  // the `info` Redux slice — this is the piece that keeps components like
-  // LocationOverviewCard populated. Unlike the public-site navbar, this
-  // dashboard never gates or redirects on missing location; it just fetches
-  // and stores whatever `getClientInfo()` resolves with (including "N/A"
-  // fallbacks), silently, so the UI degrades gracefully instead of blocking
-  // an already-authenticated user.
   useEffect(() => {
     let cancelled = false;
 
@@ -101,8 +87,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
         if (cancelled || !clientInfo) return;
         dispatch(setInfo({ ...(clientInfo as any), fetched: true }));
       } catch (err) {
-        // Never let a failed collection strand the store at `fetched: false`
-        // silently — surface it so a stale/empty info state is debuggable.
         console.error("Navbar: failed to sync client info", err);
       }
     };
@@ -114,7 +98,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     };
   }, [dispatch]);
 
-  // Global click listener to close popups when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (envRef.current && !envRef.current.contains(event.target as Node)) {
@@ -131,7 +114,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
     };
   }, []);
 
-  // Close open dropdowns on route change (mobile UX safety net)
   useEffect(() => {
     setEnvOpen(false);
     setWalletOpen(false);
@@ -155,17 +137,8 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   return (
     <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#05070B]/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-3 sm:h-16 sm:px-6">
-        {/* Mobile sidebar toggle — always visible/reachable, unlike the button inside the drawer */}
-        {token && onMenuClick && (
-          <button
-            onClick={onMenuClick}
-            aria-label="Open menu"
-            className="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-white/[0.06] hover:text-white md:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-        )}
-
+        {/* Mobile sidebar toggle */}
+        
         {/* Logo */}
         <div className="flex min-w-0 shrink-0 items-center">
           <Image
@@ -203,7 +176,6 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                     env === "PRODUCTION" ? "bg-amber-400" : "bg-emerald-400"
                   )}
                 />
-                {/* Full label on larger screens, compact label on mobile */}
                 <span className="hidden sm:inline">
                   {env === "PRODUCTION" ? "Production" : "Development"}
                 </span>

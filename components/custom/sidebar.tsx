@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import { useSidebar } from "@/context/SidebarContext"; // Context import kiya
 
 interface SidebarLink {
   title: string;
@@ -60,25 +61,13 @@ const sidebarGroups: SidebarGroup[] = [
 ];
 
 interface SidebarAvatarProps {
-  /** Uploaded photo first, UIDAI Aadhaar photo second — see `avatarSrc`. */
   src: string | null;
   initials: string;
   name: string;
-  /** Sizing for the tile; the rail and expanded states share this. */
   className: string;
   sizes: string;
 }
 
-/**
- * The user tile's avatar. Falls back to gradient initials both when no photo
- * is on the account and when the one that is there fails to load — this sits
- * in the chrome of every page, so a dead CDN URL must not leave a blank disc.
- *
- * This component is intentionally "dumb": it just renders whatever `src`/
- * `initials` it's handed. The hydration-safety gate lives one level up, in
- * `Sidebar`, so every Redux-derived value (avatar, name, tier, email) is
- * gated by a single `mounted` flag instead of being patched piecemeal.
- */
 function SidebarAvatar({
   src,
   initials,
@@ -88,7 +77,6 @@ function SidebarAvatar({
 }: SidebarAvatarProps): JSX.Element {
   const [failed, setFailed] = useState(false);
 
-  // A new photo (fresh KYC capture) deserves another attempt.
   useEffect(() => setFailed(false), [src]);
 
   if (!src || failed) {
@@ -140,15 +128,6 @@ const getTierColor = (tier?: string) => {
   }
 };
 
-interface SidebarProps {
-  /**
-   * Desktop (>= md): true = collapsed to icon-rail, false = expanded.
-   * Mobile (< md):   true = drawer closed/hidden, false = drawer open.
-   */
-  collapsed: boolean;
-  onToggle: () => void;
-}
-
 const MOBILE_BREAKPOINT = 768; // matches Tailwind's `md`
 
 const getIsMobile = () =>
@@ -160,21 +139,16 @@ const contentSpring = {
   damping: 26,
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
+const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const userData = useSelector((state: RootState) => state.user.user);
+  
+  // Context se state le rahe hain
+  const { isCollapsed, isMobileOpen, toggleSidebar, setIsMobileOpen } = useSidebar();
 
-  // Lazy-initialized so the very first render already knows the viewport size —
-  // avoids a flash of the wrong layout (desktop rail) on mobile before hydration.
   const [isMobile, setIsMobile] = useState(getIsMobile);
-
-  // Client-only flag — flips to true one tick after hydration completes.
-  // `userData` comes from Redux, which is empty on the server but already
-  // rehydrated (via redux-persist) by the time the client does its very
-  // first render. Every value derived from it below is gated on `mounted`
-  // so the server HTML and the client's first paint stay byte-identical;
-  // the swap to the real avatar/name/tier happens only after hydration.
   const [mounted, setMounted] = useState(false);
+  
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
@@ -185,12 +159,12 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
     return () => mql.removeEventListener("change", update);
   }, []);
 
-  const isDrawerOpen = isMobile && !collapsed;
+  const isDrawerOpen = isMobile && isMobileOpen;
 
   // Close the mobile drawer automatically whenever the route changes.
   useEffect(() => {
-    if (isMobile && !collapsed) {
-      onToggle();
+    if (isMobile && isMobileOpen) {
+      setIsMobileOpen(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
@@ -210,14 +184,14 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   useEffect(() => {
     if (!isDrawerOpen) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onToggle();
+      if (e.key === "Escape") setIsMobileOpen(false);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isDrawerOpen, onToggle]);
+  }, [isDrawerOpen]);
 
-  const showLabels = isMobile ? true : !collapsed;
-  const isRail = !isMobile && collapsed;
+  const showLabels = isMobile ? true : !isCollapsed;
+  const isRail = !isMobile && isCollapsed;
 
   const rawInitials = userData?.name
     ?.split(" ")
@@ -226,9 +200,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
     .toUpperCase()
     .slice(0, 2);
 
-  // Everything below is gated on `mounted` — until then we render the same
-  // generic placeholders the server does, so nothing derived from Redux can
-  // mismatch during hydration.
   const fullName = mounted ? userData?.name || "User" : "User";
   const initials = mounted ? rawInitials || "U" : "U";
   const avatarSrc = mounted
@@ -247,7 +218,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={onToggle}
+            onClick={() => setIsMobileOpen(false)}
             className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
           />
         )}
@@ -257,8 +228,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
         initial={false}
         animate={
           isMobile
-            ? { x: collapsed ? "-100%" : 0 }
-            : { width: collapsed ? 72 : 260, x: 0 }
+            ? { x: isMobileOpen ? 0 : "-100%" } // Mobile par drawer slide hoga
+            : { width: isCollapsed ? 72 : 260, x: 0 } // Desktop par width shrink hogi
         }
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="fixed left-0 top-14 z-40 flex h-[calc(100vh-56px)] w-[260px] flex-col overflow-hidden border-r border-white/[0.06] bg-[#05070B]/95 backdrop-blur-xl md:top-16 md:h-[calc(100vh-64px)] md:w-auto"
@@ -271,15 +242,21 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
           )}
         >
           <button
-            onClick={onToggle}
+            onClick={() => {
+              if (isMobile) {
+                setIsMobileOpen(false); // Mobile par close karo
+              } else {
+                toggleSidebar(); // Desktop par collapse/expand karo
+              }
+            }}
             aria-label={
-              isMobile ? "Close menu" : collapsed ? "Expand menu" : "Collapse menu"
+              isMobile ? "Close menu" : isCollapsed ? "Expand menu" : "Collapse menu"
             }
             className="rounded-xl p-2 text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
           >
             {isMobile ? (
               <X className="h-4 w-4" />
-            ) : collapsed ? (
+            ) : isCollapsed ? (
               <Menu className="h-4 w-4" />
             ) : (
               <ChevronLeft className="h-4 w-4" />
@@ -323,9 +300,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                           : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200",
                       )}
                     >
-                      {/* Active indicator bar — only in the expanded row layout.
-                          In rail mode the background alone marks the active item,
-                          which avoids the bar poking outside the rounded icon box. */}
                       {isActive && !isRail && (
                         <motion.div
                           layoutId="sidebar-active"
@@ -361,7 +335,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                         )}
                       </AnimatePresence>
 
-                      {/* Tooltip when collapsed (desktop rail only) */}
                       {isRail && (
                         <div className="pointer-events-none absolute left-full ml-2 hidden whitespace-nowrap rounded-xl border border-white/10 bg-[#0C0F16] px-3 py-1.5 text-xs font-medium text-white shadow-xl group-hover:block">
                           {link.title}
@@ -438,7 +411,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
             </motion.div>
           </Link>
 
-          {/* Action buttons — expanded state */}
           <motion.div
             animate={{
               opacity: showLabels ? 1 : 0,
@@ -476,7 +448,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                 Profile
               </Button>
             </Link>
-            <Link href="/subscriptions" className="flex-1">
+            <Link href="#" className="flex-1">
               <Button
                 variant="outline"
                 size="sm"
@@ -488,7 +460,6 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
             </Link>
           </motion.div>
 
-          {/* Collapsed settings icon — rail state only */}
           <motion.div
             animate={{
               opacity: showLabels ? 0 : 1,
@@ -516,7 +487,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
               showLabels ? "pointer-events-none absolute" : "flex",
             )}
           >
-            <Link href="/subscriptions">
+            <Link href="#">
               <Button
                 variant="ghost"
                 size="icon"
@@ -538,7 +509,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
               className="border-t border-white/[0.06] px-4 py-3"
             >
               <p className="text-[10px] font-medium tracking-wider text-slate-600">
-                SCANINFOGA ADMIN
+                SCANINFOGA COMMERCIAL PANEL
               </p>
             </motion.div>
           )}

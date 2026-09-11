@@ -4,9 +4,9 @@ import { motion, type Variants } from 'framer-motion';
 import { ProfileInformationCard } from './ProfileInformationCard';
 import { LocationOverviewCard } from './LocationOverviewCard';
 import { ChangePasswordCard } from './ChangePasswordCard';
-import { LoginHistoryCard } from './LoginHistoryCard';
+// import { LoginHistoryCard } from './LoginHistoryCard';
 import DashboardTitle from '@/components/common/DashboardTitle';
-import TransactionHistory from '@/components/pages/transactionHistory/TransactionHistory';
+// import TransactionHistory from '@/components/pages/transactionHistory/TransactionHistory';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -52,13 +52,14 @@ const Profile = () => {
         <ChangePasswordCard />
       </motion.div>
 
-      <motion.div variants={itemVariants}>
+      {/* <motion.div variants={itemVariants}>
         <LoginHistoryCard />
       </motion.div>
 
       <motion.div variants={itemVariants}>
         <TransactionHistory />
-      </motion.div>
+      </motion.div> */}
+
     </motion.div>
   );
 };
