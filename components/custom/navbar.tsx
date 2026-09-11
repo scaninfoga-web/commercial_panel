@@ -21,6 +21,8 @@ import { clearSession } from "@/lib/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { fetchWalletBalance } from "@/redux/walletSlice";
+import { getClientInfo } from "@/lib/header";
+import { setInfo } from "@/redux/infoSlice";
 import {
   Dialog,
   DialogContent,
@@ -82,6 +84,35 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
       dispatch(fetchWalletBalance());
     }
   }, [token, dispatch]);
+
+  // Collects device/location/network info once per session and syncs it into
+  // the `info` Redux slice — this is the piece that keeps components like
+  // LocationOverviewCard populated. Unlike the public-site navbar, this
+  // dashboard never gates or redirects on missing location; it just fetches
+  // and stores whatever `getClientInfo()` resolves with (including "N/A"
+  // fallbacks), silently, so the UI degrades gracefully instead of blocking
+  // an already-authenticated user.
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncClientInfo = async () => {
+      try {
+        const clientInfo = await getClientInfo();
+        if (cancelled || !clientInfo) return;
+        dispatch(setInfo({ ...(clientInfo as any), fetched: true }));
+      } catch (err) {
+        // Never let a failed collection strand the store at `fetched: false`
+        // silently — surface it so a stale/empty info state is debuggable.
+        console.error("Navbar: failed to sync client info", err);
+      }
+    };
+
+    syncClientInfo();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch]);
 
   // Global click listener to close popups when clicking outside
   useEffect(() => {

@@ -19,9 +19,7 @@ import {
   Maximize2,
   Info,
   CheckCircle2,
-  Lock,
-  Globe,
-  IndianRupee,
+ IndianRupee,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

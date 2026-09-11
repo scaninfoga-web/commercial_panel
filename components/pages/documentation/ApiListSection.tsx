@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { get } from "@/lib/api";
+import { getApiDocumentation } from "@/lib/api-docs";
 import ViewDocumentation from "./ViewDocumentation";
 import { cn } from "@/lib/utils";
 
@@ -82,6 +83,24 @@ const matchesCategory = (api: ApiDetail, category: ApiCategory) => {
   return category.keywords.some((kw) => haystack.includes(kw.toLowerCase()));
 };
 
+// ─── Description lookup (JSON → fallback) ────────────────────────────────────
+// Reads the per-endpoint documentation JSON and returns its description.
+// Falls back to a generic sentence so a card never shows an empty line.
+// Wrapped in try/catch so a malformed or missing docs entry for one
+// endpoint can never take down the whole grid.
+const FALLBACK_DESCRIPTION = (api: ApiDetail) =>
+  `Securely execute ${api.api_name} and retrieve data instantly via our commercial portal.`;
+
+const getApiDescription = (api: ApiDetail): string => {
+  try {
+    const doc = getApiDocumentation(api.endpoint);
+    const description = doc?.description?.trim();
+    return description && description.length > 0 ? description : FALLBACK_DESCRIPTION(api);
+  } catch {
+    return FALLBACK_DESCRIPTION(api);
+  }
+};
+
 // ─── API call ───────────────────────────────────────────────────────────────
 
 async function fetchAllApisDetails(): Promise<{ total: number; apis: ApiDetail[] }> {
@@ -89,9 +108,10 @@ async function fetchAllApisDetails(): Promise<{ total: number; apis: ApiDetail[]
   try {
     const response = await get<ApiResponseEnvelope<{ total?: number; apis?: ApiDetail[] }>>(endpoint);
     const raw = response?.responseData ?? {};
+    const apis = Array.isArray(raw.apis) ? raw.apis : [];
     return {
-      total: Number(raw.total ?? 0),
-      apis: Array.isArray(raw.apis) ? raw.apis : [],
+      total: Number(raw.total ?? apis.length ?? 0),
+      apis,
     };
   } catch (err: any) {
     const message = err?.response?.data?.responseStatus?.message || "Failed to load APIs. Please try again.";
@@ -123,7 +143,8 @@ function ApiCardSkeleton() {
         <div className="h-4 w-2/3 animate-pulse rounded-xl bg-slate-800/60" />
         <div className="h-4 w-12 animate-pulse rounded-full bg-slate-800/60" />
       </div>
-      <div className="mt-4 h-8 w-full animate-pulse rounded-xl bg-slate-800/40" />
+      <div className="mt-3 h-8 w-full animate-pulse rounded-xl bg-slate-800/40" />
+      <div className="mt-3 h-3 w-full animate-pulse rounded bg-slate-800/40" />
       <div className="mt-auto flex items-center justify-between pt-4">
         <div className="h-5 w-12 animate-pulse rounded bg-slate-800/60" />
         <div className="h-5 w-10 animate-pulse rounded bg-slate-800/60" />
@@ -136,11 +157,23 @@ function ApiCardSkeleton() {
 // Behaviour branches once, up front, on `isActive` (= api.status_for_user).
 // Everything else in the card just reads that one flag.
 //
+// `description` is passed in as a prop (resolved once by the parent via a
+// memoized lookup map) rather than computed here on every render — keeps
+// the card a pure, predictable function of its props.
+//
 // Note: the action button is always rendered (not a hover-only reveal) so it
 // works identically with mouse, touch and keyboard — hover is reserved for
 // the card's ambient glow/spotlight, which is purely decorative.
 
-function ApiCard({ api, onClick }: { api: ApiDetail; onClick: () => void }) {
+function ApiCard({
+  api,
+  description,
+  onClick,
+}: {
+  api: ApiDetail;
+  description: string;
+  onClick: () => void;
+}) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const isActive = api.status_for_user;
@@ -215,9 +248,9 @@ function ApiCard({ api, onClick }: { api: ApiDetail; onClick: () => void }) {
           )}
         </div>
 
-        {/* Description */}
-        <p className="mt-3 line-clamp-2 min-h-[32px] text-xs leading-5 text-slate-400">
-          {`Securely execute ${api.api_name} and retrieve data instantly via our commercial portal.`}
+        {/* Description — pulled from docs JSON, falls back to a generic line */}
+        <p className="mt-3 line-clamp-2 min-h-[32px] text-xs leading-5 text-slate-400" title={description}>
+          {description}
         </p>
 
         {/* Footer: method + price on the left, action pill on the right — always visible */}
@@ -402,6 +435,20 @@ export default function ApiListSection() {
     setSearchQuery("");
   };
 
+  // Resolved once per `apis` change (not on every render/keystroke) so the
+  // docs-JSON lookup never repeats for the same endpoint unnecessarily.
+  // Cards and the search filter both read from this single map.
+  const descriptionsByEndpoint = useMemo(() => {
+    const map = new Map<string, string>();
+    apis.forEach((api) => {
+      map.set(api.endpoint, getApiDescription(api));
+    });
+    return map;
+  }, [apis]);
+
+  const resolveDescription = (api: ApiDetail) =>
+    descriptionsByEndpoint.get(api.endpoint) ?? FALLBACK_DESCRIPTION(api);
+
   const filteredApis = useMemo(() => {
     let visibleApis = apis.filter((api) => !BLOCKED_ENDPOINTS.includes(api.endpoint));
 
@@ -413,13 +460,17 @@ export default function ApiListSection() {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return visibleApis;
 
-    return visibleApis.filter(
-      (api) =>
+    // Search across name, endpoint, method, and the resolved JSON description.
+    return visibleApis.filter((api) => {
+      const description = (descriptionsByEndpoint.get(api.endpoint) ?? FALLBACK_DESCRIPTION(api)).toLowerCase();
+      return (
         api.api_name?.toLowerCase().includes(q) ||
         api.endpoint?.toLowerCase().includes(q) ||
-        api.method?.toLowerCase().includes(q),
-    );
-  }, [apis, searchQuery, activeCategory]);
+        api.method?.toLowerCase().includes(q) ||
+        description.includes(q)
+      );
+    });
+  }, [apis, searchQuery, activeCategory, descriptionsByEndpoint]);
 
   const visibleTotal = useMemo(
     () => apis.filter((api) => !BLOCKED_ENDPOINTS.includes(api.endpoint)).length,
@@ -460,7 +511,7 @@ export default function ApiListSection() {
             autoComplete="off"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name..."
+            placeholder="Search by name, endpoint, description..."
             aria-label="Search APIs"
             className="h-9 w-full rounded-xl border-slate-700 bg-slate-900 pl-9 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
           />
@@ -534,7 +585,12 @@ export default function ApiListSection() {
         {!isLoading && !error && filteredApis.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredApis.map((api, index) => (
-              <ApiCard key={api.id ?? `${api.endpoint}-${index}`} api={api} onClick={() => handleApiClick(api)} />
+              <ApiCard
+                key={api.id ?? `${api.endpoint}-${index}`}
+                api={api}
+                description={resolveDescription(api)}
+                onClick={() => handleApiClick(api)}
+              />
             ))}
           </div>
         )}

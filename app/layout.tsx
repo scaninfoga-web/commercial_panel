@@ -4,7 +4,7 @@ import { Inter, Geist } from "next/font/google";
 import { SidebarProvider } from '@/context/SidebarContext';
 import { Toaster } from "sonner";
 import "../styles/globals.css";
-import Providers from "./provider";
+import { Providers } from "./provider";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
