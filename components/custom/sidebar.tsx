@@ -19,10 +19,11 @@ import {
   Settings,
   User,
   Crown,
+  ShieldCheck,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { useSidebar } from "@/context/SidebarContext"; // Context import kiya
+import { useSidebar } from "@/context/SidebarContext";
 
 interface SidebarLink {
   title: string;
@@ -55,6 +56,11 @@ const sidebarGroups: SidebarGroup[] = [
         title: "IAS Report",
         icon: FileChartColumnIcon,
         href: "/ias-report",
+      },
+      {
+        title: "MSI Agreement",
+        icon: ShieldCheck,
+        href: "/msi-agreement",
       },
     ],
   },
@@ -142,13 +148,13 @@ const contentSpring = {
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const userData = useSelector((state: RootState) => state.user.user);
-  
-  // Context se state le rahe hain
-  const { isCollapsed, isMobileOpen, toggleSidebar, setIsMobileOpen } = useSidebar();
+
+  const { isCollapsed, isMobileOpen, toggleSidebar, setIsMobileOpen } =
+    useSidebar();
 
   const [isMobile, setIsMobile] = useState(getIsMobile);
   const [mounted, setMounted] = useState(false);
-  
+
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
@@ -180,7 +186,6 @@ const Sidebar: React.FC = () => {
     }
   }, [isDrawerOpen]);
 
-  // Close on Escape while the mobile drawer is open.
   useEffect(() => {
     if (!isDrawerOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -188,7 +193,7 @@ const Sidebar: React.FC = () => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isDrawerOpen]);
+  }, [setIsMobileOpen, isDrawerOpen]);
 
   const showLabels = isMobile ? true : !isCollapsed;
   const isRail = !isMobile && isCollapsed;
@@ -228,8 +233,8 @@ const Sidebar: React.FC = () => {
         initial={false}
         animate={
           isMobile
-            ? { x: isMobileOpen ? 0 : "-100%" } // Mobile par drawer slide hoga
-            : { width: isCollapsed ? 72 : 260, x: 0 } // Desktop par width shrink hogi
+            ? { x: isMobileOpen ? 0 : "-100%" }
+            : { width: isCollapsed ? 72 : 260, x: 0 }
         }
         transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
         className="fixed left-0 top-14 z-40 flex h-[calc(100vh-56px)] w-[260px] flex-col overflow-hidden border-r border-white/[0.06] bg-[#05070B]/95 backdrop-blur-xl md:top-16 md:h-[calc(100vh-64px)] md:w-auto"
@@ -244,13 +249,17 @@ const Sidebar: React.FC = () => {
           <button
             onClick={() => {
               if (isMobile) {
-                setIsMobileOpen(false); // Mobile par close karo
+                setIsMobileOpen(false);
               } else {
-                toggleSidebar(); // Desktop par collapse/expand karo
+                toggleSidebar();
               }
             }}
             aria-label={
-              isMobile ? "Close menu" : isCollapsed ? "Expand menu" : "Collapse menu"
+              isMobile
+                ? "Close menu"
+                : isCollapsed
+                  ? "Expand menu"
+                  : "Collapse menu"
             }
             className="rounded-xl p-2 text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
           >

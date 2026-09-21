@@ -12,17 +12,14 @@ import {
   XCircle,
   RotateCcw,
   Filter,
-  Search,
   X,
-  Loader2,
   ArrowDown,
   ArrowUp,
-  Inbox,
   RefreshCw,
   Copy,
   Check,
-  AlertTriangle,
   BarChart3,
+  SearchCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,14 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -66,12 +55,12 @@ import type {
 import { cn, formatDate, formatCurrency } from "@/lib/utils";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
+import { DataTable, type DataTableColumn } from "@/components/custom/DataTable";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const REFRESH_INTERVAL_MS = 120000; // 2 minutes
 const FILTER_DEBOUNCE_MS = 400;
 const SEARCH_DEBOUNCE_MS = 150;
-const TABLE_SKELETON_ROWS = 8;
 
 // "ALL" is used as the Select sentinel value — Radix Select does not allow
 // an empty string as an item value, so filters are keyed off this instead.
@@ -327,50 +316,6 @@ function EmptyState({
   );
 }
 
-function ErrorState({
-  message,
-  onRetry,
-}: {
-  message: string;
-  onRetry: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-slate-800 bg-slate-950/50 py-16 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">
-        <AlertTriangle className="h-6 w-6 text-red-400" />
-      </div>
-      <p className="max-w-sm text-sm font-medium text-zinc-300">{message}</p>
-      <Button
-        className="w-fit bg-red-600 px-4 text-white shadow-lg shadow-red-900/30 transition-none hover:bg-red-600 hover:text-white"
-        onClick={onRetry}
-      >
-        Try Again
-      </Button>
-    </div>
-  );
-}
-
-function TableRowSkeleton() {
-  return (
-    <TableRow className="border-slate-800 hover:bg-transparent">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <TableCell
-          key={i}
-          className={i === 0 ? "pl-6" : i === 7 ? "pr-6" : undefined}
-        >
-          <div
-            className="h-4 animate-pulse rounded bg-slate-800"
-            style={{ width: i === 0 ? "70%" : i === 6 ? "90%" : "50%" }}
-          />
-        </TableCell>
-      ))}
-    </TableRow>
-  );
-}
-
-/** Animated, keyboard- and touch-accessible bar chart for monthly volume.
- * Tooltips open on hover (desktop), tap (mobile), and keyboard focus, so
- * insight isn't gated behind a mouse. */
 function MonthlyActivityChart({ data }: { data: MonthlyTransactionStat[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -597,8 +542,7 @@ export default function DashboardPage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  // Invalidate any in-flight request on unmount so a late response can't
-  // trigger a state update on an unmounted component.
+
   useEffect(() => {
     return () => {
       requestIdRef.current += 1;
@@ -675,6 +619,94 @@ export default function DashboardPage() {
     copyTimeoutRef.current = setTimeout(() => setCopiedTxnId(null), 2000);
   }, []);
 
+  const columns = useMemo<DataTableColumn<Transaction>[]>(
+    () => [
+      {
+        key: "txn_id",
+        header: "Transaction ID",
+        cell: (txn) => (
+          <div className="flex items-center gap-1.5">
+            {txn.txn_id && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCopyTxnId(txn.txn_id);
+                }}
+                className="shrink-0 rounded-md p-1 text-zinc-500 transition hover:bg-slate-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                title="Copy transaction ID"
+                aria-label="Copy transaction ID"
+              >
+                {copiedTxnId === txn.txn_id ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+              </button>
+            )}
+            <span className="max-w-[100px] truncate font-mono text-[11px] text-emerald-400">
+              {txn.txn_id || "—"}
+            </span>
+          </div>
+        ),
+      },
+      {
+        key: "created_at",
+        header: "Date & Time",
+        cellClassName: "whitespace-nowrap text-sm text-zinc-400",
+        cell: (txn) => formatDate(txn.created_at),
+      },
+      {
+        key: "type",
+        header: "Type",
+        cell: (txn) => <TypeBadge type={txn.type} />,
+      },
+      {
+        key: "key_type",
+        header: "Key Type",
+        cellClassName: "text-sm text-zinc-300",
+        cell: (txn) => txn.key_type || "—",
+      },
+      {
+        key: "status",
+        header: "Status",
+        cell: (txn) => <StatusBadge status={txn.status} />,
+      },
+      {
+        key: "amount",
+        header: "Amount",
+        cellClassName: "whitespace-nowrap text-sm font-medium text-white",
+        cell: (txn) => formatCurrency(txn.amount),
+      },
+      {
+        key: "endpoint",
+        header: "Endpoint",
+        cellClassName: "max-w-[160px] truncate font-mono text-xs text-zinc-400",
+        skeletonWidth: "90%",
+        cell: (txn) => txn.endpoint,
+      },
+      {
+        key: "action",
+        header: "Action",
+        align: "right",
+        cell: (txn) => (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-slate-700 hover:text-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedTransaction(txn);
+            }}
+            aria-label="View transaction details"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        ),
+      },
+    ],
+    [copiedTxnId, handleCopyTxnId],
+  );
+
   const monthlyData = overviewStats?.monthly ?? [];
 
   const todaySuccessRate = overviewStats
@@ -694,59 +726,59 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-<motion.div
-  initial={{ opacity: 0, y: -10 }}
-  animate={{ opacity: 1, y: 0 }}
-  className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
->
-  <div className="flex items-center gap-3 sm:gap-4">
-    {/* Advanced Glassmorphic Icon - Mobile par hidden, Desktop par visible */}
-    <div className="relative hidden h-11 w-11 sm:flex sm:h-12 sm:w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 shadow-[0_8px_20px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm">
-      {/* Glow ring behind icon */}
-      <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 blur-md"></div>
-      <Activity className="relative h-5 w-5 sm:h-6 sm:w-6 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-    </div>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Advanced Glassmorphic Icon - Mobile par hidden, Desktop par visible */}
+          <div className="relative hidden h-11 w-11 sm:flex sm:h-12 sm:w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 shadow-[0_8px_20px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm">
+            {/* Glow ring behind icon */}
+            <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 blur-md"></div>
+            <Activity className="relative h-5 w-5 sm:h-6 sm:w-6 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+          </div>
 
-    <div className="flex flex-col gap-0.5">
-      <h1 className="flex flex-wrap items-center gap-x-2 text-lg font-semibold tracking-tight text-white sm:text-2xl">
-        <span className="text-emerald-400">Welcome,</span>
-        <span className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]">
-          {isMounted ? user?.name?.split(" ")[0] || "User" : "Guest"}
-        </span>
-        {/* Modern Dot Separator instead of Pipe (|) */}
-        <span className="hidden h-1 w-1 rounded-full bg-zinc-600 sm:inline-block"></span>
-        <span className="text-zinc-100">Commercial Dashboard</span>
-      </h1>
-      <p className="text-xs font-medium text-zinc-400 sm:text-sm">
-        Wallet &amp; transaction analytics.
-      </p>
-    </div>
-  </div>
+          <div className="flex flex-col gap-0.5">
+            <h1 className="flex flex-wrap items-center gap-x-2 text-lg font-semibold tracking-tight text-white sm:text-2xl">
+              <span className="text-emerald-400">Welcome,</span>
+              <span className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]">
+                {isMounted ? user?.name?.split(" ")[0] || "User" : "Guest"}
+              </span>
+              {/* Modern Dot Separator instead of Pipe (|) */}
+              <span className="hidden h-1 w-1 rounded-full bg-zinc-600 sm:inline-block"></span>
+              <span className="text-zinc-100">Commercial Dashboard</span>
+            </h1>
+            <p className="text-xs font-medium text-zinc-400 sm:text-sm">
+              Wallet &amp; transaction analytics.
+            </p>
+          </div>
+        </div>
 
-  {/* Modern Refresh Glass Pill */}
-  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1.5 pr-3 backdrop-blur-sm shadow-sm">
-    <button
-      onClick={() => void loadInitial()}
-      disabled={isRefreshing}
-      className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition hover:bg-emerald-500/10 hover:text-emerald-400 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-      title="Auto Refresh (Every 2 minutes)"
-      aria-label="Refresh now"
-    >
-      <RefreshCw
-        className={cn("h-4 w-4", isRefreshing && "animate-spin")}
-      />
-    </button>
-    <span
-      className="text-xs font-medium text-zinc-400"
-      role="status"
-      aria-live="polite"
-    >
-      {lastUpdated
-        ? `Auto Update in minutes ${lastUpdated.toLocaleTimeString()}`  // we will show 1 min but real time is 2 min
-        : "Not updated yet"}
-    </span>
-  </div>
-</motion.div>
+        {/* Modern Refresh Glass Pill */}
+        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1.5 pr-3 backdrop-blur-sm shadow-sm">
+          <button
+            onClick={() => void loadInitial()}
+            disabled={isRefreshing}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition hover:bg-emerald-500/10 hover:text-emerald-400 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            title="Auto Refresh (Every 2 minutes)"
+            aria-label="Refresh now"
+          >
+            <RefreshCw
+              className={cn("h-4 w-4", isRefreshing && "animate-spin")}
+            />
+          </button>
+          <span
+            className="text-xs font-medium text-zinc-400"
+            role="status"
+            aria-live="polite"
+          >
+            {lastUpdated
+              ? `Auto Update in minutes ${lastUpdated.toLocaleTimeString()}` // we will show 1 min but real time is 2 min
+              : "Not updated yet"}
+          </span>
+        </div>
+      </motion.div>
       {/* Overview Stats */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {showOverviewSkeleton ? (
@@ -977,185 +1009,43 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-4 flex justify-end">
-            <Button className="rounded-xl" size="sm" onClick={handleResetFilters}>
+            <Button
+              className="rounded-xl"
+              size="sm"
+              onClick={handleResetFilters}
+            >
               <X className="mr-1.5 h-3.5 w-3.5" /> Reset Filters
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Transactions Table */}
-      <Card className="flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 shadow-[0_20px_60px_rgba(15,23,42,0.45)]">
-        <CardHeader className="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-lg font-medium text-white">
-              Recent Transactions
-            </CardTitle>
-            <p className="mt-1 text-sm text-zinc-400">
-              Scroll inside the table to load more.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search loaded rows..."
-                aria-label="Search loaded transactions"
-                className="w-48 rounded-xl border-slate-700 bg-slate-800/50 pl-8 pr-8 text-sm text-white placeholder:text-zinc-500"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-zinc-500 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                  aria-label="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-            <Badge className="border border-slate-700 bg-slate-800/70 text-zinc-300">
-              {filteredTransactions.length} loaded
-            </Badge>
-          </div>
-        </CardHeader>
-
-        <div className="flex-1 overflow-hidden p-4">
-          {error && transactions.length === 0 ? (
-            <ErrorState message={error} onRetry={() => void loadInitial()} />
-          ) : !showTableSkeleton && filteredTransactions.length === 0 ? (
-            <EmptyState
-              icon={Inbox}
-              title="No transactions found"
-              description="Try adjusting your filters or search."
-            />
-          ) : (
-            <div className="flex flex-col rounded-2xl border border-slate-800">
-              <div className="max-h-[65vh] overflow-y-auto rounded-2xl bg-slate-950/40 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-900 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb:hover]:bg-slate-600">
-                <Table>
-                  <TableHeader className="sticky top-0 z-10 bg-slate-900 shadow-[0_1px_0_0_rgba(30,41,59,1)]">
-                    <TableRow className="border-slate-800 hover:bg-transparent [&>th]:border-b-slate-800 [&>th]:bg-slate-900">
-                      <TableHead className="pl-6 text-zinc-400">
-                        Transaction ID
-                      </TableHead>
-                      <TableHead className="text-zinc-400">
-                        Date &amp; Time
-                      </TableHead>
-                      <TableHead className="text-zinc-400">Type</TableHead>
-                      <TableHead className="text-zinc-400">Key Type</TableHead>
-                      <TableHead className="text-zinc-400">Status</TableHead>
-                      <TableHead className="text-zinc-400">Amount</TableHead>
-                      <TableHead className="text-zinc-400">Endpoint</TableHead>
-                      <TableHead className="pr-6 text-right text-zinc-400">
-                        Action
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {showTableSkeleton
-                      ? Array.from({ length: TABLE_SKELETON_ROWS }).map(
-                          (_, i) => <TableRowSkeleton key={i} />,
-                        )
-                      : filteredTransactions.map((txn) => (
-                          <TableRow
-                            key={txn.id}
-                            role="button"
-                            tabIndex={0}
-                            aria-label={`View details for transaction ${txn.txn_id || txn.id}`}
-                            className="cursor-pointer border-slate-800 bg-slate-900/30 transition-colors hover:bg-slate-800/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-inset"
-                            onClick={() => setSelectedTransaction(txn)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                setSelectedTransaction(txn);
-                              }
-                            }}
-                          >
-                            <TableCell className="pl-6">
-                              <div className="flex items-center gap-1.5">
-                                {txn.txn_id && (
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCopyTxnId(txn.txn_id);
-                                    }}
-                                    className="shrink-0 rounded-md p-1 text-zinc-500 transition hover:bg-slate-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-                                    title="Copy transaction ID"
-                                    aria-label="Copy transaction ID"
-                                  >
-                                    {copiedTxnId === txn.txn_id ? (
-                                      <Check className="h-3.5 w-3.5 text-emerald-400" />
-                                    ) : (
-                                      <Copy className="h-3.5 w-3.5" />
-                                    )}
-                                  </button>
-                                )}
-                                <span className="max-w-[100px] truncate font-mono text-[11px] text-emerald-400">
-                                  {txn.txn_id || "—"}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap text-sm text-zinc-400">
-                              {formatDate(txn.created_at)}
-                            </TableCell>
-                            <TableCell>
-                              <TypeBadge type={txn.type} />
-                            </TableCell>
-                            <TableCell className="text-sm text-zinc-300">
-                              {txn.key_type || "—"}
-                            </TableCell>
-                            <TableCell>
-                              <StatusBadge status={txn.status} />
-                            </TableCell>
-                            <TableCell className="whitespace-nowrap text-sm font-medium text-white">
-                              {formatCurrency(txn.amount)}
-                            </TableCell>
-                            <TableCell className="max-w-[160px] truncate font-mono text-xs text-zinc-400">
-                              {txn.endpoint}
-                            </TableCell>
-                            <TableCell className="pr-6 text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 rounded-lg text-zinc-400 hover:bg-slate-700 hover:text-white"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedTransaction(txn);
-                                }}
-                                aria-label="View transaction details"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                  </TableBody>
-                </Table>
-
-                <div ref={sentinelRef} className="h-1" />
-                {isLoadingMore && (
-                  <div className="flex justify-center py-4">
-                    <Loader2 className="h-6 w-6 animate-spin text-emerald-400" />
-                  </div>
-                )}
-                {!showTableSkeleton &&
-                  !hasMore &&
-                  filteredTransactions.length > 0 && (
-                    <div className="py-6 text-center text-sm text-zinc-500">
-                      — End of transactions —
-                    </div>
-                  )}
-                {hasLoadedMore && (
-                  <div className="pb-4 text-center text-xs text-zinc-600">
-                    Auto-refresh paused while browsing older transactions
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </Card>
+      <DataTable
+        title="Recent Transactions"
+        description="Scroll inside the table to load more."
+        headerActions={showTableSkeleton ? null : <SearchCheck />}
+        columns={columns}
+        rows={filteredTransactions}
+        getRowKey={(txn) => txn.id}
+        getRowAriaLabel={(txn) =>
+          `View details for transaction ${txn.txn_id || txn.id}`
+        }
+        onRowClick={setSelectedTransaction}
+        isLoading={showTableSkeleton}
+        error={transactions.length === 0 ? error : null}
+        onRetry={() => void loadInitial()}
+        emptyTitle="No transactions found"
+        emptyDescription="Try adjusting your filters or search."
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={loadMore}
+        endMessage="— End of transactions —"
+        footerNote={
+          hasLoadedMore
+            ? "Auto-refresh paused while browsing older transactions"
+            : null
+        }
+      />
 
       {/* Transaction Details Dialog */}
       <Dialog

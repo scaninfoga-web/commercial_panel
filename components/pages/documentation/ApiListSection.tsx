@@ -49,15 +49,13 @@ interface ApiResponseEnvelope<T> {
 const BLOCKED_ENDPOINTS: string[] = [
   "/api/v1/map/route-data",
   "/api/v1/map/location-data",
-  "/api/v1/uan/get-uan-no", // UAN API is temporarily disabled for all users
+  "/api/v1/uan/get-uan-no",
+  "/api/v1/uan/uan-to-employment-profile-lookup",
+  "/api/v1/mobile/mobile-to-profile-advance", // UAN API is temporarily disabled for all users
 
   // Add more endpoints here that you want to HIDE
 ];
 
-// ─── Category quick filters ──────────────────────────────────────────────
-// Each category is matched against an API's name/endpoint by substring —
-// clicking a chip narrows the grid instantly, no typing required. Add a
-// new product line here and it shows up in the row automatically.
 interface ApiCategory {
   label: string;
   keywords: string[];
@@ -154,16 +152,6 @@ function ApiCardSkeleton() {
 }
 
 // ─── API card ───────────────────────────────────────────────────────────────
-// Behaviour branches once, up front, on `isActive` (= api.status_for_user).
-// Everything else in the card just reads that one flag.
-//
-// `description` is passed in as a prop (resolved once by the parent via a
-// memoized lookup map) rather than computed here on every render — keeps
-// the card a pure, predictable function of its props.
-//
-// Note: the action button is always rendered (not a hover-only reveal) so it
-// works identically with mouse, touch and keyboard — hover is reserved for
-// the card's ambient glow/spotlight, which is purely decorative.
 
 function ApiCard({
   api,

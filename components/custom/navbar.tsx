@@ -37,7 +37,7 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const dispatch = useDispatch<AppDispatch>();
-  
+
   const [token, setToken] = useState<string | null>(null);
   const [env, setEnv] = useState<string>("DEVELOPMENT");
   const [envOpen, setEnvOpen] = useState(false);
@@ -103,7 +103,10 @@ const Navbar: React.FC = () => {
       if (envRef.current && !envRef.current.contains(event.target as Node)) {
         setEnvOpen(false);
       }
-      if (walletRef.current && !walletRef.current.contains(event.target as Node)) {
+      if (
+        walletRef.current &&
+        !walletRef.current.contains(event.target as Node)
+      ) {
         setWalletOpen(false);
       }
     };
@@ -124,6 +127,11 @@ const Navbar: React.FC = () => {
     localStorage.setItem("environment", value);
     setEnvChangeTarget(null);
     setEnvOpen(false);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("environment-changed", { detail: value }),
+      );
+    }
   };
 
   const handleLogout = () => {
@@ -138,7 +146,7 @@ const Navbar: React.FC = () => {
     <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#05070B]/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center justify-between px-3 sm:h-16 sm:px-6">
         {/* Mobile sidebar toggle */}
-        
+
         {/* Logo */}
         <div className="flex min-w-0 shrink-0 items-center">
           <Image
@@ -167,13 +175,13 @@ const Navbar: React.FC = () => {
                   "flex items-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-colors sm:gap-1.5 sm:px-2.5 sm:text-[11px]",
                   env === "PRODUCTION"
                     ? "border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
-                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                    : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20",
                 )}
               >
                 <span
                   className={cn(
                     "h-1.5 w-1.5 shrink-0 rounded-full",
-                    env === "PRODUCTION" ? "bg-amber-400" : "bg-emerald-400"
+                    env === "PRODUCTION" ? "bg-amber-400" : "bg-emerald-400",
                   )}
                 />
                 <span className="hidden sm:inline">
@@ -185,7 +193,7 @@ const Navbar: React.FC = () => {
                 <ChevronDown
                   className={cn(
                     "h-3 w-3 shrink-0 opacity-60 transition-transform",
-                    envOpen && "rotate-180"
+                    envOpen && "rotate-180",
                   )}
                 />
               </button>
@@ -209,13 +217,15 @@ const Navbar: React.FC = () => {
                           "flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs font-medium transition-colors",
                           env === v
                             ? "bg-white/[0.06] text-white"
-                            : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
+                            : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200",
                         )}
                       >
                         <span
                           className={cn(
                             "h-1.5 w-1.5 shrink-0 rounded-full",
-                            v === "PRODUCTION" ? "bg-amber-400" : "bg-emerald-400"
+                            v === "PRODUCTION"
+                              ? "bg-amber-400"
+                              : "bg-emerald-400",
                           )}
                         />
                         {v === "PRODUCTION" ? "Production" : "Development"}
@@ -304,7 +314,7 @@ const Navbar: React.FC = () => {
                                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
                                     isCredit
                                       ? "bg-emerald-500/10 text-emerald-400"
-                                      : "bg-red-500/10 text-red-400"
+                                      : "bg-red-500/10 text-red-400",
                                   )}
                                 >
                                   {isCredit ? (
@@ -325,7 +335,9 @@ const Navbar: React.FC = () => {
                               <span
                                 className={cn(
                                   "shrink-0 text-sm font-semibold",
-                                  isCredit ? "text-emerald-400" : "text-red-400"
+                                  isCredit
+                                    ? "text-emerald-400"
+                                    : "text-red-400",
                                 )}
                               >
                                 {isCredit ? "+" : "-"}₹{txn.amount?.toFixed(2)}
@@ -369,7 +381,9 @@ const Navbar: React.FC = () => {
             <DialogDescription className="text-zinc-400">
               Are you sure you want to switch to the{" "}
               <span className="font-medium text-white">
-                {envChangeTarget === "PRODUCTION" ? "Production" : "Development"}
+                {envChangeTarget === "PRODUCTION"
+                  ? "Production"
+                  : "Development"}
               </span>{" "}
               environment? This will affect which API keys are used for your
               requests.
@@ -389,9 +403,11 @@ const Navbar: React.FC = () => {
                 "w-full rounded-xl text-white shadow-lg transition-none sm:w-auto",
                 envChangeTarget === "PRODUCTION"
                   ? "border border-amber-500/80 bg-amber-600 shadow-amber-900/30 hover:bg-amber-600 hover:text-white"
-                  : "border border-emerald-500/80 bg-emerald-600 shadow-emerald-900/30 hover:bg-emerald-600 hover:text-white"
+                  : "border border-emerald-500/80 bg-emerald-600 shadow-emerald-900/30 hover:bg-emerald-600 hover:text-white",
               )}
-              onClick={() => envChangeTarget && handleEnvChange(envChangeTarget)}
+              onClick={() =>
+                envChangeTarget && handleEnvChange(envChangeTarget)
+              }
             >
               Yes, Switch
             </Button>

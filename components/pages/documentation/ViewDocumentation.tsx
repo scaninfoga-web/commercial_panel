@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { motion } from "framer-motion";
 import {
-  Loader2,
-  Send,
-  Copy,
-  Check,
-  FlaskConical,
-  Rocket,
-  Terminal,
-  FileJson,
   AlertTriangle,
-  RefreshCw,
-  KeyRound,
-  Maximize2,
-  Info,
+  Check,
   CheckCircle2,
- IndianRupee,
+  Copy,
+  FileJson,
+  FlaskConical,
+  IndianRupee,
+  Info,
+  KeyRound,
+  Loader2,
+  Maximize2,
+  RefreshCw,
+  Rocket,
+  Send,
+  Terminal,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,22 +39,21 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { getApiDocumentation } from "@/lib/api-docs";
-import { get } from "@/lib/api"; // Added generic get import
-import type { ApiDocumentation } from "@/types/api-documentation";
+import { get } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-// ─── Local Types & API Helpers (Replaced lib/manage_apis) ────────────────────
-type ApiKeyEnvironment = "DEVELOPMENT" | "PRODUCTION";
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type KeyType = "DEVELOPMENT" | "PRODUCTION";
 type ApiKeyStatus = "ACTIVE" | "INACTIVE" | "REVOKED";
+type KeyValueRow = [string, string];
 
 interface ApiKey {
   id: string;
-  type: ApiKeyEnvironment;
+  type: KeyType;
   key?: string;
   status: ApiKeyStatus;
   createdAt: string;
-  lastUsedAt?: string;
-  expiresAt?: string;
 }
 
 interface ApiResponseEnvelope<T> {
@@ -62,75 +61,74 @@ interface ApiResponseEnvelope<T> {
   responseData: T;
 }
 
-const normalizeStatus = (value: unknown): ApiKeyStatus => {
-  const normalized = String(value ?? "").trim().toUpperCase();
-  if (normalized === "ACTIVE" || normalized === "REVOKED") return normalized as ApiKeyStatus;
-  return "INACTIVE";
-};
-
-const normalizeEnvironment = (value: unknown): ApiKeyEnvironment =>
-  String(value ?? "").trim().toUpperCase() === "PRODUCTION" ? "PRODUCTION" : "DEVELOPMENT";
-
-const normalizeKeyItem = (item: any): ApiKey | null => {
-  if (!item || typeof item !== "object") return null;
-  const id = item.id ?? item.api_key_id;
-  if (!id) {
-    console.warn("[ViewDocumentation] Skipping API key with no id in response:", item);
-    return null;
-  }
-  return {
-    id: String(id),
-    type: normalizeEnvironment(item.type ?? item.environment),
-    key: item.key ?? item.api_key ?? undefined,
-    status: normalizeStatus(item.status ?? item.state),
-    createdAt: String(item.createdAt ?? item.created_at ?? new Date().toISOString()),
-    lastUsedAt: item.lastUsedAt ?? item.last_used_at ?? undefined,
-    expiresAt: item.expiresAt ?? item.expires_at ?? undefined,
-  };
-};
-
-const extractApiKeyList = (payload: unknown): ApiKey[] => {
-  const list = Array.isArray(payload)
-    ? payload
-    : Array.isArray((payload as any)?.keys)
-      ? (payload as any).keys
-      : Array.isArray((payload as any)?.data)
-        ? (payload as any).data
-        : [];
-  return list
-    .map(normalizeKeyItem)
-    .filter((k: ApiKey | null): k is ApiKey => k !== null);
-};
-
-async function fetchApiKeys(): Promise<ApiKey[]> {
-  const response = await get<ApiResponseEnvelope<any>>("/api/v1/user/commercial/api-keys");
-  return extractApiKeyList(response.responseData);
+interface ConsoleResponse {
+  text: string;
+  status: "success" | "error";
+  code: number | null;
 }
 
-// ─── Component Definition ────────────────────────────────────────────────────
+interface ParsedCurl {
+  method: string;
+  headers: KeyValueRow[];
+  bodyText: string | null;
+}
+
+interface CurlLine {
+  text: string;
+  // flag: curl syntax, json: request body, fixed: dimmed compliance field.
+  variant: "flag" | "json" | "fixed";
+}
+
+interface DocRequest {
+  method?: string;
+  body?: Record<string, unknown>;
+  headers?: unknown;
+  query_params?: unknown;
+  queryParams?: unknown;
+  path_params?: unknown;
+  pathParams?: unknown;
+}
+
+interface ResponseExample {
+  status_code?: number | string;
+  description?: string;
+  example?: unknown;
+}
+
+// Local view of the documentation JSON. Unknown top-level fields are kept
+// (index signature) so they can be rendered under "Additional Details".
+interface ApiDoc {
+  title?: string;
+  description?: string;
+  notes?: string;
+  endpoint?: string;
+  request_curl?: string;
+  request?: DocRequest;
+  response?: Record<string, ResponseExample | null>;
+  errors?: Array<{ code: number; message: string }>;
+  [key: string]: unknown;
+}
+
 interface ViewDocumentationProps {
   endpoint: string;
   apiName?: string;
 }
 
-type KeyType = "DEVELOPMENT" | "PRODUCTION";
-type ResponseStatus = "success" | "error" | null;
+// ─── Constants ───────────────────────────────────────────────────────────────
 
-// Every request in this product is served from a single host, so the
-// left-hand docs pane and the generated cURL always show the full,
-// copy-pasteable URL rather than a bare path.
 const BASE_DOMAIN = "https://api.scaninfoga.com";
+const API_KEYS_ENDPOINT = "/api/v1/user/commercial/api-keys";
+const REQUEST_TIMEOUT_MS = 30_000;
 
-// These fields are attached to every request for compliance and consent
-// reasons. They're pulled out of the editable JSON body so a user can
-// never accidentally edit or delete them, shown separately in a dimmed,
-// read-only block, and merged back in right before a request is sent or
-// a cURL example is generated.
+// Shared with the navbar, which writes the choice and dispatches the event.
+const ENV_STORAGE_KEY = "environment";
+const ENV_CHANGE_EVENT = "environment-changed";
+
+// Attached to every request for compliance; never editable by the user.
 const FIXED_FIELD_KEYS = new Set(["purpose", "consent"]);
 
-// Fields we render with dedicated UI. Anything else your JSON adds still
-// shows up automatically in "Additional Details" below — nothing gets
-// silently dropped as your docs grow.
+// Top-level doc fields with dedicated UI. Everything else is listed under
+// "Additional Details" so nothing is silently dropped.
 const KNOWN_DOC_FIELDS = new Set([
   "title",
   "description",
@@ -142,8 +140,92 @@ const KNOWN_DOC_FIELDS = new Set([
   "notes",
 ]);
 
-// Consistent, typed error-message extraction — replaces scattered `err: any`
-// catches so failures always surface a real, readable message.
+const DEFAULT_CURL_HEADERS: KeyValueRow[] = [
+  ["Content-Type", "application/json"],
+  ["api-key", "YOUR_API_KEY"],
+];
+
+const CARD_CLASS =
+  "border-slate-800 bg-slate-900/50 shadow-none backdrop-blur-xl";
+
+const STATUS_CODES = [
+  {
+    code: 200,
+    title: "Success",
+    charged: true,
+    card: "border-emerald-500/30 bg-emerald-500/5",
+    badge: "bg-emerald-500/20 text-emerald-400",
+    desc: "The request was processed successfully, and the applicable fee was deducted from your wallet balance.",
+  },
+  {
+    code: 400,
+    title: "Bad Request",
+    charged: false,
+    card: "border-amber-500/30 bg-amber-500/5",
+    badge: "bg-amber-500/20 text-amber-400",
+    desc: "The server could not process the request due to malformed syntax or missing required parameters.",
+  },
+  {
+    code: 401,
+    title: "Unauthorized",
+    charged: false,
+    card: "border-orange-500/30 bg-orange-500/5",
+    badge: "bg-orange-500/20 text-orange-400",
+    desc: "Authentication failed. The request is missing a valid API key or the provided key is invalid.",
+  },
+  {
+    code: 404,
+    title: "Not Found",
+    charged: true,
+    card: "border-rose-500/30 bg-rose-500/5",
+    badge: "bg-rose-500/20 text-rose-400",
+    desc: "The requested resource could not be found. Please verify the endpoint, identifier, or reference number and try again.",
+  },
+  {
+    code: 500,
+    title: "Server Error",
+    charged: false,
+    card: "border-red-500/30 bg-red-500/5",
+    badge: "bg-red-500/20 text-red-400",
+    desc: "An internal server error occurred. It is safe to retry the request after a short delay.",
+  },
+] as const;
+
+const ENV_OPTIONS = [
+  {
+    value: "DEVELOPMENT",
+    label: "Development key",
+    Icon: FlaskConical,
+    iconClass: "text-cyan-400",
+  },
+  {
+    value: "PRODUCTION",
+    label: "Production key",
+    Icon: Rocket,
+    iconClass: "text-violet-400",
+  },
+] as const;
+
+// ─── Generic helpers ─────────────────────────────────────────────────────────
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const parseJsonObject = (
+  text?: string | null,
+): Record<string, unknown> | null => {
+  if (!text) return null;
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return isPlainObject(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+const formatBody = (body: Record<string, unknown>): string =>
+  Object.keys(body).length > 0 ? JSON.stringify(body, null, 2) : "{}";
+
 const getErrorMessage = (err: unknown, fallback: string): string => {
   if (axios.isAxiosError(err)) {
     return (
@@ -157,46 +239,27 @@ const getErrorMessage = (err: unknown, fallback: string): string => {
   return fallback;
 };
 
-// Case/whitespace-safe match, and picks the most recently created key
-// when more than one active key of the same type exists.
-const findActiveKey = (keys: ApiKey[], keyType: KeyType): ApiKey | null => {
-  const matches = keys.filter(
-    (k) =>
-      (k.type ?? "").toString().trim().toUpperCase() === keyType &&
-      (k.status ?? "").toString().trim().toUpperCase() === "ACTIVE",
-  );
-  if (matches.length === 0) return null;
-  return [...matches].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  )[0];
-};
+const isSuccessKey = (key: string): boolean =>
+  /success|(^|\D)2(\d\d|xx)(\D|$)/i.test(key);
 
-// Accepts headers as either { KEY: "value" } or [{ key, value }] — your
-// JSON schema can use either shape and this still renders it.
-const normalizeKeyValueList = (input: unknown): Array<[string, string]> => {
-  if (!input) return [];
+const normalizeKeyValueList = (input: unknown): KeyValueRow[] => {
   if (Array.isArray(input)) {
     return input
-      .map(
-        (entry: any) =>
-          [
-            String(entry?.key ?? entry?.name ?? ""),
-            String(entry?.value ?? entry?.description ?? ""),
-          ] as [string, string],
-      )
+      .map((entry): KeyValueRow => {
+        const item = isPlainObject(entry) ? entry : {};
+        return [
+          String(item.key ?? item.name ?? ""),
+          String(item.value ?? item.description ?? ""),
+        ];
+      })
       .filter(([key]) => key.length > 0);
   }
-  if (typeof input === "object") {
-    return Object.entries(input as Record<string, unknown>).map(([k, v]) => [
-      k,
-      String(v),
-    ]);
+  if (isPlainObject(input)) {
+    return Object.entries(input).map(([k, v]): KeyValueRow => [k, String(v)]);
   }
   return [];
 };
 
-// Splits a request body into the fields a user can edit and the fixed
-// compliance fields that ride along with every request.
 const splitFixedFields = (
   body: Record<string, unknown> | null,
 ): { editable: Record<string, unknown>; fixed: Record<string, unknown> } => {
@@ -211,19 +274,105 @@ const splitFixedFields = (
   return { editable, fixed };
 };
 
-interface ParsedCurl {
-  method: string;
-  headers: Array<[string, string]>;
-  bodyText: string | null;
+const readSavedEnvironment = (): string | null => {
+  try {
+    return localStorage.getItem(ENV_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
+// ─── API key helpers ─────────────────────────────────────────────────────────
+
+const isKeyType = (value: unknown): value is KeyType =>
+  value === "DEVELOPMENT" || value === "PRODUCTION";
+
+const isMaskedKey = (key?: string | null): boolean =>
+  !!key && key.includes("*");
+
+const maskKey = (key?: string | null): string => {
+  const trimmed = key?.trim();
+  if (!trimmed) return "";
+  // Keep keys the backend already masked to avoid double-masking.
+  if (trimmed.includes("*")) return trimmed;
+  return `****${trimmed.slice(-4)}`;
+};
+
+const asOptionalString = (value: unknown): string | undefined =>
+  typeof value === "string" && value ? value : undefined;
+
+const normalizeStatus = (value: unknown): ApiKeyStatus => {
+  const normalized = String(value ?? "")
+    .trim()
+    .toUpperCase();
+  return normalized === "ACTIVE" || normalized === "REVOKED"
+    ? normalized
+    : "INACTIVE";
+};
+
+const normalizeEnvironment = (value: unknown): KeyType =>
+  String(value ?? "")
+    .trim()
+    .toUpperCase() === "PRODUCTION"
+    ? "PRODUCTION"
+    : "DEVELOPMENT";
+
+const normalizeKeyItem = (item: unknown): ApiKey | null => {
+  if (!isPlainObject(item)) return null;
+  const id = item.id ?? item.api_key_id;
+  if (!id) return null;
+  return {
+    id: String(id),
+    type: normalizeEnvironment(item.type ?? item.environment),
+    key: asOptionalString(item.key) ?? asOptionalString(item.api_key),
+    status: normalizeStatus(item.status ?? item.state),
+    createdAt: String(
+      item.createdAt ?? item.created_at ?? new Date().toISOString(),
+    ),
+  };
+};
+
+const extractApiKeyList = (payload: unknown): ApiKey[] => {
+  let list: unknown[] = [];
+  if (Array.isArray(payload)) {
+    list = payload;
+  } else if (isPlainObject(payload)) {
+    if (Array.isArray(payload.keys)) list = payload.keys;
+    else if (Array.isArray(payload.data)) list = payload.data;
+  }
+  return list.map(normalizeKeyItem).filter((k): k is ApiKey => k !== null);
+};
+
+async function fetchApiKeys(): Promise<ApiKey[]> {
+  const response = await get<ApiResponseEnvelope<unknown>>(API_KEYS_ENDPOINT);
+  return extractApiKeyList(response.responseData);
 }
 
-// Reads a docs-team-authored cURL example (the `request_curl` field our
-// JSON now ships) apart into its pieces, so it can be re-rendered
-// consistently and its body reused to seed the interactive console.
+// Newest active key of the given type, if any.
+const findActiveKey = (keys: ApiKey[], keyType: KeyType): ApiKey | null => {
+  const matches = keys.filter(
+    (k) => k.type === keyType && k.status === "ACTIVE",
+  );
+  if (matches.length === 0) return null;
+  return [...matches].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0];
+};
+
+const getKeyStatus = (key: ApiKey | null, isReady: boolean) => {
+  if (!key) return { text: "No active key found", tone: "text-red-400" };
+  if (!isReady) {
+    return { text: "Value not cached — paste it in", tone: "text-amber-400" };
+  }
+  return { text: "Ready to use", tone: "text-emerald-400" };
+};
+
+// ─── cURL and JSON rendering helpers ─────────────────────────────────────────
+
 const parseCurl = (curl?: string | null): ParsedCurl => {
   if (!curl) return { method: "POST", headers: [], bodyText: null };
 
-  const headers: Array<[string, string]> = [];
+  const headers: KeyValueRow[] = [];
   const headerRe = /--header\s+'([^:']+):\s*([^']*)'/g;
   let match: RegExpExecArray | null;
   while ((match = headerRe.exec(curl)) !== null) {
@@ -243,11 +392,10 @@ const parseCurl = (curl?: string | null): ParsedCurl => {
   return { method, headers, bodyText };
 };
 
-// Colors a JSON string token-by-token the way Postman's console does —
-// keys, strings, numbers, booleans, and null each get their own color —
-// so a response is easy to scan instead of one flat block of text.
-// Escapes <, >, & first so nothing in the payload can break out of the
-// generated markup; safe to feed into dangerouslySetInnerHTML.
+// Escapes single quotes so the copied command works in a POSIX shell.
+const shellEscape = (value: string): string => value.replace(/'/g, "'\\''");
+
+// Escapes HTML first, so the result is safe for dangerouslySetInnerHTML.
 const highlightJson = (value: string): string => {
   const escaped = value
     .replace(/&/g, "&amp;")
@@ -272,21 +420,9 @@ const highlightJson = (value: string): string => {
   );
 };
 
-interface CurlLine {
-  text: string;
-  // "flag": curl syntax (--location, --header) — plain accent color.
-  // "json": part of the request body — gets full token-level coloring.
-  // "fixed": a compliance field (purpose, consent) — always dimmed flat,
-  //          deliberately not colorized so it reads as "don't edit me".
-  variant: "flag" | "json" | "fixed";
-}
-
-// Builds a readable, multi-line cURL command from a URL, headers, and a
-// body object — pretty-printing the body and flagging any line that
-// belongs to a fixed compliance field so it can be rendered dimmed.
 const buildCurlDisplay = (
   url: string,
-  headers: Array<[string, string]>,
+  headers: KeyValueRow[],
   bodyObj: Record<string, unknown> | null,
 ): { lines: CurlLine[]; plainText: string } => {
   const lines: CurlLine[] = [];
@@ -295,58 +431,94 @@ const buildCurlDisplay = (
       ? JSON.stringify(bodyObj, null, 2)
       : null;
 
-  lines.push({ text: `curl --location '${url}' \\`, variant: "flag" });
+  lines.push({
+    text: `curl --location '${shellEscape(url)}' \\`,
+    variant: "flag",
+  });
 
   headers.forEach(([key, value]) => {
-    lines.push({ text: `  --header '${key}: ${value}' \\`, variant: "flag" });
+    lines.push({
+      text: `  --header '${shellEscape(`${key}: ${value}`)}' \\`,
+      variant: "flag",
+    });
   });
 
   if (bodyJson) {
     const bodyLines = bodyJson.split("\n");
     bodyLines.forEach((line, idx) => {
       const isFixed = /^\s*"(purpose|consent)"\s*:/i.test(line);
-      const isFirst = idx === 0;
-      const isLast = idx === bodyLines.length - 1;
-      const rendered = `${isFirst ? "  --data '" : "  "}${line}${isLast ? "'" : ""}`;
-      lines.push({ text: rendered, variant: isFixed ? "fixed" : "json" });
+      const prefix = idx === 0 ? "  --data '" : "  ";
+      const suffix = idx === bodyLines.length - 1 ? "'" : "";
+      lines.push({
+        text: `${prefix}${shellEscape(line)}${suffix}`,
+        variant: isFixed ? "fixed" : "json",
+      });
     });
   } else {
+    // No body: drop the trailing line continuation.
     const last = lines[lines.length - 1];
-    if (last && last.text.endsWith(" \\")) {
-      last.text = last.text.slice(0, -2);
-    }
+    if (last.text.endsWith(" \\")) last.text = last.text.slice(0, -2);
   }
 
   return { lines, plainText: lines.map((l) => l.text).join("\n") };
 };
 
-// Renders any JSON value: syntax-plain but line-wrapped so huge single
-// strings don't force endless horizontal scroll, a copy button, a line
-// count, a themed + always-visible scrollbar (works on touch, not just
-// hover), and — for large payloads — an expand-to-fullscreen view so
-// nothing is ever cut off by a fixed small box.
+// ─── Hooks ───────────────────────────────────────────────────────────────────
+
+function useCopy(successMessage = "Copied to clipboard") {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+
+  const copy = useCallback(
+    async (text: string) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        toast.success(successMessage);
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => setCopied(false), 2000);
+      } catch {
+        toast.error("Failed to copy");
+      }
+    },
+    [successMessage],
+  );
+
+  return { copied, copy };
+}
+
+// ─── Presentational components ───────────────────────────────────────────────
+
+function MethodBadge({ method }: { method: string }) {
+  return (
+    <span className="rounded-xl bg-emerald-500/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-emerald-400">
+      {method}
+    </span>
+  );
+}
+
 function JsonViewer({
   data,
-  label,
+  label = "JSON",
   maxHeight = "18rem",
   tone = "text-zinc-300",
   alwaysShowExpand = false,
-  noHeightCap = false,
 }: {
   data: unknown;
   label?: string;
   maxHeight?: string;
   tone?: string;
   alwaysShowExpand?: boolean;
-  // When true, the block grows to fit its content instead of scrolling
-  // inside a fixed-height box. Use this for the one JSON block per view
-  // that matters most (e.g. the live API response) so every line —
-  // including the last one — is reachable by scrolling the page itself,
-  // instead of getting trapped behind a second, nested scrollbar.
-  noHeightCap?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopy();
 
   const json = useMemo(() => {
     try {
@@ -356,19 +528,10 @@ function JsonViewer({
     }
   }, [data]);
 
+  const html = useMemo(() => highlightJson(json), [json]);
+
   const lineCount = json.split("\n").length;
   const showExpandButton = alwaysShowExpand || lineCount > 14;
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(json);
-      setCopied(true);
-      toast.success("Copied to clipboard");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy");
-    }
-  };
 
   return (
     <>
@@ -389,7 +552,7 @@ function JsonViewer({
               </button>
             )}
             <button
-              onClick={handleCopy}
+              onClick={() => copy(json)}
               className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-slate-800 hover:text-emerald-400"
               title="Copy"
               aria-label="Copy JSON"
@@ -407,8 +570,8 @@ function JsonViewer({
             "scrollbar-custom overflow-auto whitespace-pre-wrap break-all p-3 font-mono text-xs leading-5",
             tone,
           )}
-          style={noHeightCap ? undefined : { maxHeight }}
-          dangerouslySetInnerHTML={{ __html: highlightJson(json) }}
+          style={{ maxHeight }}
+          dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>
 
@@ -416,13 +579,11 @@ function JsonViewer({
         <DialogContent className="max-h-[88vh] overflow-hidden rounded-2xl border-slate-800 bg-slate-900 p-0 sm:max-w-4xl">
           <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
             <div>
-              <p className="text-sm font-semibold text-white">
-                {label ?? "JSON"}
-              </p>
+              <p className="text-sm font-semibold text-white">{label}</p>
               <p className="text-xs text-zinc-500">{lineCount} lines</p>
             </div>
             <button
-              onClick={handleCopy}
+              onClick={() => copy(json)}
               className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-slate-800 hover:text-emerald-400"
               title="Copy"
               aria-label="Copy JSON"
@@ -436,7 +597,7 @@ function JsonViewer({
           </div>
           <pre
             className="scrollbar-custom max-h-[calc(88vh-68px)] overflow-auto whitespace-pre-wrap break-all p-5 font-mono text-sm leading-6 text-zinc-200"
-            dangerouslySetInnerHTML={{ __html: highlightJson(json) }}
+            dangerouslySetInnerHTML={{ __html: html }}
           />
         </DialogContent>
       </Dialog>
@@ -444,10 +605,6 @@ function JsonViewer({
   );
 }
 
-// A themed terminal block for a cURL command — mirrors JsonViewer's
-// chrome (line-style header, copy button) but line-by-line, so fixed
-// compliance fields (purpose, consent) can be rendered dimmed while
-// everything else stays legible and copy-pastable as-is.
 function CurlConsole({
   lines,
   plainText,
@@ -459,18 +616,7 @@ function CurlConsole({
   label?: string;
   footnote?: string;
 }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(plainText);
-      setCopied(true);
-      toast.success("cURL copied to clipboard");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy");
-    }
-  };
+  const { copied, copy } = useCopy("cURL copied to clipboard");
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
@@ -480,7 +626,7 @@ function CurlConsole({
           {label}
         </span>
         <button
-          onClick={handleCopy}
+          onClick={() => copy(plainText)}
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-zinc-500 transition-colors hover:bg-slate-800 hover:text-emerald-400"
           title="Copy cURL"
         >
@@ -532,15 +678,12 @@ function CurlConsole({
   );
 }
 
-// A small key/value table for headers, query params, or path params —
-// whichever shape your JSON uses.
-function KeyValueTable({ rows }: { rows: Array<[string, string]> }) {
-  if (rows.length === 0) return null;
+function KeyValueTable({ rows }: { rows: KeyValueRow[] }) {
   return (
     <div className="overflow-hidden rounded-lg border border-slate-800">
-      {rows.map(([key, value]) => (
+      {rows.map(([key, value], idx) => (
         <div
-          key={key}
+          key={`${key}-${idx}`}
           className="flex items-center justify-between gap-3 border-b border-slate-800/60 bg-slate-950/40 px-3 py-1.5 text-xs last:border-b-0"
         >
           <span className="shrink-0 font-mono text-emerald-400">{key}</span>
@@ -551,142 +694,107 @@ function KeyValueTable({ rows }: { rows: Array<[string, string]> }) {
   );
 }
 
-// Read-only, deliberately dimmed display of the fields that ride along
-// with every request (purpose, consent, ...). Kept out of the editable
-// textarea so they can never be edited or stripped by mistake.
+// ─── Main component ──────────────────────────────────────────────────────────
 
 export default function ViewDocumentation({
   endpoint,
   apiName,
 }: ViewDocumentationProps) {
-  const [doc, setDoc] = useState<ApiDocumentation | null>(null);
-  const [isDocLoading, setIsDocLoading] = useState(true);
-  const [docMethod, setDocMethod] = useState("POST");
-
-  // The editable part of the request body. Fixed compliance fields
-  // (purpose, consent) live in `fixedFields` instead and are merged back
-  // in right before sending or building a cURL command.
-  const [editableBody, setEditableBody] = useState("{}");
-  const [fixedFields, setFixedFields] = useState<Record<string, unknown>>({});
-  const [legacyRequestMeta, setLegacyRequestMeta] = useState<{
-    headers: Array<[string, string]>;
-    queryParams: Array<[string, string]>;
-    pathParams: Array<[string, string]>;
-  }>({ headers: [], queryParams: [], pathParams: [] });
-
-  const [isSending, setIsSending] = useState(false);
-  const [responseText, setResponseText] = useState<string | null>(null);
-  const [responseStatus, setResponseStatus] = useState<ResponseStatus>(null);
-  const [responseStatusCode, setResponseStatusCode] = useState<number | null>(
-    null,
+  const doc = useMemo(
+    () => (getApiDocumentation(endpoint) ?? null) as unknown as ApiDoc | null,
+    [endpoint],
   );
+
+  const requestInfo = useMemo(() => {
+    const request = doc?.request;
+    const curl = parseCurl(doc?.request_curl);
+    const legacyBody = request?.body;
+    const body =
+      parseJsonObject(curl.bodyText) ??
+      (isPlainObject(legacyBody) ? legacyBody : null);
+    const { editable, fixed } = splitFixedFields(body);
+
+    return {
+      curl,
+      body,
+      editable,
+      fixed,
+      method: (request?.method || curl.method || "POST").toUpperCase(),
+      meta: {
+        headers: normalizeKeyValueList(request?.headers),
+        queryParams: normalizeKeyValueList(
+          request?.query_params ?? request?.queryParams,
+        ),
+        pathParams: normalizeKeyValueList(
+          request?.path_params ?? request?.pathParams,
+        ),
+      },
+    };
+  }, [doc]);
+
+  const endpointPath = doc?.endpoint || endpoint;
+  const docsUrl = `${BASE_DOMAIN}${endpointPath}`;
+  const sendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL || BASE_DOMAIN}${endpointPath}`;
+
+  const [editableBody, setEditableBody] = useState(() =>
+    formatBody(requestInfo.editable),
+  );
+  const [response, setResponse] = useState<ConsoleResponse | null>(null);
+  const [isSending, setIsSending] = useState(false);
   const responseRef = useRef<HTMLDivElement | null>(null);
 
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [isKeysLoading, setIsKeysLoading] = useState(false);
   const [keysError, setKeysError] = useState<string | null>(null);
 
-  // The environment must be chosen from this dropdown before Send is
-  // enabled — no request goes out without an explicit key selection.
   const [selectedKeyType, setSelectedKeyType] = useState<KeyType | "">("");
   const [resolvedKeyValue, setResolvedKeyValue] = useState<string | null>(null);
 
-  // Shown when a matched key's value wasn't returned by the list
-  // endpoint (common — the full secret is often only ever shown once,
-  // at creation time), so the user can paste it in instead of failing.
+  // Opens when the selected key's value isn't available from the list API.
   const [showManualKeyDialog, setShowManualKeyDialog] = useState(false);
   const [manualKeyValue, setManualKeyValue] = useState("");
 
-  const [copiedEndpoint, setCopiedEndpoint] = useState(false);
+  // Reset the editor and last response when the documented endpoint changes.
+  useEffect(() => {
+    setEditableBody(formatBody(requestInfo.editable));
+    setResponse(null);
+  }, [requestInfo]);
 
   useEffect(() => {
-    setIsDocLoading(true);
-    const data = getApiDocumentation(endpoint);
-    setDoc(data ?? null);
-
-    const legacyBody =
-      ((data?.request as any)?.body as Record<string, unknown> | undefined) ??
-      null;
-    const legacyMethod = (data?.request as any)?.method as string | undefined;
-    const curlInfo = parseCurl((data as any)?.request_curl);
-
-    let bodyObj: Record<string, unknown> | null = legacyBody ?? null;
-    if (!bodyObj && curlInfo.bodyText) {
-      try {
-        bodyObj = JSON.parse(curlInfo.bodyText);
-      } catch {
-        bodyObj = null;
-      }
-    }
-
-    const { editable, fixed } = splitFixedFields(bodyObj);
-    setEditableBody(
-      Object.keys(editable).length > 0
-        ? JSON.stringify(editable, null, 2)
-        : "{}",
-    );
-    setFixedFields(fixed);
-    setDocMethod(legacyMethod || curlInfo.method || "POST");
-
-    setLegacyRequestMeta({
-      headers: normalizeKeyValueList((data?.request as any)?.headers),
-      queryParams: normalizeKeyValueList(
-        (data?.request as any)?.query_params ??
-          (data?.request as any)?.queryParams,
-      ),
-      pathParams: normalizeKeyValueList(
-        (data?.request as any)?.path_params ??
-          (data?.request as any)?.pathParams,
-      ),
-    });
-
-    setResponseText(null);
-    setResponseStatus(null);
-    setResponseStatusCode(null);
-    setSelectedKeyType("");
-    setResolvedKeyValue(null);
-    setIsDocLoading(false);
-  }, [endpoint]);
-
-  // As soon as a response lands, bring it into view — the user shouldn't
-  // have to go hunting for it below the Send button.
-  useEffect(() => {
-    if (responseText && responseRef.current) {
-      responseRef.current.scrollIntoView({
+    if (response) {
+      responseRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
       });
     }
-  }, [responseText]);
+  }, [response]);
 
-  // Live validity feedback on the request body editor — you see
-  // immediately whether what you typed will actually parse, instead of
-  // finding out after hitting Send.
   const bodyValidity = useMemo(() => {
     if (!editableBody.trim()) return { valid: true, message: "Empty body" };
     try {
-      JSON.parse(editableBody);
-      return { valid: true, message: "Valid JSON" };
+      const parsed: unknown = JSON.parse(editableBody);
+      return isPlainObject(parsed)
+        ? { valid: true, message: "Valid JSON" }
+        : { valid: false, message: "Body must be a JSON object" };
     } catch (err: unknown) {
       return { valid: false, message: getErrorMessage(err, "Invalid JSON") };
     }
   }, [editableBody]);
 
   const handleFormatBody = () => {
-    try {
-      const parsed = JSON.parse(editableBody);
-      setEditableBody(JSON.stringify(parsed, null, 2));
-    } catch {
+    const parsed = parseJsonObject(editableBody);
+    if (!parsed) {
       toast.error("Can't format — fix the JSON syntax first");
+      return;
     }
+    setEditableBody(formatBody(parsed));
   };
 
-  const loadApiKeys = async () => {
+  const loadApiKeys = useCallback(async () => {
     setIsKeysLoading(true);
     setKeysError(null);
     try {
-      const keys = await fetchApiKeys();
-      setApiKeys(keys);
+      setApiKeys(await fetchApiKeys());
     } catch (err: unknown) {
       const message = getErrorMessage(err, "Failed to load API keys");
       setKeysError(message);
@@ -694,61 +802,67 @@ export default function ViewDocumentation({
     } finally {
       setIsKeysLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadApiKeys();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void loadApiKeys();
+  }, [loadApiKeys]);
 
   const selectedMatchedKey = useMemo(
     () => (selectedKeyType ? findActiveKey(apiKeys, selectedKeyType) : null),
     [apiKeys, selectedKeyType],
   );
 
-  // Choosing an environment resolves a usable key immediately when one
-  // is cached, or opens the manual-paste dialog when it isn't — either
-  // way, Send stays disabled until a real key value is in hand.
-  const handleSelectKeyType = (value: string) => {
-    const keyType = value as KeyType;
-    setSelectedKeyType(keyType);
-    setResolvedKeyValue(null);
-    setManualKeyValue("");
+  // Uses the cached key when it is a real value; otherwise asks the user to
+  // paste it. Send stays disabled until a usable key value is resolved.
+  const handleSelectKeyType = useCallback(
+    (value: string) => {
+      if (!isKeyType(value)) return;
 
-    const matched = findActiveKey(apiKeys, keyType);
-    if (matched?.key) {
-      setResolvedKeyValue(matched.key);
-    } else if (matched && !matched.key) {
-      setShowManualKeyDialog(true);
-    }
-  };
+      setSelectedKeyType(value);
+      setResolvedKeyValue(null);
+      setManualKeyValue("");
 
-  const exampleCurl = useMemo(() => {
-    const url = `${BASE_DOMAIN}${(doc as any)?.endpoint || endpoint}`;
-    const curlInfo = parseCurl((doc as any)?.request_curl);
+      const matched = findActiveKey(apiKeys, value);
+      if (!matched) return;
 
-    let headers = curlInfo.headers;
-    if (headers.length === 0) {
-      headers = [
-        ["Content-Type", "application/json"],
-        ["api-key", "YOUR_API_KEY"],
-      ];
-    }
-
-    let bodyObj: Record<string, unknown> | null = null;
-    if (curlInfo.bodyText) {
-      try {
-        bodyObj = JSON.parse(curlInfo.bodyText);
-      } catch {
-        bodyObj = null;
+      if (matched.key && !isMaskedKey(matched.key)) {
+        setResolvedKeyValue(matched.key);
+      } else {
+        setShowManualKeyDialog(true);
       }
-    } else {
-      bodyObj =
-        ((doc?.request as any)?.body as Record<string, unknown>) ?? null;
-    }
+    },
+    [apiKeys],
+  );
 
-    return buildCurlDisplay(url, headers, bodyObj);
-  }, [doc, endpoint]);
+  // Pick up the environment stored by the navbar once keys have loaded.
+  useEffect(() => {
+    if (isKeysLoading || apiKeys.length === 0 || selectedKeyType) return;
+    const savedEnv = readSavedEnvironment();
+    if (savedEnv) handleSelectKeyType(savedEnv);
+  }, [isKeysLoading, apiKeys, selectedKeyType, handleSelectKeyType]);
+
+  // Follow live environment changes made in the navbar.
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<unknown>).detail;
+      if (isKeyType(detail) && apiKeys.length > 0) handleSelectKeyType(detail);
+    };
+    window.addEventListener(ENV_CHANGE_EVENT, handler);
+    return () => window.removeEventListener(ENV_CHANGE_EVENT, handler);
+  }, [apiKeys, handleSelectKeyType]);
+
+  const exampleCurl = useMemo(
+    () =>
+      buildCurlDisplay(
+        docsUrl,
+        requestInfo.curl.headers.length > 0
+          ? requestInfo.curl.headers
+          : DEFAULT_CURL_HEADERS,
+        requestInfo.body,
+      ),
+    [docsUrl, requestInfo],
+  );
 
   const handleSend = async () => {
     if (!selectedKeyType) {
@@ -760,76 +874,55 @@ export default function ViewDocumentation({
       return;
     }
 
-    let editableParsed: Record<string, unknown>;
-    try {
-      editableParsed = editableBody.trim() ? JSON.parse(editableBody) : {};
-    } catch {
-      toast.error("Invalid JSON body.");
+    const editable = editableBody.trim() ? parseJsonObject(editableBody) : {};
+    if (!editable) {
+      toast.error("Request body must be a valid JSON object");
       return;
     }
 
-    const payload = { ...editableParsed, ...fixedFields };
+    const payload = { ...editable, ...requestInfo.fixed };
+    const sendsBody =
+      requestInfo.method !== "GET" && requestInfo.method !== "HEAD";
 
     setIsSending(true);
-    setResponseText(null);
-    setResponseStatus(null);
-    setResponseStatusCode(null);
+    setResponse(null);
 
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL || BASE_DOMAIN}${endpoint}`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "api-key": resolvedKeyValue,
-          },
+      const result = await axios.request({
+        url: sendUrl,
+        method: requestInfo.method,
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": resolvedKeyValue,
         },
-      );
+        timeout: REQUEST_TIMEOUT_MS,
+        ...(sendsBody ? { data: payload } : { params: payload }),
+      });
 
-      setResponseText(JSON.stringify(response.data, null, 2));
-      setResponseStatus("success");
-      setResponseStatusCode(response.status);
+      setResponse({
+        text: JSON.stringify(result.data, null, 2),
+        status: "success",
+        code: result.status,
+      });
       toast.success("API call successful");
     } catch (error: unknown) {
       const message = getErrorMessage(error, "API call failed");
-      const errorPayload = axios.isAxiosError(error)
-        ? error.response?.data
-        : undefined;
-      const statusCode = axios.isAxiosError(error)
-        ? (error.response?.status ?? null)
-        : null;
+      const isAxiosErr = axios.isAxiosError(error);
 
-      setResponseText(
-        JSON.stringify(errorPayload ?? { error: message }, null, 2),
-      );
-      setResponseStatus("error");
-      setResponseStatusCode(statusCode);
+      setResponse({
+        text: JSON.stringify(
+          (isAxiosErr ? error.response?.data : undefined) ?? { error: message },
+          null,
+          2,
+        ),
+        status: "error",
+        code: isAxiosErr ? (error.response?.status ?? null) : null,
+      });
       toast.error(message);
     } finally {
       setIsSending(false);
     }
   };
-
-  const copyEndpoint = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        `${BASE_DOMAIN}${(doc as any)?.endpoint || endpoint}`,
-      );
-      setCopiedEndpoint(true);
-      setTimeout(() => setCopiedEndpoint(false), 2000);
-    } catch {
-      toast.error("Failed to copy");
-    }
-  };
-
-  if (isDocLoading) {
-    return (
-      <div className="flex justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-      </div>
-    );
-  }
 
   if (!doc) {
     return (
@@ -842,31 +935,26 @@ export default function ViewDocumentation({
     );
   }
 
-  // Anything at the top level of doc.json that isn't one of the fields
-  // this component already knows how to render.
-  const extraFields = Object.entries(
-    doc as unknown as Record<string, unknown>,
-  ).filter(
+  const requestMetaSections = [
+    { title: "Path Params", rows: requestInfo.meta.pathParams },
+    { title: "Query Params", rows: requestInfo.meta.queryParams },
+    { title: "Headers", rows: requestInfo.meta.headers },
+  ].filter(({ rows }) => rows.length > 0);
+
+  const responseEntries = (
+    doc.response && typeof doc.response === "object"
+      ? Object.entries(doc.response)
+      : []
+  ).filter((entry): entry is [string, ResponseExample] => entry[1] != null);
+
+  const extraFields = Object.entries(doc).filter(
     ([key, value]) =>
       !KNOWN_DOC_FIELDS.has(key) && value !== undefined && value !== null,
   );
 
-  // Response can be a single { success, error, ... } object with any
-  // number of named examples — render every one of them, not just
-  // "success".
-  const responseEntries =
-    doc.response && typeof doc.response === "object"
-      ? Object.entries(doc.response as Record<string, any>).filter(
-          ([, v]) => v != null,
-        )
-      : [];
-
-  const keyStatusLabel = (key: ApiKey | null) => {
-    if (!key) return { text: "No active key found", tone: "text-red-400" };
-    if (!key.key)
-      return { text: "Value not cached — paste it in", tone: "text-amber-400" };
-    return { text: "Ready to use", tone: "text-emerald-400" };
-  };
+  const keyStatus = getKeyStatus(selectedMatchedKey, !!resolvedKeyValue);
+  const isSendReady = !!selectedKeyType && !!resolvedKeyValue;
+  const canSend = isSendReady && !isSending && bodyValidity.valid;
 
   return (
     <motion.div
@@ -881,16 +969,14 @@ export default function ViewDocumentation({
             <h2 className="text-xl font-semibold text-white">
               {doc.title || apiName || endpoint}
             </h2>
-            <span className="rounded-xl bg-emerald-500/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-emerald-400">
-              {docMethod}
-            </span>
+            <MethodBadge method={requestInfo.method} />
           </div>
           {doc.description && (
             <p className="mt-1.5 text-sm text-zinc-400">{doc.description}</p>
           )}
         </div>
 
-        <Card className="border-slate-800 bg-slate-900/50 shadow-none backdrop-blur-xl">
+        <Card className={CARD_CLASS}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-zinc-300">
               <Terminal className="h-4 w-4 text-emerald-400" />
@@ -898,32 +984,14 @@ export default function ViewDocumentation({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {legacyRequestMeta.pathParams.length > 0 && (
-              <div className="space-y-1.5">
+            {requestMetaSections.map(({ title, rows }) => (
+              <div key={title} className="space-y-1.5">
                 <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-                  Path Params
+                  {title}
                 </p>
-                <KeyValueTable rows={legacyRequestMeta.pathParams} />
+                <KeyValueTable rows={rows} />
               </div>
-            )}
-
-            {legacyRequestMeta.queryParams.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-                  Query Params
-                </p>
-                <KeyValueTable rows={legacyRequestMeta.queryParams} />
-              </div>
-            )}
-
-            {legacyRequestMeta.headers.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-                  Headers
-                </p>
-                <KeyValueTable rows={legacyRequestMeta.headers} />
-              </div>
-            )}
+            ))}
 
             <CurlConsole
               lines={exampleCurl.lines}
@@ -934,14 +1002,9 @@ export default function ViewDocumentation({
         </Card>
 
         {responseEntries.map(([key, value]) => {
-          const isSuccessLike =
-            key.toLowerCase().includes("success") ||
-            key.toLowerCase().includes("2");
+          const isSuccessLike = isSuccessKey(key);
           return (
-            <Card
-              key={key}
-              className="border-slate-800 bg-slate-900/50 shadow-none backdrop-blur-xl"
-            >
+            <Card key={key} className={CARD_CLASS}>
               <CardHeader className="pb-2">
                 <CardTitle
                   className={cn(
@@ -958,7 +1021,7 @@ export default function ViewDocumentation({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {value?.status_code && (
+                {!!value.status_code && (
                   <span
                     className={cn(
                       "inline-block rounded-xl px-2.5 py-1 font-mono text-[11px] font-semibold",
@@ -970,29 +1033,28 @@ export default function ViewDocumentation({
                     {value.status_code}
                   </span>
                 )}
-                {value?.description && (
+                {value.description && (
                   <p className="text-sm text-zinc-400">{value.description}</p>
                 )}
-                {value?.example && (
+                {value.example != null && (
                   <JsonViewer
                     data={value.example}
                     label={`${key} response`}
                     tone={isSuccessLike ? "text-zinc-300" : "text-red-200"}
                   />
                 )}
-                {/* If this response entry isn't the {status_code, example} shape
-                    we expect, show it raw so nothing is ever hidden. */}
-                {value?.example === undefined &&
-                  value?.status_code === undefined &&
-                  value?.description === undefined && (
+                {/* Unexpected shape: show it raw so nothing is hidden. */}
+                {value.example === undefined &&
+                  value.status_code === undefined &&
+                  value.description === undefined && (
                     <JsonViewer data={value} label={key} />
                   )}
               </CardContent>
             </Card>
           );
         })}
-        {/* Response Status Codes Legend */}
-        <Card className="border-slate-800 bg-slate-900/50 shadow-none backdrop-blur-xl">
+
+        <Card className={CARD_CLASS}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-zinc-300">
               <Info className="h-4 w-4 text-emerald-400" />
@@ -1000,109 +1062,38 @@ export default function ViewDocumentation({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5">
-            {/* 200 - Success */}
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-lg bg-emerald-500/20 px-2.5 py-1 font-mono text-xs font-bold text-emerald-400">
-                  200
-                </span>
-                <span className="text-sm font-semibold text-white">
-                  Success
-                </span>
-                <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-400">
-                  <IndianRupee className="h-3 w-3" />
-                  Charged
-                </span>
+            {STATUS_CODES.map(({ code, title, charged, card, badge, desc }) => (
+              <div key={code} className={cn("rounded-xl border p-3", card)}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={cn(
+                      "rounded-lg px-2.5 py-1 font-mono text-xs font-bold",
+                      badge,
+                    )}
+                  >
+                    {code}
+                  </span>
+                  <span className="text-sm font-semibold text-white">
+                    {title}
+                  </span>
+                  {charged ? (
+                    <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-400">
+                      <IndianRupee className="h-3 w-3" /> Charged
+                    </span>
+                  ) : (
+                    <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
+                      <CheckCircle2 className="h-3 w-3" /> No Charge
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1.5 text-xs text-zinc-400">{desc}</p>
               </div>
-              <p className="mt-1.5 text-xs text-zinc-400">
-                The request was processed successfully, and the applicable fee
-                was deducted from your wallet balance.
-              </p>
-            </div>
-
-            {/* 400 - Bad Request */}
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-lg bg-amber-500/20 px-2.5 py-1 font-mono text-xs font-bold text-amber-400">
-                  400
-                </span>
-                <span className="text-sm font-semibold text-white">
-                  Bad Request
-                </span>
-                <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
-                  <CheckCircle2 className="h-3 w-3" />
-                  No Charge
-                </span>
-              </div>
-              <p className="mt-1.5 text-xs text-zinc-400">
-                The server could not process the request due to malformed syntax
-                or missing required parameters.
-              </p>
-            </div>
-
-            {/* 401 - Unauthorized */}
-            <div className="rounded-xl border border-orange-500/30 bg-orange-500/5 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-lg bg-orange-500/20 px-2.5 py-1 font-mono text-xs font-bold text-orange-400">
-                  401
-                </span>
-                <span className="text-sm font-semibold text-white">
-                  Unauthorized
-                </span>
-                <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
-                  <CheckCircle2 className="h-3 w-3" />
-                  No Charge
-                </span>
-              </div>
-              <p className="mt-1.5 text-xs text-zinc-400">
-                Authentication failed. The request is missing a valid API key or
-                the provided key is invalid.
-              </p>
-            </div>
-
-            {/* 402 - Payment Required */}
-            <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-lg bg-yellow-500/20 px-2.5 py-1 font-mono text-xs font-bold text-yellow-400">
-                  402
-                </span>
-                <span className="text-sm font-semibold text-white">
-                  Payment Required
-                </span>
-                <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
-                  <CheckCircle2 className="h-3 w-3" />
-                  No Charge
-                </span>
-              </div>
-              <p className="mt-1.5 text-xs text-zinc-400">
-                Insufficient wallet balance. Please recharge your account to
-                access this endpoint.
-              </p>
-            </div>
-
-            {/* 500 - Server Error */}
-            <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-lg bg-red-500/20 px-2.5 py-1 font-mono text-xs font-bold text-red-400">
-                  500
-                </span>
-                <span className="text-sm font-semibold text-white">
-                  Server Error
-                </span>
-                <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
-                  <CheckCircle2 className="h-3 w-3" />
-                  No Charge
-                </span>
-              </div>
-              <p className="mt-1.5 text-xs text-zinc-400">
-                An internal server error occurred. It is safe to retry the
-                request after a short delay.
-              </p>
-            </div>
+            ))}
           </CardContent>
         </Card>
+
         {doc.errors && doc.errors.length > 0 && (
-          <Card className="border-slate-800 bg-slate-900/50 shadow-none backdrop-blur-xl">
+          <Card className={CARD_CLASS}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium text-red-300">
                 <AlertTriangle className="h-4 w-4" />
@@ -1110,25 +1101,20 @@ export default function ViewDocumentation({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {doc.errors.map(
-                (err: { code: number; message: string }, idx: number) => (
-                  <div key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="rounded-xl bg-red-500/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-red-400">
-                      {err.code}
-                    </span>
-                    <span className="text-zinc-400">{err.message}</span>
-                  </div>
-                ),
-              )}
+              {doc.errors.map((err, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-sm">
+                  <span className="rounded-xl bg-red-500/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-red-400">
+                    {err.code}
+                  </span>
+                  <span className="text-zinc-400">{err.message}</span>
+                </div>
+              ))}
             </CardContent>
           </Card>
         )}
 
-        {/* Catch-all: any field your JSON adds later that this component
-            doesn't have dedicated UI for yet still shows up here instead
-            of silently disappearing. */}
         {extraFields.length > 0 && (
-          <Card className="border-slate-800 bg-slate-900/50 shadow-none backdrop-blur-xl">
+          <Card className={CARD_CLASS}>
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium text-zinc-300">
                 <Info className="h-4 w-4 text-emerald-400" />
@@ -1161,19 +1147,19 @@ export default function ViewDocumentation({
         )}
       </div>
 
-      {/* RIGHT PANE — API Console */}
+      {/* RIGHT PANE — Test Console */}
       <div className="scrollbar-custom max-h-[75vh] space-y-4 overflow-y-auto pr-1">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-white">Test Console</h3>
-          <span className="rounded-xl bg-emerald-500/10 px-2.5 py-1 font-mono text-[11px] font-semibold text-emerald-400">
-            {docMethod}
-          </span>
+          <MethodBadge method={requestInfo.method} />
         </div>
 
-        {/* Environment / key selection — must be chosen before Send unlocks */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
+            <label
+              htmlFor="environment-select"
+              className="block text-xs font-medium uppercase tracking-wider text-zinc-400"
+            >
               Environment
             </label>
             <button
@@ -1190,28 +1176,33 @@ export default function ViewDocumentation({
           </div>
 
           <Select value={selectedKeyType} onValueChange={handleSelectKeyType}>
-            <SelectTrigger className="w-full border-slate-700 bg-slate-900 text-slate-300">
+            <SelectTrigger
+              id="environment-select"
+              className="w-full border-slate-700 bg-slate-900 text-slate-300"
+            >
               <SelectValue placeholder="Select an API key" />
             </SelectTrigger>
             <SelectContent className="border-slate-700 bg-slate-900">
-              <SelectItem
-                value="DEVELOPMENT"
-                className="text-slate-300 focus:bg-emerald-500/10 focus:text-emerald-400"
-              >
-                <span className="flex items-center gap-2">
-                  <FlaskConical className="h-3.5 w-3.5 text-cyan-400" />
-                  Development key
-                </span>
-              </SelectItem>
-              <SelectItem
-                value="PRODUCTION"
-                className="text-slate-300 focus:bg-emerald-500/10 focus:text-emerald-400"
-              >
-                <span className="flex items-center gap-2">
-                  <Rocket className="h-3.5 w-3.5 text-violet-400" />
-                  Production key
-                </span>
-              </SelectItem>
+              {ENV_OPTIONS.map(({ value, label, Icon, iconClass }) => {
+                const masked = maskKey(findActiveKey(apiKeys, value)?.key);
+                return (
+                  <SelectItem
+                    key={value}
+                    value={value}
+                    className="text-slate-300 focus:bg-emerald-500/10 focus:text-emerald-400"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Icon className={cn("h-3.5 w-3.5", iconClass)} />
+                      {label}
+                      {masked && (
+                        <span className="ml-1 font-mono text-[11px] text-zinc-500">
+                          {masked}
+                        </span>
+                      )}
+                    </span>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
 
@@ -1225,22 +1216,25 @@ export default function ViewDocumentation({
             <p
               className={cn(
                 "flex items-center gap-1 text-[11px]",
-                keyStatusLabel(selectedMatchedKey).tone,
+                keyStatus.tone,
               )}
             >
-              {selectedMatchedKey?.key ? (
+              {resolvedKeyValue ? (
                 <CheckCircle2 className="h-3 w-3" />
               ) : (
                 <AlertTriangle className="h-3 w-3" />
               )}
-              {keyStatusLabel(selectedMatchedKey).text}
+              {keyStatus.text}
             </p>
           )}
         </div>
 
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
+            <label
+              htmlFor="request-body"
+              className="block text-xs font-medium uppercase tracking-wider text-zinc-400"
+            >
               Request Body (JSON)
             </label>
             <div className="flex items-center gap-3">
@@ -1262,9 +1256,11 @@ export default function ViewDocumentation({
             </div>
           </div>
           <textarea
+            id="request-body"
             value={editableBody}
             onChange={(e) => setEditableBody(e.target.value)}
             rows={10}
+            spellCheck={false}
             className={cn(
               "scrollbar-custom w-full resize-y rounded-xl border bg-slate-950 p-3 font-mono text-sm text-white placeholder:text-zinc-600 focus:outline-none transition-colors",
               bodyValidity.valid
@@ -1277,12 +1273,7 @@ export default function ViewDocumentation({
 
         <Button
           onClick={handleSend}
-          disabled={
-            isSending ||
-            !selectedKeyType ||
-            !resolvedKeyValue ||
-            !bodyValidity.valid
-          }
+          disabled={!canSend}
           className="w-full rounded-xl border-emerald-500/80 bg-emerald-600 text-white shadow-[0_10px_25px_rgba(16,185,129,0.18)] transition-colors hover:border-emerald-500 hover:bg-emerald-500 hover:text-white disabled:opacity-50"
         >
           {isSending ? (
@@ -1292,38 +1283,36 @@ export default function ViewDocumentation({
           )}
           Send Request
         </Button>
-        {(!selectedKeyType || !resolvedKeyValue) && (
+        {!isSendReady && (
           <p className="-mt-2 text-center text-[11px] text-zinc-500">
             Select an environment with a valid key to enable sending.
           </p>
         )}
 
-        {responseText && (
+        {response && (
           <div ref={responseRef}>
             <div className="mb-1 flex items-center justify-between">
               <p className="text-xs font-medium uppercase tracking-wider text-zinc-400">
                 Response
               </p>
-              {responseStatus && (
-                <span
-                  className={cn(
-                    "rounded-xl px-2.5 py-1 font-mono text-[10px] font-semibold",
-                    responseStatus === "success"
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : "bg-red-500/10 text-red-400",
-                  )}
-                >
-                  {responseStatus === "success" ? "SUCCESS" : "ERROR"}
-                  {responseStatusCode ? ` · ${responseStatusCode}` : ""}
-                </span>
-              )}
+              <span
+                className={cn(
+                  "rounded-xl px-2.5 py-1 font-mono text-[10px] font-semibold",
+                  response.status === "success"
+                    ? "bg-emerald-500/10 text-emerald-400"
+                    : "bg-red-500/10 text-red-400",
+                )}
+              >
+                {response.status === "success" ? "SUCCESS" : "ERROR"}
+                {response.code ? ` · ${response.code}` : ""}
+              </span>
             </div>
             <JsonViewer
-              data={responseText}
+              data={response.text}
               label="Live Response"
               maxHeight="min(28rem, 55vh)"
               tone={
-                responseStatus === "error" ? "text-red-200" : "text-zinc-300"
+                response.status === "error" ? "text-red-200" : "text-zinc-300"
               }
               alwaysShowExpand
             />
@@ -1331,16 +1320,8 @@ export default function ViewDocumentation({
         )}
       </div>
 
-      {/* Manual key entry — shown when a matched key's value wasn't
-          returned by the list endpoint. */}
-      <Dialog
-        open={showManualKeyDialog}
-        onOpenChange={(open) => {
-          if (!open) {
-            setShowManualKeyDialog(false);
-          }
-        }}
-      >
+      {/* Manual key entry */}
+      <Dialog open={showManualKeyDialog} onOpenChange={setShowManualKeyDialog}>
         <DialogContent className="rounded-xl border-slate-800 bg-slate-900 sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
@@ -1358,6 +1339,9 @@ export default function ViewDocumentation({
           </DialogHeader>
           <div className="py-2">
             <Input
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
               value={manualKeyValue}
               onChange={(e) => setManualKeyValue(e.target.value)}
               placeholder="Paste your API key"

@@ -43,7 +43,6 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { get, post } from "@/lib/api";
 import { cn, formatDate } from "@/lib/utils";
-import { PageShell } from "@/components/custom/page-shell";
 
 // ─── Local Types ──────────────────────────────────────────────────────────────
 type ApiKeyEnvironment = "DEVELOPMENT" | "PRODUCTION";
@@ -215,7 +214,7 @@ export default function ManageApisPage() {
     try {
       const keys = await fetchApiKeys();
       setApiKeys(keys);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message = getApiErrorMessage(err, "Failed to load API keys");
       setError(message);
       toast.error(message);
@@ -270,7 +269,7 @@ export default function ManageApisPage() {
       toast.success("API key created successfully");
       setIsCreateOpen(false);
       loadApiKeys();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(getApiErrorMessage(err, "Failed to create API key"));
     } finally {
       setIsCreating(false);
@@ -285,7 +284,7 @@ export default function ManageApisPage() {
       toast.success("API key deleted");
       setDeleteTarget(null);
       loadApiKeys();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(getApiErrorMessage(err, "Failed to delete API key"));
     } finally {
       setIsDeleting(false);
@@ -310,7 +309,7 @@ export default function ManageApisPage() {
       );
       setStatusActionTarget(null);
       loadApiKeys();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(getApiErrorMessage(err, "Failed to update status"));
     } finally {
       setStatusUpdatingId(null);

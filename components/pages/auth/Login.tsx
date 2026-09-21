@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * Login — Scaninfoga Commercial Intelligence Portal
@@ -33,10 +33,10 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
-} from 'react';
-import { toast } from 'sonner';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { AxiosError } from 'axios';
+} from "react";
+import { toast } from "sonner";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AxiosError } from "axios";
 import {
   Activity,
   ArrowRight,
@@ -50,27 +50,27 @@ import {
   RotateCcw,
   ShieldCheck,
   Smartphone,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { post } from '@/lib/api';
-import { setCredentials, type Gender, type User } from '@/redux/userSlice';
+} from "@/components/ui/dialog";
+import { post } from "@/lib/api";
+import { setCredentials, type Gender, type User } from "@/redux/userSlice";
 // Adjust this path to wherever EmailInputAutocomplete actually lives.
-import EmailInputAutocomplete from '@/components/custom/EmailInputAutocomplete';
-import { useAppDispatch } from '@/redux/hooks';
+import EmailInputAutocomplete from "@/components/custom/EmailInputAutocomplete";
+import { useAppDispatch } from "@/redux/hooks";
 
 /* ────────────────────────────────────────────────────────────
    Types
    ──────────────────────────────────────────────────────────── */
-type OtpChannel = 'EMAIL';
-type SigninStep = 'mpin' | 'otp';
-type ForgotStep = 'otp' | 'new-mpin';
+type OtpChannel = "EMAIL";
+type SigninStep = "mpin" | "otp";
+type ForgotStep = "otp" | "new-mpin";
 
 /* ────────────────────────────────────────────────────────────
    Helpers (logic unchanged)
@@ -86,42 +86,43 @@ function extractError(err: unknown, fallback: string): string {
   return fallback;
 }
 
-const REGISTERED_TIERS = new Set<User['tier']>([
-  'ADMIN',
-  'NORMAL',
-  'COMMERCIAL',
-  'COOPERATIVE',
-  'COOPERATIVE_MEMBER',
+const REGISTERED_TIERS = new Set<User["tier"]>([
+  "ADMIN",
+  "NORMAL",
+  "COMMERCIAL",
+  "COOPERATIVE",
+  "COOPERATIVE_MEMBER",
 ]);
 
-function normalizeTierValue(value: unknown): User['tier'] | null {
-  if (typeof value === 'string') {
+function normalizeTierValue(value: unknown): User["tier"] | null {
+  if (typeof value === "string") {
     const normalized = value.trim().toUpperCase();
-    if (normalized === 'SUPER_ADMIN') return 'ADMIN';
-    if (normalized === 'COMM') return 'COMMERCIAL';
-    if (normalized === 'ADMIN' || normalized === 'COMMERCIAL') {
-      return normalized as User['tier'];
+    if (normalized === "SUPER_ADMIN") return "ADMIN";
+    if (normalized === "COMM") return "COMMERCIAL";
+    if (normalized === "ADMIN" || normalized === "COMMERCIAL") {
+      return normalized as User["tier"];
     }
-    if (REGISTERED_TIERS.has(normalized as User['tier'])) {
-      return normalized as User['tier'];
+    if (REGISTERED_TIERS.has(normalized as User["tier"])) {
+      return normalized as User["tier"];
     }
     return null;
   }
 
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return null;
   }
 
   return null;
 }
 
-function normalizeTier(raw: any): User['tier'] | null {
+function normalizeTier(raw: any): User["tier"] | null {
   const seen = new Set<any>();
   const queue: any[] = [raw];
 
   while (queue.length > 0) {
     const current = queue.shift();
-    if (current === null || current === undefined || seen.has(current)) continue;
+    if (current === null || current === undefined || seen.has(current))
+      continue;
     seen.add(current);
 
     if (Array.isArray(current)) {
@@ -129,13 +130,13 @@ function normalizeTier(raw: any): User['tier'] | null {
       continue;
     }
 
-    if (typeof current === 'string' || typeof current === 'number') {
+    if (typeof current === "string" || typeof current === "number") {
       const tier = normalizeTierValue(current);
       if (tier) return tier;
       continue;
     }
 
-    if (typeof current === 'object') {
+    if (typeof current === "object") {
       const keys = Object.keys(current as Record<string, unknown>);
 
       for (const key of keys) {
@@ -143,11 +144,25 @@ function normalizeTier(raw: any): User['tier'] | null {
         const value = (current as Record<string, unknown>)[key];
 
         if (
-          ['tier', 'user_type', 'usertype', 'userType', 'role', 'role_name', 'rolename', 'userRole', 'user_role', 'accountType', 'type', 'access_level', 'accessLevel'].includes(lowered) ||
-          lowered.includes('tier') ||
-          lowered.includes('role') ||
-          lowered.includes('account') ||
-          lowered.includes('access')
+          [
+            "tier",
+            "user_type",
+            "usertype",
+            "userType",
+            "role",
+            "role_name",
+            "rolename",
+            "userRole",
+            "user_role",
+            "accountType",
+            "type",
+            "access_level",
+            "accessLevel",
+          ].includes(lowered) ||
+          lowered.includes("tier") ||
+          lowered.includes("role") ||
+          lowered.includes("account") ||
+          lowered.includes("access")
         ) {
           const tier = normalizeTierValue(value);
           if (tier) return tier;
@@ -162,16 +177,16 @@ function normalizeTier(raw: any): User['tier'] | null {
 }
 
 function normalizeUser(raw: any): User {
-  const gender = String(raw?.gender || '').toUpperCase();
+  const gender = String(raw?.gender || "").toUpperCase();
   return {
     name: raw?.name,
     email: raw?.email,
     mobile_number: raw?.mobile_number,
     gender:
-      gender === 'MALE' || gender === 'FEMALE' ? (gender as Gender) : null,
+      gender === "MALE" || gender === "FEMALE" ? (gender as Gender) : null,
     is_aadhaar_kyc: Boolean(raw?.is_aadhaar_kyc),
     is_video_kyc: Boolean(raw?.is_video_kyc),
-    tier: normalizeTier(raw) ?? 'NORMAL',
+    tier: normalizeTier(raw) ?? "NORMAL",
     profile_image: raw?.profile_image ?? null,
     aadhaar_image: raw?.aadhaar_image ?? null,
     date_of_birth: raw?.date_of_birth ?? null,
@@ -187,10 +202,10 @@ function pinDigitChange(
   refs: React.MutableRefObject<(HTMLInputElement | null)[]>,
   onComplete: (code: string) => void,
 ) {
-  const cleaned = value.replace(/\D/g, '');
+  const cleaned = value.replace(/\D/g, "");
   if (!cleaned) {
     const next = [...digits];
-    next[index] = '';
+    next[index] = "";
     setDigits(next);
     return;
   }
@@ -198,20 +213,20 @@ function pinDigitChange(
     const next = [...digits];
     cleaned
       .slice(0, 6 - index)
-      .split('')
+      .split("")
       .forEach((ch, i) => {
         next[index + i] = ch;
       });
     setDigits(next);
     refs.current[Math.min(index + cleaned.length, 5)]?.focus();
-    if (next.every((d) => d !== '')) onComplete(next.join(''));
+    if (next.every((d) => d !== "")) onComplete(next.join(""));
     return;
   }
   const next = [...digits];
   next[index] = cleaned;
   setDigits(next);
   if (index < 5) refs.current[index + 1]?.focus();
-  if (next.every((d) => d !== '')) onComplete(next.join(''));
+  if (next.every((d) => d !== "")) onComplete(next.join(""));
 }
 
 function pinKeyDown(
@@ -220,7 +235,7 @@ function pinKeyDown(
   digits: string[],
   refs: React.MutableRefObject<(HTMLInputElement | null)[]>,
 ) {
-  if (e.key === 'Backspace' && !digits[index] && index > 0)
+  if (e.key === "Backspace" && !digits[index] && index > 0)
     refs.current[index - 1]?.focus();
 }
 
@@ -231,13 +246,13 @@ function pinPaste(
   onComplete: (code: string) => void,
 ) {
   e.preventDefault();
-  const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+  const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
   if (!pasted) return;
-  const next = Array(6).fill('');
-  pasted.split('').forEach((ch, i) => (next[i] = ch));
+  const next = Array(6).fill("");
+  pasted.split("").forEach((ch, i) => (next[i] = ch));
   setDigits(next);
   refs.current[Math.min(pasted.length, 5)]?.focus();
-  if (next.every((d) => d !== '')) onComplete(next.join(''));
+  if (next.every((d) => d !== "")) onComplete(next.join(""));
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -247,26 +262,26 @@ export default function Login(): JSX.Element {
   const dispatch = useAppDispatch();
   const reduceMotion = !!useReducedMotion();
 
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState('');
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [signinOpen, setSigninOpen] = useState(false);
-  const [signinStep, setSigninStep] = useState<SigninStep>('mpin');
+  const [signinStep, setSigninStep] = useState<SigninStep>("mpin");
   const [signinToken, setSigninToken] = useState<string | null>(null);
-  const [signinMpinCode, setSigninMpinCode] = useState('');
-  const [signinOtpDest, setSigninOtpDest] = useState('');
-  const [mpin, setMpin] = useState<string[]>(Array(6).fill(''));
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+  const [signinMpinCode, setSigninMpinCode] = useState("");
+  const [signinOtpDest, setSigninOtpDest] = useState("");
+  const [mpin, setMpin] = useState<string[]>(Array(6).fill(""));
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const mpinRefs = useRef<(HTMLInputElement | null)[]>([]);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [forgotOpen, setForgotOpen] = useState(false);
-  const [forgotStep, setForgotStep] = useState<ForgotStep>('otp');
+  const [forgotStep, setForgotStep] = useState<ForgotStep>("otp");
   const [forgotToken, setForgotToken] = useState<string | null>(null);
-  const [forgotOtpDest, setForgotOtpDest] = useState('');
-  const [forgotOtp, setForgotOtp] = useState<string[]>(Array(6).fill(''));
-  const [newMpin, setNewMpin] = useState<string[]>(Array(6).fill(''));
+  const [forgotOtpDest, setForgotOtpDest] = useState("");
+  const [forgotOtp, setForgotOtp] = useState<string[]>(Array(6).fill(""));
+  const [newMpin, setNewMpin] = useState<string[]>(Array(6).fill(""));
   const forgotOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
   const newMpinRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -275,7 +290,7 @@ export default function Login(): JSX.Element {
       try {
         setLoading(true);
         const response = await post(
-          '/api/v1/auth/signin',
+          "/api/v1/auth/signin",
           {
             email: email.trim(),
             mpin: mpinCode || signinMpinCode,
@@ -286,32 +301,38 @@ export default function Login(): JSX.Element {
         const { responseData, responseStatus } = response;
 
         if (!responseStatus?.status) {
-          toast.error(responseStatus?.message || 'Invalid credentials.');
-          setSigninStep('mpin');
-          setMpin(Array(6).fill(''));
-          setSigninMpinCode('');
+          toast.error(responseStatus?.message || "Invalid credentials.");
+          setSigninStep("mpin");
+          setMpin(Array(6).fill(""));
+          setSigninMpinCode("");
           setTimeout(() => mpinRefs.current[0]?.focus(), 50);
           return;
         }
 
-        const signedInUser = normalizeUser(responseData?.user ?? responseData ?? null);
-        const userTier = normalizeTier(responseData?.user ?? responseData ?? null)?.toUpperCase();
+        const signedInUser = normalizeUser(
+          responseData?.user ?? responseData ?? null,
+        );
+        const userTier = normalizeTier(
+          responseData?.user ?? responseData ?? null,
+        )?.toUpperCase();
 
-        if (userTier && !['ADMIN', 'COMMERCIAL'].includes(userTier)) {
-          toast.error('Only Admin and Commercial users can access this portal.');
-          setSigninStep('mpin');
-          setMpin(Array(6).fill(''));
-          setSigninMpinCode('');
+        if (userTier && !["ADMIN", "COMMERCIAL"].includes(userTier)) {
+          toast.error(
+            "Only Admin and Commercial users can access this portal.",
+          );
+          setSigninStep("mpin");
+          setMpin(Array(6).fill(""));
+          setSigninMpinCode("");
           setTimeout(() => mpinRefs.current[0]?.focus(), 50);
           return;
         }
 
         if (responseData?.requires_otp) {
           setSigninToken(responseData.token);
-          setSigninOtpDest('email');
-          setSigninStep('otp');
-          setOtp(Array(6).fill(''));
-          toast.info(responseStatus?.message || 'OTP sent.');
+          setSigninOtpDest("email");
+          setSigninStep("otp");
+          setOtp(Array(6).fill(""));
+          toast.info(responseStatus?.message || "OTP sent.");
         } else if (responseData?.access_token) {
           dispatch(
             setCredentials({
@@ -320,14 +341,14 @@ export default function Login(): JSX.Element {
               expiresAt: responseData.expires_at ?? null,
             }),
           );
-          toast.success('Signed in successfully', { duration: 900 });
-          setTimeout(() => (window.location.href = '/dashboard'), 400);
+          toast.success("Signed in successfully", { duration: 900 });
+          setTimeout(() => (window.location.href = "/dashboard"), 400);
         }
       } catch (err) {
-        toast.error(extractError(err, 'Invalid credentials. Try again.'));
-        setSigninStep('mpin');
-        setMpin(Array(6).fill(''));
-        setSigninMpinCode('');
+        toast.error(extractError(err, "Invalid credentials. Try again."));
+        setSigninStep("mpin");
+        setMpin(Array(6).fill(""));
+        setSigninMpinCode("");
         setTimeout(() => mpinRefs.current[0]?.focus(), 50);
       } finally {
         setLoading(false);
@@ -340,21 +361,21 @@ export default function Login(): JSX.Element {
     e.preventDefault();
     const trimmed = email.trim();
     if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setEmailError('Enter a valid email address');
+      setEmailError("Enter a valid email address");
       return;
     }
-    setEmailError('');
-    setMpin(Array(6).fill(''));
-    setOtp(Array(6).fill(''));
-    setSigninStep('mpin');
-    setSigninMpinCode('');
+    setEmailError("");
+    setMpin(Array(6).fill(""));
+    setOtp(Array(6).fill(""));
+    setSigninStep("mpin");
+    setSigninMpinCode("");
     setSigninOpen(true);
   };
 
   const handleMpinComplete = useCallback(
     (code: string) => {
       setSigninMpinCode(code);
-      handleSigninChannelSelect('EMAIL', code);
+      handleSigninChannelSelect("EMAIL", code);
     },
     [handleSigninChannelSelect],
   );
@@ -365,7 +386,7 @@ export default function Login(): JSX.Element {
       try {
         setLoading(true);
         const response = await post(
-          '/api/v1/auth/signin/verify-otp',
+          "/api/v1/auth/signin/verify-otp",
           {
             token: signinToken,
             otp: code,
@@ -374,18 +395,24 @@ export default function Login(): JSX.Element {
         );
         const { responseData, responseStatus } = response;
         if (!responseStatus?.status || !responseData?.access_token) {
-          toast.error(responseStatus?.message || 'OTP verification failed.');
-          setOtp(Array(6).fill(''));
+          toast.error(responseStatus?.message || "OTP verification failed.");
+          setOtp(Array(6).fill(""));
           setTimeout(() => otpRefs.current[0]?.focus(), 50);
           return;
         }
 
-        const signedInUser = normalizeUser(responseData?.user ?? responseData ?? null);
-        const userTier = normalizeTier(responseData?.user ?? responseData ?? null)?.toUpperCase();
+        const signedInUser = normalizeUser(
+          responseData?.user ?? responseData ?? null,
+        );
+        const userTier = normalizeTier(
+          responseData?.user ?? responseData ?? null,
+        )?.toUpperCase();
 
-        if (userTier && !['ADMIN', 'COMMERCIAL'].includes(userTier)) {
-          toast.error('Only Admin and Commercial users can access this portal.');
-          setOtp(Array(6).fill(''));
+        if (userTier && !["ADMIN", "COMMERCIAL"].includes(userTier)) {
+          toast.error(
+            "Only Admin and Commercial users can access this portal.",
+          );
+          setOtp(Array(6).fill(""));
           setTimeout(() => otpRefs.current[0]?.focus(), 50);
           return;
         }
@@ -397,11 +424,11 @@ export default function Login(): JSX.Element {
             expiresAt: responseData.expires_at ?? null,
           }),
         );
-        toast.success('Signed in successfully', { duration: 900 });
-        setTimeout(() => (window.location.href = '/dashboard'), 400);
+        toast.success("Signed in successfully", { duration: 900 });
+        setTimeout(() => (window.location.href = "/dashboard"), 400);
       } catch (err) {
-        toast.error(extractError(err, 'Invalid OTP. Try again.'));
-        setOtp(Array(6).fill(''));
+        toast.error(extractError(err, "Invalid OTP. Try again."));
+        setOtp(Array(6).fill(""));
         setTimeout(() => otpRefs.current[0]?.focus(), 50);
       } finally {
         setLoading(false);
@@ -414,22 +441,22 @@ export default function Login(): JSX.Element {
     async (channel: OtpChannel) => {
       try {
         setLoading(true);
-        const response = await post('/api/v1/auth/forgot-mpin', {
+        const response = await post("/api/v1/auth/forgot-mpin", {
           email: email.trim(),
           otp_channel: channel,
         });
         const { responseData, responseStatus } = response;
         if (!responseStatus?.status || !responseData?.token) {
-          toast.error(responseStatus?.message || 'Failed to send OTP.');
+          toast.error(responseStatus?.message || "Failed to send OTP.");
           return;
         }
         setForgotToken(responseData.token);
-        setForgotOtpDest('email');
-        setForgotStep('otp');
-        setForgotOtp(Array(6).fill(''));
-        toast.info(responseStatus?.message || 'OTP sent.');
+        setForgotOtpDest("email");
+        setForgotStep("otp");
+        setForgotOtp(Array(6).fill(""));
+        toast.info(responseStatus?.message || "OTP sent.");
       } catch (err) {
-        toast.error(extractError(err, 'Failed to send OTP.'));
+        toast.error(extractError(err, "Failed to send OTP."));
       } finally {
         setLoading(false);
       }
@@ -440,22 +467,22 @@ export default function Login(): JSX.Element {
   const handleForgotClick = () => {
     const trimmed = email.trim();
     if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setEmailError('Enter your email first, then click Forgot MPIN');
+      setEmailError("Enter your email first, then click Forgot MPIN");
       return;
     }
-    setEmailError('');
-    setForgotStep('otp');
-    setForgotOtp(Array(6).fill(''));
-    setNewMpin(Array(6).fill(''));
+    setEmailError("");
+    setForgotStep("otp");
+    setForgotOtp(Array(6).fill(""));
+    setNewMpin(Array(6).fill(""));
     setForgotToken(null);
     setForgotOpen(true);
-    handleForgotChannelSelect('EMAIL');
+    handleForgotChannelSelect("EMAIL");
   };
 
   const handleForgotOtpComplete = useCallback((code: string) => {
-    setForgotOtp(code.split(''));
-    setForgotStep('new-mpin');
-    setNewMpin(Array(6).fill(''));
+    setForgotOtp(code.split(""));
+    setForgotStep("new-mpin");
+    setNewMpin(Array(6).fill(""));
   }, []);
 
   const handleNewMpinComplete = useCallback(
@@ -463,34 +490,34 @@ export default function Login(): JSX.Element {
       if (!forgotToken) return;
       try {
         setLoading(true);
-        const response = await post('/api/v1/auth/forgot-mpin/verify-otp', {
+        const response = await post("/api/v1/auth/forgot-mpin/verify-otp", {
           token: forgotToken,
-          otp: forgotOtp.join(''),
+          otp: forgotOtp.join(""),
           new_mpin: code,
         });
         if (!response?.responseStatus?.status) {
           toast.error(
-            response?.responseStatus?.message || 'Failed to reset MPIN.',
+            response?.responseStatus?.message || "Failed to reset MPIN.",
           );
-          setNewMpin(Array(6).fill(''));
+          setNewMpin(Array(6).fill(""));
           setTimeout(() => newMpinRefs.current[0]?.focus(), 50);
           return;
         }
         toast.success(
           response?.responseStatus?.message ||
-            'MPIN reset successfully. Please sign in.',
+            "MPIN reset successfully. Please sign in.",
           { duration: 2500 },
         );
         setForgotOpen(false);
         setForgotToken(null);
       } catch (err) {
-        const msg = extractError(err, 'Failed to reset MPIN.');
+        const msg = extractError(err, "Failed to reset MPIN.");
         toast.error(msg);
-        if (msg.toLowerCase().includes('otp')) {
-          setForgotStep('otp');
-          setForgotOtp(Array(6).fill(''));
+        if (msg.toLowerCase().includes("otp")) {
+          setForgotStep("otp");
+          setForgotOtp(Array(6).fill(""));
         } else {
-          setNewMpin(Array(6).fill(''));
+          setNewMpin(Array(6).fill(""));
           setTimeout(() => newMpinRefs.current[0]?.focus(), 50);
         }
       } finally {
@@ -500,8 +527,8 @@ export default function Login(): JSX.Element {
     [forgotToken, forgotOtp],
   );
 
-  const signinStepIdx = signinStep === 'mpin' ? 0 : 1;
-  const forgotStepIdx = forgotStep === 'otp' ? 0 : 1;
+  const signinStepIdx = signinStep === "mpin" ? 0 : 1;
+  const forgotStepIdx = forgotStep === "otp" ? 0 : 1;
 
   return (
     <>
@@ -555,7 +582,7 @@ export default function Login(): JSX.Element {
                     value={email}
                     onChange={(val: string) => {
                       setEmail(val);
-                      if (emailError) setEmailError('');
+                      if (emailError) setEmailError("");
                     }}
                     placeholder="business@company.com"
                     error={!!emailError}
@@ -614,9 +641,9 @@ export default function Login(): JSX.Element {
           if (loading) return;
           setSigninOpen(open);
           if (!open) {
-            setSigninStep('mpin');
+            setSigninStep("mpin");
             setSigninToken(null);
-            setSigninMpinCode('');
+            setSigninMpinCode("");
           }
         }}
       >
@@ -634,10 +661,15 @@ export default function Login(): JSX.Element {
               />
               <div
                 className={`h-px w-6 transition-colors duration-300 ${
-                  signinStepIdx > 0 ? 'bg-emerald-400' : 'bg-white/10'
+                  signinStepIdx > 0 ? "bg-emerald-400" : "bg-white/10"
                 }`}
               />
-              <StepDot active={signinStepIdx === 1} done={false} label="2" accent="emerald" />
+              <StepDot
+                active={signinStepIdx === 1}
+                done={false}
+                label="2"
+                accent="emerald"
+              />
             </div>
             <AnimatePresence mode="wait">
               <motion.div
@@ -650,24 +682,24 @@ export default function Login(): JSX.Element {
               >
                 <div
                   className={`flex h-12 w-12 items-center justify-center rounded-full ${
-                    signinStep === 'mpin'
-                      ? 'bg-emerald-500/10 text-emerald-400'
-                      : 'bg-cyan-500/10 text-cyan-400'
+                    signinStep === "mpin"
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "bg-cyan-500/10 text-cyan-400"
                   }`}
                 >
-                  {signinStep === 'mpin' ? (
+                  {signinStep === "mpin" ? (
                     <Lock className="h-5 w-5" />
                   ) : (
                     <KeyRound className="h-5 w-5" />
                   )}
                 </div>
                 <DialogTitle className="text-lg font-semibold text-white">
-                  {signinStep === 'mpin' ? 'Enter your MPIN' : 'Enter OTP'}
+                  {signinStep === "mpin" ? "Enter your MPIN" : "Enter OTP"}
                 </DialogTitle>
                 <DialogDescription className="text-sm text-zinc-400">
-                  {signinStep === 'mpin'
-                    ? 'Enter your 6-digit MPIN to access your commercial account.'
-                    : `We sent a verification code to your ${signinOtpDest || 'email'}. Enter it below.`}
+                  {signinStep === "mpin"
+                    ? "Enter your 6-digit MPIN to access your commercial account."
+                    : `We sent a verification code to your ${signinOtpDest || "email"}. Enter it below.`}
                 </DialogDescription>
               </motion.div>
             </AnimatePresence>
@@ -682,14 +714,23 @@ export default function Login(): JSX.Element {
               transition={{ duration: 0.2 }}
               className="mt-2"
             >
-              {signinStep === 'mpin' && (
+              {signinStep === "mpin" && (
                 <PinInput
                   digits={mpin}
                   onChange={(i, v) =>
-                    pinDigitChange(i, v, mpin, setMpin, mpinRefs, handleMpinComplete)
+                    pinDigitChange(
+                      i,
+                      v,
+                      mpin,
+                      setMpin,
+                      mpinRefs,
+                      handleMpinComplete,
+                    )
                   }
                   onKeyDown={(i, e) => pinKeyDown(i, e, mpin, mpinRefs)}
-                  onPaste={(e) => pinPaste(e, setMpin, mpinRefs, handleMpinComplete)}
+                  onPaste={(e) =>
+                    pinPaste(e, setMpin, mpinRefs, handleMpinComplete)
+                  }
                   refs={mpinRefs}
                   loading={loading}
                   masked
@@ -697,12 +738,23 @@ export default function Login(): JSX.Element {
                   ariaLabel="MPIN"
                 />
               )}
-              {signinStep === 'otp' && (
+              {signinStep === "otp" && (
                 <PinInput
                   digits={otp}
-                  onChange={(i, v) => pinDigitChange(i, v, otp, setOtp, otpRefs, handleOtpComplete)}
+                  onChange={(i, v) =>
+                    pinDigitChange(
+                      i,
+                      v,
+                      otp,
+                      setOtp,
+                      otpRefs,
+                      handleOtpComplete,
+                    )
+                  }
                   onKeyDown={(i, e) => pinKeyDown(i, e, otp, otpRefs)}
-                  onPaste={(e) => pinPaste(e, setOtp, otpRefs, handleOtpComplete)}
+                  onPaste={(e) =>
+                    pinPaste(e, setOtp, otpRefs, handleOtpComplete)
+                  }
                   refs={otpRefs}
                   loading={loading}
                   masked={false}
@@ -716,7 +768,7 @@ export default function Login(): JSX.Element {
           {loading && (
             <div className="flex items-center justify-center gap-2 pt-1 text-sm text-zinc-400">
               <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
-              {signinStep === 'mpin' ? 'Authenticating...' : 'Verifying...'}
+              {signinStep === "mpin" ? "Authenticating..." : "Verifying..."}
             </div>
           )}
         </DialogContent>
@@ -731,7 +783,7 @@ export default function Login(): JSX.Element {
           if (loading) return;
           setForgotOpen(open);
           if (!open) {
-            setForgotStep('otp');
+            setForgotStep("otp");
             setForgotToken(null);
           }
         }}
@@ -750,10 +802,15 @@ export default function Login(): JSX.Element {
               />
               <div
                 className={`h-px w-6 transition-colors duration-300 ${
-                  forgotStepIdx > 0 ? 'bg-amber-400' : 'bg-white/10'
+                  forgotStepIdx > 0 ? "bg-amber-400" : "bg-white/10"
                 }`}
               />
-              <StepDot active={forgotStepIdx === 1} done={false} label="2" accent="amber" />
+              <StepDot
+                active={forgotStepIdx === 1}
+                done={false}
+                label="2"
+                accent="amber"
+              />
             </div>
             <AnimatePresence mode="wait">
               <motion.div
@@ -766,24 +823,24 @@ export default function Login(): JSX.Element {
               >
                 <div
                   className={`flex h-12 w-12 items-center justify-center rounded-full ${
-                    forgotStep === 'otp'
-                      ? 'bg-emerald-500/10 text-emerald-400'
-                      : 'bg-amber-500/10 text-amber-400'
+                    forgotStep === "otp"
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "bg-amber-500/10 text-amber-400"
                   }`}
                 >
-                  {forgotStep === 'otp' ? (
+                  {forgotStep === "otp" ? (
                     <Smartphone className="h-5 w-5" />
                   ) : (
                     <RotateCcw className="h-5 w-5" />
                   )}
                 </div>
                 <DialogTitle className="text-lg font-semibold text-white">
-                  {forgotStep === 'otp' ? 'Enter OTP' : 'Set new MPIN'}
+                  {forgotStep === "otp" ? "Enter OTP" : "Set new MPIN"}
                 </DialogTitle>
                 <DialogDescription className="text-sm text-zinc-400">
-                  {forgotStep === 'otp'
-                    ? `We sent a verification code to your ${forgotOtpDest || 'email'}. Enter it below.`
-                    : 'Create a new 6-digit MPIN for your commercial account.'}
+                  {forgotStep === "otp"
+                    ? `We sent a verification code to your ${forgotOtpDest || "email"}. Enter it below.`
+                    : "Create a new 6-digit MPIN for your commercial account."}
                 </DialogDescription>
               </motion.div>
             </AnimatePresence>
@@ -798,15 +855,29 @@ export default function Login(): JSX.Element {
               transition={{ duration: 0.2 }}
               className="mt-2"
             >
-              {forgotStep === 'otp' && (
+              {forgotStep === "otp" && (
                 <PinInput
                   digits={forgotOtp}
                   onChange={(i, v) =>
-                    pinDigitChange(i, v, forgotOtp, setForgotOtp, forgotOtpRefs, handleForgotOtpComplete)
+                    pinDigitChange(
+                      i,
+                      v,
+                      forgotOtp,
+                      setForgotOtp,
+                      forgotOtpRefs,
+                      handleForgotOtpComplete,
+                    )
                   }
-                  onKeyDown={(i, e) => pinKeyDown(i, e, forgotOtp, forgotOtpRefs)}
+                  onKeyDown={(i, e) =>
+                    pinKeyDown(i, e, forgotOtp, forgotOtpRefs)
+                  }
                   onPaste={(e) =>
-                    pinPaste(e, setForgotOtp, forgotOtpRefs, handleForgotOtpComplete)
+                    pinPaste(
+                      e,
+                      setForgotOtp,
+                      forgotOtpRefs,
+                      handleForgotOtpComplete,
+                    )
                   }
                   refs={forgotOtpRefs}
                   loading={loading}
@@ -815,14 +886,23 @@ export default function Login(): JSX.Element {
                   ariaLabel="OTP"
                 />
               )}
-              {forgotStep === 'new-mpin' && (
+              {forgotStep === "new-mpin" && (
                 <PinInput
                   digits={newMpin}
                   onChange={(i, v) =>
-                    pinDigitChange(i, v, newMpin, setNewMpin, newMpinRefs, handleNewMpinComplete)
+                    pinDigitChange(
+                      i,
+                      v,
+                      newMpin,
+                      setNewMpin,
+                      newMpinRefs,
+                      handleNewMpinComplete,
+                    )
                   }
                   onKeyDown={(i, e) => pinKeyDown(i, e, newMpin, newMpinRefs)}
-                  onPaste={(e) => pinPaste(e, setNewMpin, newMpinRefs, handleNewMpinComplete)}
+                  onPaste={(e) =>
+                    pinPaste(e, setNewMpin, newMpinRefs, handleNewMpinComplete)
+                  }
                   refs={newMpinRefs}
                   loading={loading}
                   masked
@@ -836,16 +916,18 @@ export default function Login(): JSX.Element {
           {loading && (
             <div className="flex items-center justify-center gap-2 pt-1 text-sm text-zinc-400">
               <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
-              {forgotStep === 'new-mpin' ? 'Resetting MPIN...' : 'Processing...'}
+              {forgotStep === "new-mpin"
+                ? "Resetting MPIN..."
+                : "Processing..."}
             </div>
           )}
 
-          {forgotStep === 'new-mpin' && !loading && (
+          {forgotStep === "new-mpin" && !loading && (
             <button
               type="button"
               onClick={() => {
-                setForgotStep('otp');
-                setForgotOtp(Array(6).fill(''));
+                setForgotStep("otp");
+                setForgotOtp(Array(6).fill(""));
               }}
               className="mx-auto mt-1 block text-xs text-zinc-500 transition hover:text-zinc-300"
             >
@@ -863,9 +945,9 @@ export default function Login(): JSX.Element {
    ──────────────────────────────────────────────────────────── */
 function BrandPanel({ reduceMotion }: { reduceMotion: boolean }) {
   const stats = [
-    { icon: Activity, label: 'Uptime', value: '99.99%' },
-    { icon: Globe2, label: 'Regions', value: '14' },
-    { icon: Fingerprint, label: 'MFA', value: 'Enforced' },
+    { icon: Activity, label: "Uptime", value: "99.99%" },
+    { icon: Globe2, label: "Regions", value: "14" },
+    { icon: Fingerprint, label: "MFA", value: "Enforced" },
   ];
 
   return (
@@ -874,10 +956,10 @@ function BrandPanel({ reduceMotion }: { reduceMotion: boolean }) {
         className="absolute inset-0 opacity-[0.18]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(16,185,129,0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.25) 1px, transparent 1px)',
-          backgroundSize: '52px 52px',
+            "linear-gradient(rgba(16,185,129,0.25) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.25) 1px, transparent 1px)",
+          backgroundSize: "52px 52px",
           maskImage:
-            'radial-gradient(ellipse 80% 60% at 30% 40%, #000 40%, transparent 100%)',
+            "radial-gradient(ellipse 80% 60% at 30% 40%, #000 40%, transparent 100%)",
         }}
       />
 
@@ -886,9 +968,9 @@ function BrandPanel({ reduceMotion }: { reduceMotion: boolean }) {
         <motion.div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-emerald-400/10 to-transparent"
-          initial={{ top: '-10%' }}
-          animate={{ top: ['-10%', '110%'] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+          initial={{ top: "-10%" }}
+          animate={{ top: ["-10%", "110%"] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
         />
       )}
 
@@ -977,14 +1059,16 @@ function StepDot({
   active: boolean;
   done: boolean;
   label: string;
-  accent: 'emerald' | 'amber';
+  accent: "emerald" | "amber";
 }) {
   const doneClass =
-    accent === 'emerald' ? 'bg-emerald-500 text-black' : 'bg-amber-500 text-black';
+    accent === "emerald"
+      ? "bg-emerald-500 text-black"
+      : "bg-amber-500 text-black";
   const activeClass =
-    accent === 'emerald'
-      ? 'border-emerald-400/50 bg-emerald-500/15 text-emerald-400 shadow-[0_0_12px_-2px_rgba(16,185,129,0.4)]'
-      : 'border-amber-400/50 bg-amber-500/15 text-amber-400 shadow-[0_0_12px_-2px_rgba(245,158,11,0.4)]';
+    accent === "emerald"
+      ? "border-emerald-400/50 bg-emerald-500/15 text-emerald-400 shadow-[0_0_12px_-2px_rgba(16,185,129,0.4)]"
+      : "border-amber-400/50 bg-amber-500/15 text-amber-400 shadow-[0_0_12px_-2px_rgba(245,158,11,0.4)]";
   return (
     <div
       className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
@@ -992,7 +1076,7 @@ function StepDot({
           ? doneClass
           : active
             ? `border ${activeClass}`
-            : 'border border-white/10 bg-white/[0.03] text-zinc-600'
+            : "border border-white/10 bg-white/[0.03] text-zinc-600"
       }`}
     >
       {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : label}
@@ -1021,7 +1105,7 @@ function PinInput({
   refs: React.MutableRefObject<(HTMLInputElement | null)[]>;
   loading: boolean;
   masked: boolean;
-  accentColor: 'emerald' | 'cyan' | 'amber';
+  accentColor: "emerald" | "cyan" | "amber";
   ariaLabel: string;
 }) {
   useEffect(() => {
@@ -1030,19 +1114,19 @@ function PinInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const filled = digits.every((d) => d !== '');
+  const filled = digits.every((d) => d !== "");
   const colorMap = {
     emerald: {
-      ring: 'focus:border-emerald-400/60 focus:ring-emerald-400/20 focus:shadow-[0_0_12px_-2px_rgba(16,185,129,0.3)]',
-      filled: 'border-emerald-500/30 bg-emerald-500/[0.06]',
+      ring: "focus:border-emerald-400/60 focus:ring-emerald-400/20 focus:shadow-[0_0_12px_-2px_rgba(16,185,129,0.3)]",
+      filled: "border-emerald-500/30 bg-emerald-500/[0.06]",
     },
     cyan: {
-      ring: 'focus:border-cyan-400/60 focus:ring-cyan-400/20 focus:shadow-[0_0_12px_-2px_rgba(6,182,212,0.3)]',
-      filled: 'border-cyan-500/30 bg-cyan-500/[0.06]',
+      ring: "focus:border-cyan-400/60 focus:ring-cyan-400/20 focus:shadow-[0_0_12px_-2px_rgba(6,182,212,0.3)]",
+      filled: "border-cyan-500/30 bg-cyan-500/[0.06]",
     },
     amber: {
-      ring: 'focus:border-amber-400/60 focus:ring-amber-400/20 focus:shadow-[0_0_12px_-2px_rgba(245,158,11,0.3)]',
-      filled: 'border-amber-500/30 bg-amber-500/[0.06]',
+      ring: "focus:border-amber-400/60 focus:ring-amber-400/20 focus:shadow-[0_0_12px_-2px_rgba(245,158,11,0.3)]",
+      filled: "border-amber-500/30 bg-amber-500/[0.06]",
     },
   } as const;
   const colors = colorMap[accentColor];
@@ -1056,17 +1140,17 @@ function PinInput({
             ref={(el) => {
               refs.current[i] = el;
             }}
-            type={masked ? 'password' : 'text'}
+            type={masked ? "password" : "text"}
             inputMode="numeric"
             autoComplete="one-time-code"
             aria-label={`${ariaLabel} digit ${i + 1}`}
             value={digit}
             disabled={loading}
-            onChange={(e) => onChange(i, e.target.value.replace(/\D/g, ''))}
+            onChange={(e) => onChange(i, e.target.value.replace(/\D/g, ""))}
             onKeyDown={(e) => onKeyDown(i, e)}
             onPaste={onPaste}
             className={`h-12 w-10 rounded-xl border border-white/10 bg-white/[0.04] text-center text-lg font-semibold text-white outline-none transition-all duration-200 focus:ring-1 disabled:opacity-40 sm:h-14 sm:w-12 sm:text-xl ${colors.ring} ${
-              digit ? colors.filled : ''
+              digit ? colors.filled : ""
             }`}
           />
         ))}
