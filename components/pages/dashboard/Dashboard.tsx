@@ -67,11 +67,6 @@ const SEARCH_DEBOUNCE_MS = 150;
 const ALL = "ALL";
 
 // ─── Fetch + response normalization ────────────────────────────────────────
-// Kept local to this page since it's the only place that needs it. The
-// backend contract can drift (a field missing, a number sent as a string,
-// etc), so these helpers keep the dashboard from crashing on a bad payload
-// instead of trusting the response blindly.
-
 function toNumber(value: unknown, fallback = 0): number {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -129,8 +124,6 @@ function normalizeResponse(raw: unknown): TransactionsResponseData {
 async function fetchTransactions(
   filters: TransactionFilters = {},
 ): Promise<TransactionsResponseData> {
-  // `get()` only takes a URL, so the query string is built here rather
-  // than passed as a separate params object.
   const params = new URLSearchParams();
   if (filters.limit) params.set("limit", String(filters.limit));
   if (filters.cursor) params.set("cursor", filters.cursor);
@@ -145,9 +138,6 @@ async function fetchTransactions(
     `/api/v1/user/get-transaction${query ? `?${query}` : ""}`,
   );
 
-  // Supports both a `{ responseData }` wrapper (the convention used by
-  // /admin/users/all elsewhere in the app) and a bare payload, in case
-  // `get()` already unwraps it for you.
   const payload =
     (response as { responseData?: unknown } | null)?.responseData ?? response;
 
@@ -170,9 +160,6 @@ function getErrorMessage(err: unknown, fallback: string): string {
   return typeof message === "string" ? message : fallback;
 }
 
-/** Copies text to the clipboard, falling back to `execCommand` for
- * non-secure contexts (e.g. plain-HTTP staging/LAN previews) where
- * `navigator.clipboard` is unavailable. */
 async function copyToClipboard(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard && window.isSecureContext) {
@@ -226,10 +213,6 @@ const typeBadgeClass = (type: string) =>
     ? "border-red-500/30 bg-red-500/10 text-red-400"
     : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
 
-// ─── Small presentational components ───────────────────────────────────────
-// Pulled out of the page body so the render tree stays readable and each
-// piece can be memoized independently.
-
 function StatusBadge({ status }: { status: TransactionStatus }) {
   return (
     <Badge className={cn("gap-1 px-2 py-0.5", statusBadgeClass(status))}>
@@ -254,47 +237,61 @@ function TypeBadge({ type }: { type: TransactionType }) {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  tone = "emerald",
-}: {
+type StatCardTone = "emerald" | "cyan" | "violet" | "zinc" | "red" | "blue";
+
+const toneStyles: Record<StatCardTone, string> = {
+  emerald: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+  cyan: "border-cyan-500/20 bg-cyan-500/10 text-cyan-400",
+  violet: "border-violet-500/20 bg-violet-500/10 text-violet-400",
+  zinc: "border-zinc-500/20 bg-zinc-500/10 text-zinc-400",
+  red: "border-red-500/20 bg-red-500/10 text-red-400",
+  blue: "border-blue-500/20 bg-blue-500/10 text-blue-400",
+};
+
+interface StatCardProps {
   label: string;
   value: string;
   icon: LucideIcon;
-  tone?: "emerald" | "red";
-}) {
-  const toneClass =
-    tone === "red"
-      ? "border-red-500/20 bg-red-500/10 text-red-400"
-      : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
+  tone?: StatCardTone;
+}
+
+function StatCard({ label, value, icon: Icon, tone = "zinc" }: StatCardProps) {
   return (
-    <Card className="h-full rounded-2xl border border-slate-800 bg-slate-900/60 transition-colors hover:border-slate-700">
-      <CardContent className="flex items-start justify-between p-6">
-        <div>
-          <p className="text-sm font-medium text-zinc-400">{label}</p>
-          <p className="mt-2 text-3xl font-bold text-white">{value}</p>
+    <div
+      className={cn(
+        "group relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 p-3",
+        "shadow-inner shadow-slate-950/30 transition-transform duration-200",
+        "active:scale-[0.97]",
+        "sm:rounded-2xl sm:p-4",
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="truncate text-xs text-zinc-400 sm:text-sm">{label}</p>
+        <div
+          className={cn(
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border sm:h-8 sm:w-8",
+            toneStyles[tone],
+          )}
+        >
+          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </div>
-        <div className={cn("rounded-lg border p-3", toneClass)}>
-          <Icon className="h-5 w-5" />
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+      <p className="mt-2.5 truncate text-xl font-semibold text-white sm:mt-4 sm:text-3xl">
+        {value}
+      </p>
+    </div>
   );
 }
 
 function StatCardSkeleton() {
   return (
-    <Card className="h-full rounded-2xl border border-slate-800 bg-slate-900/60">
-      <CardContent className="flex items-start justify-between p-6">
-        <div className="space-y-3">
-          <div className="h-3.5 w-28 animate-pulse rounded bg-slate-800" />
-          <div className="h-7 w-20 animate-pulse rounded bg-slate-800" />
-        </div>
-        <div className="h-11 w-11 shrink-0 animate-pulse rounded-lg bg-slate-800" />
-      </CardContent>
-    </Card>
+    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3 sm:rounded-2xl sm:p-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="h-3 w-20 animate-pulse rounded bg-slate-800 sm:w-24" />
+        <div className="h-7 w-7 shrink-0 animate-pulse rounded-lg bg-slate-800 sm:h-8 sm:w-8" />
+      </div>
+      <div className="mt-2.5 h-6 w-16 animate-pulse rounded bg-slate-800 sm:mt-4 sm:h-8 sm:w-20" />
+    </div>
   );
 }
 
@@ -316,6 +313,12 @@ function EmptyState({
   );
 }
 
+// ─── Monthly Activity Chart ────────────────────────────────────────────────
+// NOTE: no horizontal-scroll wrapper around this component. Bars are
+// `flex-1` and shrink to fit the container width on their own, so a scroll
+// wrapper isn't needed — and it was actively breaking the hover/tap
+// tooltip, because `overflow-x-auto` forces the browser to also clip on
+// the y-axis, cutting off the tooltip that pops up above each bar.
 function MonthlyActivityChart({ data }: { data: MonthlyTransactionStat[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -324,6 +327,7 @@ function MonthlyActivityChart({ data }: { data: MonthlyTransactionStat[] }) {
   const gridLines = [1, 0.75, 0.5, 0.25, 0].map((fraction) =>
     Math.round(maxValue * fraction),
   );
+  const barCount = data.length;
 
   if (data.length === 0) {
     return (
@@ -337,15 +341,17 @@ function MonthlyActivityChart({ data }: { data: MonthlyTransactionStat[] }) {
 
   return (
     <div
-      className="relative h-56 sm:h-64"
+      // Extra top padding reserves room for the tooltip so it never gets
+      // clipped by the card's edge, whatever the tallest bar's height is.
+      className="relative h-52 pt-10 sm:h-64 sm:pt-12"
       role="img"
       aria-label={`Monthly transaction volume, ${data.length} months, peaking at ${maxValue.toLocaleString()} transactions`}
     >
       {/* Gridlines + y-axis labels */}
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-10 flex flex-col justify-between sm:top-12">
         {gridLines.map((val, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <span className="w-9 shrink-0 text-right text-[10px] tabular-nums text-zinc-600">
+          <div key={i} className="flex items-center gap-1.5 sm:gap-2">
+            <span className="w-7 shrink-0 text-right text-[9px] tabular-nums text-zinc-600 sm:w-9 sm:text-[10px]">
               {formatCompactNumber(val)}
             </span>
             <div className="h-px flex-1 bg-slate-800/70" />
@@ -354,13 +360,20 @@ function MonthlyActivityChart({ data }: { data: MonthlyTransactionStat[] }) {
       </div>
 
       {/* Bars */}
-      <div className="relative ml-11 flex h-full items-end justify-between gap-2 sm:gap-3">
+      <div className="absolute inset-x-0 bottom-0 top-10 ml-9 flex items-end justify-between gap-1 sm:top-12 sm:ml-11 sm:gap-3">
         {data.map((month, i) => {
           const heightPct =
             month.total_transactions > 0
               ? Math.max((month.total_transactions / maxValue) * 100, 2)
               : 0;
           const isActive = activeIndex === i;
+
+          // Keep the tooltip from clipping at the left/right edges of the
+          // chart on narrow screens by nudging its anchor for the first
+          // and last couple of bars instead of always centering it.
+          const isNearStart = i < 1;
+          const isNearEnd = i > barCount - 2;
+
           return (
             <div
               key={month.month || i}
@@ -400,7 +413,14 @@ function MonthlyActivityChart({ data }: { data: MonthlyTransactionStat[] }) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 4 }}
                     transition={{ duration: 0.15 }}
-                    className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max max-w-[11rem] -translate-x-1/2 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-[11px] leading-4 text-zinc-300 shadow-xl"
+                    className={cn(
+                      "pointer-events-none absolute bottom-full z-10 mb-2 w-max max-w-[9.5rem] rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-[10px] leading-4 text-zinc-300 shadow-xl sm:max-w-[11rem] sm:text-[11px]",
+                      isNearStart
+                        ? "left-0"
+                        : isNearEnd
+                          ? "right-0"
+                          : "left-1/2 -translate-x-1/2",
+                    )}
                   >
                     <div className="font-medium text-white">{month.label}</div>
                     <div>{month.total_transactions.toLocaleString()} txns</div>
@@ -414,7 +434,7 @@ function MonthlyActivityChart({ data }: { data: MonthlyTransactionStat[] }) {
                 )}
               </AnimatePresence>
 
-              <span className="mt-2 text-xs font-medium text-zinc-500">
+              <span className="mt-2 truncate text-[10px] font-medium text-zinc-500 sm:text-xs">
                 {month.label.split(" ")[0]}
               </span>
             </div>
@@ -477,10 +497,6 @@ export default function DashboardPage() {
     return filters;
   }, [limit, keyType, type, status, endpoint, txnId]);
 
-  // Every fetch (initial or paginated) is tagged with a generation id. If
-  // filters change while a request is in flight, the id is bumped and the
-  // stale response is dropped when it resolves — this avoids a slower,
-  // superseded request overwriting the table with the wrong data.
   const loadInitial = useCallback(async () => {
     const requestId = ++requestIdRef.current;
     if (hasLoadedOnceRef.current) setIsRefreshing(true);
@@ -534,8 +550,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     void loadInitial();
-    // Refetch whenever a filter changes; `loadInitial` itself is derived
-    // from these same values so it's intentionally left out of the deps.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit, keyType, type, status, endpoint, txnId]);
 
@@ -729,58 +743,66 @@ export default function DashboardPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-row items-center justify-between gap-2 sm:gap-4"
       >
-        <div className="flex items-center gap-3 sm:gap-4">
-          {/* Advanced Glassmorphic Icon - Mobile par hidden, Desktop par visible */}
-          <div className="relative hidden h-11 w-11 sm:flex sm:h-12 sm:w-12 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 shadow-[0_8px_20px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm">
-            {/* Glow ring behind icon */}
-            <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 blur-md"></div>
-            <Activity className="relative h-5 w-5 sm:h-6 sm:w-6 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+        <div className="flex min-w-0 items-center gap-2.5 sm:gap-4">
+          <div className="relative hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 shadow-[0_8px_20px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm sm:flex sm:h-12 sm:w-12">
+            <div className="absolute inset-0 rounded-2xl bg-emerald-500/10 blur-md" />
+            <Activity className="relative h-5 w-5 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.6)] sm:h-6 sm:w-6" />
           </div>
 
-          <div className="flex flex-col gap-0.5">
-            <h1 className="flex flex-wrap items-center gap-x-2 text-lg font-semibold tracking-tight text-white sm:text-2xl">
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <h1 className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm font-semibold tracking-tight text-white xs:text-base sm:text-2xl">
               <span className="text-emerald-400">Welcome,</span>
-              <span className="text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]">
+              <span className="max-w-[90px] truncate text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)] xs:max-w-[120px] sm:max-w-none">
                 {isMounted ? user?.name?.split(" ")[0] || "User" : "Guest"}
               </span>
-              {/* Modern Dot Separator instead of Pipe (|) */}
-              <span className="hidden h-1 w-1 rounded-full bg-zinc-600 sm:inline-block"></span>
-              <span className="text-zinc-100">Commercial Dashboard</span>
+              <span className="hidden h-1 w-1 rounded-full bg-zinc-600 sm:inline-block" />
+              <span className="hidden text-zinc-100 sm:inline">
+                Commercial Dashboard
+              </span>
             </h1>
-            <p className="text-xs font-medium text-zinc-400 sm:text-sm">
-              Wallet &amp; transaction analytics.
+            <p className="truncate text-[10px] font-medium text-zinc-400 xs:text-[11px] sm:text-sm">
+              <span className="sm:hidden">Commercial Dashboard</span>
+              <span className="hidden sm:inline">
+                Wallet &amp; transaction analytics.
+              </span>
             </p>
           </div>
         </div>
 
-        {/* Modern Refresh Glass Pill */}
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1.5 pr-3 backdrop-blur-sm shadow-sm">
+        <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] py-1 pl-1.5 pr-2 shadow-sm backdrop-blur-sm sm:gap-2 sm:pr-3">
           <button
             onClick={() => void loadInitial()}
             disabled={isRefreshing}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition hover:bg-emerald-500/10 hover:text-emerald-400 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition hover:bg-emerald-500/10 hover:text-emerald-400 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 sm:h-8 sm:w-8"
             title="Auto Refresh (Every 2 minutes)"
             aria-label="Refresh now"
           >
             <RefreshCw
-              className={cn("h-4 w-4", isRefreshing && "animate-spin")}
+              className={cn(
+                "h-3.5 w-3.5 sm:h-4 sm:w-4",
+                isRefreshing && "animate-spin",
+              )}
             />
           </button>
           <span
-            className="text-xs font-medium text-zinc-400"
+            className="hidden truncate text-[11px] font-medium text-zinc-400 xs:inline-block sm:text-xs"
             role="status"
             aria-live="polite"
           >
             {lastUpdated
-              ? `Auto Update in minutes ${lastUpdated.toLocaleTimeString()}` // we will show 1 min but real time is 2 min
-              : "Not updated yet"}
+              ? lastUpdated.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "—"}
           </span>
         </div>
       </motion.div>
+
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 xs:gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6">
         {showOverviewSkeleton ? (
           Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
         ) : overviewStats ? (
@@ -789,6 +811,7 @@ export default function DashboardPage() {
               label="Today Transactions"
               value={overviewStats.today.total_transactions.toLocaleString()}
               icon={Zap}
+              tone="blue"
             />
             <StatCard
               label="Today Debit"
@@ -800,31 +823,37 @@ export default function DashboardPage() {
               label="Lifetime Transactions"
               value={overviewStats.lifetime.total_transactions.toLocaleString()}
               icon={Activity}
+              tone="zinc"
             />
             <StatCard
               label="Lifetime Credit"
               value={formatCurrency(overviewStats.lifetime.total_credit)}
               icon={ArrowUp}
+              tone="emerald"
             />
           </>
-        ) : null}
+        ) : (
+          <div className="col-span-2 rounded-xl border border-dashed border-slate-800 bg-slate-900/40 py-8 text-center text-sm text-zinc-500 sm:rounded-2xl lg:col-span-4">
+            No stats available
+          </div>
+        )}
       </div>
 
       {/* Chart + Status Breakdown */}
       {(overviewStats || showOverviewSkeleton) && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <Card className="rounded-2xl border border-slate-800 bg-slate-900/60 lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg font-medium text-white">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+          <Card className="rounded-xl border border-slate-800 bg-slate-900/60 sm:rounded-2xl lg:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 p-4 pb-2 sm:p-6 sm:pb-2">
+              <CardTitle className="text-base font-medium text-white sm:text-lg">
                 Monthly Activity
               </CardTitle>
-              <Badge className="border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+              <Badge className="shrink-0 border border-emerald-500/20 bg-emerald-500/10 text-[10px] text-emerald-400 sm:text-xs">
                 Transactions
               </Badge>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-2 sm:p-6 sm:pt-2">
               {showOverviewSkeleton ? (
-                <div className="flex h-56 items-end justify-between gap-2 sm:h-64 sm:gap-3">
+                <div className="flex h-44 items-end justify-between gap-1.5 xs:h-48 sm:h-64 sm:gap-3">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div
                       key={i}
@@ -834,15 +863,18 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : (
+                // No overflow/scroll wrapper here anymore — bars shrink to
+                // fit on their own, and this keeps the hover/tap tooltip
+                // from getting clipped.
                 <MonthlyActivityChart data={monthlyData} />
               )}
             </CardContent>
           </Card>
 
-          <Card className="flex flex-col justify-center rounded-2xl border border-slate-800 bg-slate-900/60">
-            <CardContent className="space-y-5 p-6">
+          <Card className="flex flex-col justify-center rounded-xl border border-slate-800 bg-slate-900/60 sm:rounded-2xl">
+            <CardContent className="space-y-4 p-4 sm:space-y-5 sm:p-6">
               {showOverviewSkeleton || !overviewStats ? (
-                <div className="space-y-5">
+                <div className="space-y-4 sm:space-y-5">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="space-y-2">
                       <div className="h-3.5 w-24 animate-pulse rounded bg-slate-800" />
@@ -853,27 +885,33 @@ export default function DashboardPage() {
               ) : (
                 <>
                   <div>
-                    <p className="mb-2 text-sm text-zinc-400">
+                    <p className="mb-2 text-xs text-zinc-400 sm:text-sm">
                       Today Success Rate
                     </p>
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                      <span className="text-lg font-semibold text-white">
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400 sm:h-5 sm:w-5" />
+                      <span className="text-base font-semibold text-white sm:text-lg">
                         {todaySuccessRate}%
                       </span>
                     </div>
                   </div>
+
                   <div className="h-px w-full bg-slate-800" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-zinc-400">Today Credit</p>
-                      <p className="mt-1 text-xl font-bold text-emerald-400">
+
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-xs text-zinc-400 sm:text-sm">
+                        Today Credit
+                      </p>
+                      <p className="mt-1 truncate text-base font-bold text-emerald-400 sm:text-xl">
                         {formatCurrency(overviewStats.today.total_credit)}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-sm text-zinc-400">Lifetime Debit</p>
-                      <p className="mt-1 text-xl font-bold text-white">
+                    <div className="min-w-0">
+                      <p className="truncate text-xs text-zinc-400 sm:text-sm">
+                        Lifetime Debit
+                      </p>
+                      <p className="mt-1 truncate text-base font-bold text-white sm:text-xl">
                         {formatCurrency(overviewStats.lifetime.total_debit)}
                       </p>
                     </div>
@@ -882,28 +920,34 @@ export default function DashboardPage() {
                   <div className="h-px w-full bg-slate-800" />
 
                   <div>
-                    <p className="mb-2 text-sm text-zinc-400">
+                    <p className="mb-2 text-xs text-zinc-400 sm:text-sm">
                       Today Status Breakdown
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-400">
-                        <CheckCircle2 className="h-3 w-3" />{" "}
-                        {overviewStats.today.status_breakdown.total_completed}{" "}
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-400 sm:text-xs">
+                        <CheckCircle2 className="h-3 w-3 shrink-0" />
+                        {
+                          overviewStats.today.status_breakdown.total_completed
+                        }{" "}
                         completed
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs text-amber-400">
-                        <Clock className="h-3 w-3" />{" "}
-                        {overviewStats.today.status_breakdown.total_pending}{" "}
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-400 sm:text-xs">
+                        <Clock className="h-3 w-3 shrink-0" />
+                        {
+                          overviewStats.today.status_breakdown.total_pending
+                        }{" "}
                         pending
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-xs text-red-400">
-                        <XCircle className="h-3 w-3" />{" "}
+                      <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[11px] text-red-400 sm:text-xs">
+                        <XCircle className="h-3 w-3 shrink-0" />
                         {overviewStats.today.status_breakdown.total_failed}{" "}
                         failed
                       </span>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-slate-500/30 bg-slate-500/10 px-2 py-0.5 text-xs text-slate-400">
-                        <RotateCcw className="h-3 w-3" />{" "}
-                        {overviewStats.today.status_breakdown.total_reversed}{" "}
+                      <span className="inline-flex items-center gap-1 rounded-full border border-slate-500/30 bg-slate-500/10 px-2 py-0.5 text-[11px] text-slate-400 sm:text-xs">
+                        <RotateCcw className="h-3 w-3 shrink-0" />
+                        {
+                          overviewStats.today.status_breakdown.total_reversed
+                        }{" "}
                         reversed
                       </span>
                     </div>
@@ -916,21 +960,22 @@ export default function DashboardPage() {
       )}
 
       {/* Filters */}
-      <Card className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-[0_20px_60px_rgba(15,23,42,0.45)]">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg font-medium text-white">
-            <Filter className="h-4 w-4 text-emerald-400" /> Transaction Filters
+      <Card className="rounded-xl border border-slate-800 bg-slate-900/60 shadow-[0_20px_60px_rgba(15,23,42,0.45)] sm:rounded-2xl">
+        <CardHeader className="p-4 pb-3 sm:p-6 sm:pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-medium text-white sm:text-lg">
+            <Filter className="h-4 w-4 shrink-0 text-emerald-400" /> Transaction
+            Filters
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+          <div className="grid grid-cols-1 gap-3 xs:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
             <div>
-              <Label className="text-zinc-300">Limit</Label>
+              <Label className="text-xs text-zinc-300 sm:text-sm">Limit</Label>
               <Select
                 value={String(limit)}
                 onValueChange={(val) => setLimit(Number(val))}
               >
-                <SelectTrigger className="mt-2 rounded-xl border-slate-700 bg-slate-800/50 text-white">
+                <SelectTrigger className="mt-1.5 rounded-xl border-slate-700 bg-slate-800/50 text-sm text-white sm:mt-2">
                   <SelectValue placeholder="Select limit" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-slate-700 bg-slate-900">
@@ -944,9 +989,11 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <Label className="text-zinc-300">Key Type</Label>
+              <Label className="text-xs text-zinc-300 sm:text-sm">
+                Key Type
+              </Label>
               <Select value={keyType} onValueChange={setKeyType}>
-                <SelectTrigger className="mt-2 rounded-xl border-slate-700 bg-slate-800/50 text-white">
+                <SelectTrigger className="mt-1.5 rounded-xl border-slate-700 bg-slate-800/50 text-sm text-white sm:mt-2">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-slate-700 bg-slate-900">
@@ -958,9 +1005,9 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <Label className="text-zinc-300">Type</Label>
+              <Label className="text-xs text-zinc-300 sm:text-sm">Type</Label>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger className="mt-2 rounded-xl border-slate-700 bg-slate-800/50 text-white">
+                <SelectTrigger className="mt-1.5 rounded-xl border-slate-700 bg-slate-800/50 text-sm text-white sm:mt-2">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-slate-700 bg-slate-900">
@@ -972,9 +1019,9 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <Label className="text-zinc-300">Status</Label>
+              <Label className="text-xs text-zinc-300 sm:text-sm">Status</Label>
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="mt-2 rounded-xl border-slate-700 bg-slate-800/50 text-white">
+                <SelectTrigger className="mt-1.5 rounded-xl border-slate-700 bg-slate-800/50 text-sm text-white sm:mt-2">
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-slate-700 bg-slate-900">
@@ -988,29 +1035,33 @@ export default function DashboardPage() {
             </div>
 
             <div>
-              <Label className="text-zinc-300">Endpoint</Label>
+              <Label className="text-xs text-zinc-300 sm:text-sm">
+                Endpoint
+              </Label>
               <Input
                 value={endpointInput}
                 onChange={(e) => setEndpointInput(e.target.value)}
                 placeholder="e.g. /api/v1/..."
-                className="mt-2 rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder:text-zinc-500"
+                className="mt-1.5 rounded-xl border-slate-700 bg-slate-800/50 text-sm text-white placeholder:text-zinc-500 sm:mt-2"
               />
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-1">
-              <Label className="text-zinc-300">Transaction ID</Label>
+            <div className="xs:col-span-2 lg:col-span-1">
+              <Label className="text-xs text-zinc-300 sm:text-sm">
+                Transaction ID
+              </Label>
               <Input
                 value={txnIdInput}
                 onChange={(e) => setTxnIdInput(e.target.value)}
                 placeholder="TXN-..."
-                className="mt-2 rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder:text-zinc-500"
+                className="mt-1.5 rounded-xl border-slate-700 bg-slate-800/50 text-sm text-white placeholder:text-zinc-500 sm:mt-2"
               />
             </div>
           </div>
 
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-stretch sm:justify-end">
             <Button
-              className="rounded-xl"
+              className="w-full rounded-xl sm:w-auto"
               size="sm"
               onClick={handleResetFilters}
             >

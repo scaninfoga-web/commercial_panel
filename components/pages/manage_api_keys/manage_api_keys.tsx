@@ -388,7 +388,7 @@ export default function ManageApisPage() {
       {/* Summary stats */}
       <motion.div
         variants={itemMotion}
-        className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        className="grid grid-cols-2 gap-2.5 xs:gap-3 sm:gap-4 xl:grid-cols-4"
       >
         {[
           { label: "Active", value: activeKeys, tone: "emerald", icon: Zap },
@@ -413,13 +413,20 @@ export default function ManageApisPage() {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-inner shadow-slate-950/30"
+            className={cn(
+              "group relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 p-3",
+              "shadow-inner shadow-slate-950/30 transition-transform duration-200",
+              "active:scale-[0.97]",
+              "sm:rounded-2xl sm:p-4",
+            )}
           >
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-zinc-400">{stat.label}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="truncate text-xs text-zinc-400 sm:text-sm">
+                {stat.label}
+              </p>
               <div
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-lg border",
+                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border sm:h-8 sm:w-8",
                   stat.tone === "emerald" &&
                     "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
                   stat.tone === "cyan" &&
@@ -430,10 +437,10 @@ export default function ManageApisPage() {
                     "border-zinc-500/20 bg-zinc-500/10 text-zinc-400",
                 )}
               >
-                <stat.icon className="h-4 w-4" />
+                <stat.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </div>
             </div>
-            <p className="mt-4 text-3xl font-semibold text-white">
+            <p className="mt-2.5 truncate text-xl font-semibold text-white sm:mt-4 sm:text-3xl">
               {stat.value}
             </p>
           </div>
@@ -705,14 +712,16 @@ export default function ManageApisPage() {
 
       {/* Create key dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="rounded-2xl border-slate-800 bg-slate-900 sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white">Create New API Key</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+        <DialogContent className="w-[92vw] max-w-[92vw] rounded-2xl border-slate-800 bg-slate-900 p-4 sm:w-full sm:max-w-md sm:p-6">
+          <DialogHeader className="space-y-1.5 text-left">
+            <DialogTitle className="text-base font-semibold text-white sm:text-lg">
+              Create New API Key
+            </DialogTitle>
+            <DialogDescription className="text-xs text-zinc-400 sm:text-sm">
               Choose the environment for your new API key.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-3 py-3 sm:space-y-4 sm:py-4">
             <Tabs
               value={createType}
               onValueChange={(val) => setCreateType(val as CreateKeyType)}
@@ -720,19 +729,19 @@ export default function ManageApisPage() {
               <TabsList className="grid w-full grid-cols-2 gap-1 rounded-2xl border border-slate-700 bg-slate-900 p-1">
                 <TabsTrigger
                   value="DEVELOPMENT"
-                  className="rounded-xl border border-transparent px-4 py-3 text-sm font-medium"
+                  className="rounded-xl border border-transparent px-2 py-2.5 text-xs font-medium sm:px-4 sm:py-3 sm:text-sm"
                 >
                   Development
                 </TabsTrigger>
                 <TabsTrigger
                   value="PRODUCTION"
-                  className="rounded-xl border border-transparent px-4 py-3 text-sm font-medium"
+                  className="rounded-xl border border-transparent px-2 py-2.5 text-xs font-medium sm:px-4 sm:py-3 sm:text-sm"
                 >
                   Production
                 </TabsTrigger>
               </TabsList>
             </Tabs>
-            <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3 text-sm text-zinc-400">
+            <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3 text-xs leading-relaxed text-zinc-400 sm:text-sm">
               {createType === "DEVELOPMENT"
                 ? "For testing and development. Lower rate limits."
                 : "For production use. Higher rate limits and monitoring."}
@@ -758,10 +767,12 @@ export default function ManageApisPage() {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
       >
-        <DialogContent className="rounded-2xl border-slate-800 bg-slate-900 sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white">Delete API Key</DialogTitle>
-            <DialogDescription className="text-zinc-400">
+        <DialogContent className="w-[92vw] max-w-[92vw] rounded-2xl border-slate-800 bg-slate-900 p-4 sm:w-full sm:max-w-md sm:p-6">
+          <DialogHeader className="space-y-1.5 text-left">
+            <DialogTitle className="text-base font-semibold text-white sm:text-lg">
+              Delete API Key
+            </DialogTitle>
+            <DialogDescription className="text-xs leading-relaxed text-zinc-400 sm:text-sm">
               Are you sure you want to delete this{" "}
               <span className="font-medium text-white">
                 {deleteTarget?.type}
@@ -773,7 +784,7 @@ export default function ManageApisPage() {
             <div className="space-y-2 pb-2">
               <label
                 htmlFor="delete-confirm"
-                className="text-zinc-300 text-xs font-medium uppercase tracking-wider"
+                className="text-[11px] font-medium uppercase tracking-wider text-zinc-300 sm:text-xs"
               >
                 Type <span className="font-mono text-red-300">DELETE</span> to
                 confirm
@@ -785,23 +796,23 @@ export default function ManageApisPage() {
                 placeholder="DELETE"
                 className="rounded-xl border-slate-700 bg-slate-950/60 text-white placeholder:text-zinc-600"
               />
-              <p className="text-xs text-zinc-500">
+              <p className="text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
                 This is a production key. We ask for extra confirmation to avoid
                 accidental deletion.
               </p>
             </div>
           )}
-          <div className="flex justify-end gap-2 py-4">
+          <div className="flex flex-col-reverse gap-2 py-3 sm:flex-row sm:justify-end sm:py-4">
             <Button
               variant="outline"
-              className="w-auto rounded-xl border-slate-700 bg-slate-800/70 text-slate-200 hover:bg-slate-700 hover:text-white"
+              className="w-full rounded-xl border-slate-700 bg-slate-800/70 text-slate-200 hover:bg-slate-700 hover:text-white sm:w-auto"
               onClick={() => setDeleteTarget(null)}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              className="w-auto rounded-xl border-red-500/80 bg-red-600 text-white shadow-[0_10px_25px_rgba(239,68,68,0.22)] hover:border-red-500 hover:bg-red-500 hover:text-white"
+              className="w-full rounded-xl border-red-500/80 bg-red-600 text-white shadow-[0_10px_25px_rgba(239,68,68,0.22)] hover:border-red-500 hover:bg-red-500 hover:text-white sm:w-auto"
               onClick={handleDeleteKey}
               disabled={isDeleting || !canConfirmDelete}
             >
@@ -821,14 +832,14 @@ export default function ManageApisPage() {
         open={!!statusActionTarget}
         onOpenChange={(open) => !open && setStatusActionTarget(null)}
       >
-        <DialogContent className="rounded-2xl border-slate-800 bg-slate-900 sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white">
+        <DialogContent className="w-[92vw] max-w-[92vw] rounded-2xl border-slate-800 bg-slate-900 p-4 sm:w-full sm:max-w-md sm:p-6">
+          <DialogHeader className="space-y-1.5 text-left">
+            <DialogTitle className="text-base font-semibold text-white sm:text-lg">
               {statusActionTarget?.action === "activate"
                 ? "Enable API Key"
                 : "Disable API Key"}
             </DialogTitle>
-            <DialogDescription className="text-zinc-400">
+            <DialogDescription className="text-xs leading-relaxed text-zinc-400 sm:text-sm">
               Are you sure you want to{" "}
               {statusActionTarget?.action === "activate" ? "enable" : "disable"}{" "}
               this{" "}
@@ -838,17 +849,17 @@ export default function ManageApisPage() {
               key? This action will change access immediately.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-end gap-2 py-4">
+          <div className="flex flex-col-reverse gap-2 py-3 sm:flex-row sm:justify-end sm:py-4">
             <Button
               variant="outline"
-              className="w-auto rounded-xl border-slate-700 bg-slate-800/70 text-slate-200 hover:bg-slate-700 hover:text-white"
+              className="w-full rounded-xl border-slate-700 bg-slate-800/70 text-slate-200 hover:bg-slate-700 hover:text-white sm:w-auto"
               onClick={() => setStatusActionTarget(null)}
             >
               No
             </Button>
             <Button
               className={cn(
-                "w-auto rounded-xl text-white shadow-[0_10px_25px_rgba(16,185,129,0.18)]",
+                "w-full rounded-xl text-white shadow-[0_10px_25px_rgba(16,185,129,0.18)] sm:w-auto",
                 statusActionTarget?.action === "activate"
                   ? "border-emerald-500/80 bg-emerald-600 hover:border-emerald-500 hover:bg-emerald-500"
                   : "border-red-500/80 bg-red-600 shadow-[0_10px_25px_rgba(239,68,68,0.22)] hover:border-red-500 hover:bg-red-500",

@@ -64,15 +64,34 @@ interface ApiCategory {
 const API_CATEGORIES: ApiCategory[] = [
   { label: "Aadhaar", keywords: ["aadhaar"] },
   { label: "PAN", keywords: ["pan"] },
-  { label: "Vehicle RC", keywords: ["vehicle", " rc", "rc advance", "rc verify"] },
+  {
+    label: "Vehicle RC",
+    keywords: ["vehicle", " rc", "rc advance", "rc verify"],
+  },
   { label: "PUCC", keywords: ["pucc"] },
   { label: "UAN", keywords: ["uan", "employment history"] },
   { label: "GST", keywords: ["gst"] },
   { label: "MCA", keywords: ["mca", "cin", "din"] },
   { label: "UPI", keywords: ["upi", "digital payment"] },
-  { label: "Mobile 360", keywords: ["mobile360", "mobile 360", "mobile to pan", "mobile to dl", "nbfc profile", "profile advance"] },
-  { label: "Email OSINT", keywords: ["hunter", "holehe", "linkedin", "github", "ghunt", "email"] },
-  { label: "Dark Web", keywords: ["stealer", "breach", "dark web", "domain search"] },
+  {
+    label: "Mobile 360",
+    keywords: [
+      "mobile360",
+      "mobile 360",
+      "mobile to pan",
+      "mobile to dl",
+      "nbfc profile",
+      "profile advance",
+    ],
+  },
+  {
+    label: "Email OSINT",
+    keywords: ["hunter", "holehe", "linkedin", "github", "ghunt", "email"],
+  },
+  {
+    label: "Dark Web",
+    keywords: ["stealer", "breach", "dark web", "domain search"],
+  },
   { label: "IndiaMART", keywords: ["indiamart"] },
 ];
 
@@ -93,7 +112,9 @@ const getApiDescription = (api: ApiDetail): string => {
   try {
     const doc = getApiDocumentation(api.endpoint);
     const description = doc?.description?.trim();
-    return description && description.length > 0 ? description : FALLBACK_DESCRIPTION(api);
+    return description && description.length > 0
+      ? description
+      : FALLBACK_DESCRIPTION(api);
   } catch {
     return FALLBACK_DESCRIPTION(api);
   }
@@ -101,10 +122,16 @@ const getApiDescription = (api: ApiDetail): string => {
 
 // ─── API call ───────────────────────────────────────────────────────────────
 
-async function fetchAllApisDetails(): Promise<{ total: number; apis: ApiDetail[] }> {
+async function fetchAllApisDetails(): Promise<{
+  total: number;
+  apis: ApiDetail[];
+}> {
   const endpoint = "/api/v1/user/commercial/get-all-apis-details";
   try {
-    const response = await get<ApiResponseEnvelope<{ total?: number; apis?: ApiDetail[] }>>(endpoint);
+    const response =
+      await get<ApiResponseEnvelope<{ total?: number; apis?: ApiDetail[] }>>(
+        endpoint,
+      );
     const raw = response?.responseData ?? {};
     const apis = Array.isArray(raw.apis) ? raw.apis : [];
     return {
@@ -112,7 +139,9 @@ async function fetchAllApisDetails(): Promise<{ total: number; apis: ApiDetail[]
       apis,
     };
   } catch (err: any) {
-    const message = err?.response?.data?.responseStatus?.message || "Failed to load APIs. Please try again.";
+    const message =
+      err?.response?.data?.responseStatus?.message ||
+      "Failed to load APIs. Please try again.";
     toast.error(message);
     throw new Error(message);
   }
@@ -129,23 +158,27 @@ const METHOD_STYLES: Record<string, string> = {
 };
 
 const methodBadgeClass = (method?: string) =>
-  METHOD_STYLES[(method || "POST").toUpperCase()] ?? "border-slate-500/20 bg-slate-500/10 text-slate-400";
+  METHOD_STYLES[(method || "POST").toUpperCase()] ??
+  "border-slate-500/20 bg-slate-500/10 text-slate-400";
 
 const formatPrice = (price?: number) =>
-  price === 0 || price === undefined ? "FREE" : `₹${price.toLocaleString("en-IN")}`;
+  price === 0 || price === undefined
+    ? "FREE"
+    : `₹${price.toLocaleString("en-IN")}`;
 
 function ApiCardSkeleton() {
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-xl">
+    <div className="flex h-full flex-col rounded-xl border border-slate-800 bg-slate-900/50 p-3 backdrop-blur-xl sm:rounded-2xl sm:p-4">
       <div className="flex items-center justify-between gap-2">
-        <div className="h-4 w-2/3 animate-pulse rounded-xl bg-slate-800/60" />
-        <div className="h-4 w-12 animate-pulse rounded-full bg-slate-800/60" />
+        <div className="h-3.5 w-2/3 animate-pulse rounded-xl bg-slate-800/60 sm:h-4" />
+        <div className="h-4 w-10 shrink-0 animate-pulse rounded-full bg-slate-800/60 sm:w-12" />
       </div>
-      <div className="mt-3 h-8 w-full animate-pulse rounded-xl bg-slate-800/40" />
-      <div className="mt-3 h-3 w-full animate-pulse rounded bg-slate-800/40" />
-      <div className="mt-auto flex items-center justify-between pt-4">
-        <div className="h-5 w-12 animate-pulse rounded bg-slate-800/60" />
-        <div className="h-5 w-10 animate-pulse rounded bg-slate-800/60" />
+      <div className="mt-2.5 h-7 w-full animate-pulse rounded-xl bg-slate-800/40 sm:mt-3 sm:h-8" />
+      <div className="mt-2.5 h-3 w-full animate-pulse rounded bg-slate-800/40 sm:mt-3" />
+      <div className="mt-2 h-3 w-4/5 animate-pulse rounded bg-slate-800/40" />
+      <div className="mt-auto flex items-center justify-between pt-3 sm:pt-4">
+        <div className="h-5 w-16 animate-pulse rounded bg-slate-800/60 sm:w-20" />
+        <div className="h-6 w-14 animate-pulse rounded-lg bg-slate-800/60 sm:w-16" />
       </div>
     </div>
   );
@@ -186,7 +219,7 @@ function ApiCard({
         }
       }}
       className={cn(
-        "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-xl transition-all duration-300 active:scale-[0.98] hover:-translate-y-1.5 hover:scale-[1.02] hover:bg-slate-900/70",
+        "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 p-3 backdrop-blur-xl transition-all duration-300 active:scale-[0.97] sm:rounded-2xl sm:p-4 sm:active:scale-[0.98] sm:hover:-translate-y-1.5 sm:hover:scale-[1.02] sm:hover:bg-slate-900/70",
         isActive
           ? "hover:border-emerald-500/40 hover:shadow-[0_15px_40px_-12px_rgba(16,185,129,0.35)]"
           : "hover:border-red-500/40 hover:shadow-[0_15px_40px_-12px_rgba(239,68,68,0.35)]",
@@ -198,7 +231,9 @@ function ApiCard({
         style={{
           background: isHovering
             ? `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, ${
-                isActive ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)"
+                isActive
+                  ? "rgba(16, 185, 129, 0.15)"
+                  : "rgba(239, 68, 68, 0.15)"
               }, transparent 40%)`
             : "none",
         }}
@@ -208,7 +243,9 @@ function ApiCard({
       <div
         className={cn(
           "pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-2xl transition-all duration-500",
-          isActive ? "bg-emerald-500/0 group-hover:bg-emerald-500/20" : "bg-red-500/0 group-hover:bg-red-500/20",
+          isActive
+            ? "bg-emerald-500/0 group-hover:bg-emerald-500/20"
+            : "bg-red-500/0 group-hover:bg-red-500/20",
         )}
       />
 
@@ -218,41 +255,53 @@ function ApiCard({
         <div className="flex items-start justify-between gap-2">
           <h3
             className={cn(
-              "truncate text-sm font-semibold text-white transition-colors",
-              isActive ? "group-hover:text-emerald-300" : "group-hover:text-red-300",
+              "truncate text-xs font-semibold text-white transition-colors sm:text-sm",
+              isActive
+                ? "group-hover:text-emerald-300"
+                : "group-hover:text-red-300",
             )}
             title={api.api_name}
           >
             {api.api_name || "Unnamed API"}
           </h3>
           {isActive ? (
-            <Badge className="shrink-0 gap-1 border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-medium text-emerald-400">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> LIVE
+            <Badge className="shrink-0 gap-1 border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[8px] font-medium text-emerald-400 sm:px-2 sm:text-[9px]">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />{" "}
+              LIVE
             </Badge>
           ) : (
-            <Badge className="shrink-0 gap-1 border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[9px] font-medium text-red-400">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" /> DISABLE
+            <Badge className="shrink-0 gap-1 border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[8px] font-medium text-red-400 sm:px-2 sm:text-[9px]">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-400" />{" "}
+              DISABLE
             </Badge>
           )}
         </div>
 
         {/* Description — pulled from docs JSON, falls back to a generic line */}
-        <p className="mt-3 line-clamp-2 min-h-[32px] text-xs leading-5 text-slate-400" title={description}>
+        <p
+          className="mt-2.5 line-clamp-2 min-h-[30px] text-[11px] leading-4 text-slate-400 sm:mt-3 sm:min-h-[32px] sm:text-xs sm:leading-5"
+          title={description}
+        >
           {description}
         </p>
 
         {/* Footer: method + price on the left, action pill on the right — always visible */}
-        <div className="mt-auto flex items-center justify-between gap-2 pt-4">
-          <div className="flex min-w-0 items-center gap-2">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
             <Badge
               className={cn(
-                "shrink-0 border px-2 py-0.5 text-[10px] font-semibold font-mono",
+                "shrink-0 border px-1.5 py-0.5 text-[9px] font-semibold font-mono sm:px-2 sm:text-[10px]",
                 methodBadgeClass(api.method),
               )}
             >
               {api.method || "POST"}
             </Badge>
-            <p className={cn("truncate text-sm font-bold", isActive ? "text-emerald-400" : "text-red-400")}>
+            <p
+              className={cn(
+                "truncate text-xs font-bold sm:text-sm",
+                isActive ? "text-emerald-400" : "text-red-400",
+              )}
+            >
               {formatPrice(api.price)}
             </p>
           </div>
@@ -263,7 +312,7 @@ function ApiCard({
               onClick();
             }}
             className={cn(
-              "flex shrink-0 items-center gap-1 rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold transition-all duration-200",
+              "flex shrink-0 items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-semibold transition-all duration-200 sm:px-2.5 sm:py-1.5 sm:text-[11px]",
               isActive
                 ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white group-hover:shadow-[0_4px_14px_-4px_rgba(16,185,129,0.6)]"
                 : "border-red-500/40 bg-red-500/10 text-red-400 group-hover:bg-red-500 group-hover:text-white group-hover:shadow-[0_4px_14px_-4px_rgba(239,68,68,0.6)]",
@@ -271,11 +320,12 @@ function ApiCard({
           >
             {isActive ? (
               <>
-                View <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                View{" "}
+                <ArrowUpRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:h-3.5 sm:w-3.5" />
               </>
             ) : (
               <>
-                Locked <Lock className="h-3.5 w-3.5" />
+                Locked <Lock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               </>
             )}
           </button>
@@ -309,11 +359,18 @@ function ResultsPlaceholder({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-[280px] flex-col items-center justify-center gap-1 rounded-2xl border border-slate-800 bg-slate-900/50 px-6 py-14 text-center backdrop-blur-xl">
-      <div className={cn("flex h-12 w-12 items-center justify-center rounded-full border", iconClassName)}>
-        <Icon className="h-6 w-6" />
+    <div className="flex min-h-[240px] flex-col items-center justify-center gap-1 rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-10 text-center backdrop-blur-xl sm:min-h-[280px] sm:rounded-2xl sm:px-6 sm:py-14">
+      <div
+        className={cn(
+          "flex h-11 w-11 items-center justify-center rounded-full border sm:h-12 sm:w-12",
+          iconClassName,
+        )}
+      >
+        <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
       </div>
-      <p className="mt-3 max-w-sm text-sm font-medium text-slate-300">{title}</p>
+      <p className="mt-3 max-w-sm text-sm font-medium text-slate-300">
+        {title}
+      </p>
       <p className="mt-1 text-xs text-slate-500">{description}</p>
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -438,11 +495,16 @@ export default function ApiListSection() {
     descriptionsByEndpoint.get(api.endpoint) ?? FALLBACK_DESCRIPTION(api);
 
   const filteredApis = useMemo(() => {
-    let visibleApis = apis.filter((api) => !BLOCKED_ENDPOINTS.includes(api.endpoint));
+    let visibleApis = apis.filter(
+      (api) => !BLOCKED_ENDPOINTS.includes(api.endpoint),
+    );
 
     if (activeCategory) {
       const category = API_CATEGORIES.find((c) => c.label === activeCategory);
-      if (category) visibleApis = visibleApis.filter((api) => matchesCategory(api, category));
+      if (category)
+        visibleApis = visibleApis.filter((api) =>
+          matchesCategory(api, category),
+        );
     }
 
     const q = searchQuery.trim().toLowerCase();
@@ -450,7 +512,9 @@ export default function ApiListSection() {
 
     // Search across name, endpoint, method, and the resolved JSON description.
     return visibleApis.filter((api) => {
-      const description = (descriptionsByEndpoint.get(api.endpoint) ?? FALLBACK_DESCRIPTION(api)).toLowerCase();
+      const description = (
+        descriptionsByEndpoint.get(api.endpoint) ?? FALLBACK_DESCRIPTION(api)
+      ).toLowerCase();
       return (
         api.api_name?.toLowerCase().includes(q) ||
         api.endpoint?.toLowerCase().includes(q) ||
@@ -461,7 +525,8 @@ export default function ApiListSection() {
   }, [apis, searchQuery, activeCategory, descriptionsByEndpoint]);
 
   const visibleTotal = useMemo(
-    () => apis.filter((api) => !BLOCKED_ENDPOINTS.includes(api.endpoint)).length,
+    () =>
+      apis.filter((api) => !BLOCKED_ENDPOINTS.includes(api.endpoint)).length,
     [apis],
   );
 
@@ -487,8 +552,12 @@ export default function ApiListSection() {
             <Code2 className="h-5 w-5 text-emerald-400" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-lg font-semibold tracking-tight text-white sm:text-xl">API Documentation</h2>
-            <p className="mt-0.5 truncate text-xs text-slate-400 sm:text-sm">Explore and integrate available APIs.</p>
+            <h2 className="truncate text-lg font-semibold tracking-tight text-white sm:text-xl">
+              API Documentation
+            </h2>
+            <p className="mt-0.5 truncate text-xs text-slate-400 sm:text-sm">
+              Explore and integrate available APIs.
+            </p>
           </div>
         </div>
 
@@ -507,26 +576,37 @@ export default function ApiListSection() {
       </div>
 
       {/* Category quick filters */}
-      <CategoryChips active={activeCategory} onSelect={handleSelectCategory} onClear={clearFilters} />
+      <CategoryChips
+        active={activeCategory}
+        onSelect={handleSelectCategory}
+        onClear={clearFilters}
+      />
 
       {/* API Count */}
       {!isLoading && !error && (
         <p className="shrink-0 text-xs text-slate-500" aria-live="polite">
-          Showing <span className="font-medium text-slate-300">{filteredApis.length}</span> of{" "}
-          <span className="font-medium text-slate-300">{visibleTotal}</span> APIs
+          Showing{" "}
+          <span className="font-medium text-slate-300">
+            {filteredApis.length}
+          </span>{" "}
+          of <span className="font-medium text-slate-300">{visibleTotal}</span>{" "}
+          APIs
           {activeCategory && (
             <>
               {" "}
-              in <span className="font-medium text-emerald-400">{activeCategory}</span>
+              in{" "}
+              <span className="font-medium text-emerald-400">
+                {activeCategory}
+              </span>
             </>
           )}
         </p>
       )}
 
       {/* Results Area with stable min-height */}
-      <div className="min-h-[280px]">
+      <div className="min-h-[240px] sm:min-h-[280px]">
         {isLoading && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 xs:gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <ApiCardSkeleton key={i} />
             ))}
@@ -571,7 +651,7 @@ export default function ApiListSection() {
         )}
 
         {!isLoading && !error && filteredApis.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2.5 xs:gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
             {filteredApis.map((api, index) => (
               <ApiCard
                 key={api.id ?? `${api.endpoint}-${index}`}
@@ -585,29 +665,47 @@ export default function ApiListSection() {
       </div>
 
       {/* Documentation Dialog — enabled APIs only */}
-      <Dialog open={!!selectedApi} onOpenChange={(open) => !open && setSelectedApi(null)}>
+      <Dialog
+        open={!!selectedApi}
+        onOpenChange={(open) => !open && setSelectedApi(null)}
+      >
         <DialogContent className="flex max-h-[86vh] w-[94vw] flex-col overflow-hidden rounded-2xl border-slate-800 bg-slate-900/95 p-0 shadow-2xl shadow-black/50 backdrop-blur-xl sm:max-w-4xl">
           <DialogHeader className="shrink-0 border-b border-slate-800 px-4 pb-4 pt-5 sm:px-5">
-            <DialogTitle className="truncate text-base font-semibold text-white sm:text-lg">{selectedApi?.api_name}</DialogTitle>
+            <DialogTitle className="truncate text-base font-semibold text-white sm:text-lg">
+              {selectedApi?.api_name}
+            </DialogTitle>
           </DialogHeader>
           <div className="scrollbar-custom flex-1 overflow-y-auto px-4 py-4 sm:px-5">
-            {selectedApi && <ViewDocumentation endpoint={selectedApi.endpoint} apiName={selectedApi.api_name} />}
+            {selectedApi && (
+              <ViewDocumentation
+                endpoint={selectedApi.endpoint}
+                apiName={selectedApi.api_name}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Access Restricted Dialog — disabled APIs */}
-      <Dialog open={!!restrictedApi} onOpenChange={(open) => !open && setRestrictedApi(null)}>
+      <Dialog
+        open={!!restrictedApi}
+        onOpenChange={(open) => !open && setRestrictedApi(null)}
+      >
         <DialogContent className="w-[92vw] rounded-2xl border-slate-800 bg-slate-900/95 p-6 text-center backdrop-blur-xl sm:max-w-md">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">
             <Lock className="h-6 w-6 text-red-400" />
           </div>
           <DialogHeader className="mt-4 items-center text-center">
-            <DialogTitle className="text-lg font-semibold text-white">API Not Enabled</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-white">
+              API Not Enabled
+            </DialogTitle>
           </DialogHeader>
           <p className="mt-1 text-sm leading-relaxed text-slate-400">
-            <span className="font-medium text-slate-200">{restrictedApi?.api_name}</span> is currently not enabled for
-            your account. Please contact our support team to get it enabled.
+            <span className="font-medium text-slate-200">
+              {restrictedApi?.api_name}
+            </span>{" "}
+            is currently not enabled for your account. Please contact our
+            support team to get it enabled.
           </p>
           <button
             onClick={() => setRestrictedApi(null)}
