@@ -1090,7 +1090,7 @@
   "endpoint": "/api/v1/gst/gst-advance",
   "title": "GST Advance",
   "description": "Retrieve comprehensive GST information using GSTIN.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE123xxxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -1102,7 +1102,7 @@
         },
         "responseData": {
           "data": {
-            "gstin": "29ABCDE1234F1Z5",
+            "gstin": "29ABCDE123xxxxx",
             "legal_name": "DEMO PRIVATE LIMITED",
             "trade_name": "Demo Enterprises",
             "constitution_of_business": "Private Limited",
@@ -1232,7 +1232,7 @@
   "endpoint": "/api/v1/gst/gst-advance-report",
   "title": "GST Advance Report",
   "description": "Retrieve comprehensive GST report using GSTIN.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE123xxxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -1244,7 +1244,7 @@
         },
         "responseData": {
           "data": {
-            "gstin": "29ABCDE1234F1Z5",
+            "gstin": "29ABCDE123xxxxx",
             "legal_name": "DEMO PRIVATE LIMITED",
             "trade_name": "Demo Enterprises",
             "gstin_status": "Active",
@@ -1282,7 +1282,7 @@
   "endpoint": "/api/v1/gst/gst-advance-report-r1",
   "title": "GST Advance Report R1",
   "description": "Generate comprehensive sales report for a GSTIN over a specified period.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report-r1' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"period\": \"YEARLY\", \"from_date\": \"2026\", \"to_date\": \"2027\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report-r1' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE123xxxxx\", \"period\": \"YEARLY\", \"from_date\": \"2026\", \"to_date\": \"2027\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -1296,7 +1296,7 @@
           "data": {
             "sales": [
               {
-                "gstin": "29ABCDE1234F1Z5",
+                "gstin": "29ABCDE123xxxxx",
                 "sector": null,
                 "serialNo": 1,
                 "total_Tax": 125000.50,
@@ -1326,7 +1326,7 @@
   "endpoint": "/api/v1/gst/gst-advance-report-r2",
   "title": "GST Advance Report R2",
   "description": "Generate comprehensive purchase report for a GSTIN over a specified period.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report-r2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"period\": \"YEARLY\", \"from_date\": \"2026\", \"to_date\": \"2027\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-advance-report-r2' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE123xxxxx\", \"period\": \"YEARLY\", \"from_date\": \"2026\", \"to_date\": \"2027\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -1340,7 +1340,7 @@
           "data": {
             "purchases": [
               {
-                "gstin": "29ABCDE1234F1Z5",
+                "gstin": "29ABCDE123xxxxx",
                 "sector": null,
                 "serialNo": 1,
                 "total_Tax": 98000.75,
@@ -1370,7 +1370,7 @@
   "endpoint": "/api/v1/gst/gst-details",
   "title": "GST Details",
   "description": "Retrieve basic GST registration information using GSTIN.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE123xxxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -1382,7 +1382,7 @@
         },
         "responseData": {
           "data": {
-            "gstin": "29ABCDE1234F1Z5",
+            "gstin": "29ABCDE123xxxxx",
             "lgnm": "DEMO PRIVATE LIMITED",
             "tradeNam": "Demo Enterprises",
             "sts": "Active",
@@ -1401,7 +1401,7 @@
   "endpoint": "/api/v1/gst/gst-report",
   "title": "GST Report",
   "description": "Generate GST compliance report using GSTIN.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE1234F1Z5\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE123xxxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -1413,7 +1413,7 @@
         },
         "responseData": {
           "data": {
-            "gstin": "29ABCDE1234F1Z5",
+            "gstin": "29ABCDE123xxxxx",
             "financial_year": "2024-2025",
             "total_tax_paid": "250000",
             "total_turnover": "5000000",
@@ -2484,7 +2484,7 @@
         "responseData": {
           "data": [
             {
-              "gstin": "29ABCDE1234F1Z5",
+              "gstin": "29ABCDE123xxxxx",
               "business_name": "DEMO PRIVATE LIMITED",
               "state_code": "29",
               "status": "Active"
@@ -3540,6 +3540,645 @@
             "mobile": "9876543210",
             "address": "123, Demo Street, Mumbai, Maharashtra - 400001",
             "website": "https://www.example.com"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/inspect/pan-to-aadhaar",
+  "title": "Pan To Aadhaar Number",
+  "description": "Fetch the Aadhaar number linked to the provided PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/pan-to-aadhaar' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "ABCDE1234F data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "aadhaar_number": "XXXXXXXX0123"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/gst/pan-to-company-contact",
+  "title": "Pan To Company Contact",
+  "description": "Retrieve establishment and company contact details registered against the provided PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/pan-to-company-contact' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "ABCDE1234F data fetched successfully"
+        },
+        "responseData": {
+          "total_records": 1,
+          "establishments": [
+            {
+              "lin": "1-0000-0000-1",
+              "srn": "0000000",
+              "address": "apt 00x flat 00, demo road, sample city, state - 000000",
+              "pincode": "000000",
+              "inspections": 0,
+              "mobileNumber": "987654xxxx",
+              "establishmentName": "EXAMPLE PRIVATE LIMITED",
+              "epfoRegistrationNo": "DEMO0000000000"
+            }
+          ]
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/gst/mobile-to-company-details",
+  "title": "Mobile To Company Details",
+  "description": "Retrieve establishment and company details registered against the provided mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/mobile-to-company-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "987654xxxx data fetched successfully"
+        },
+        "responseData": {
+          "total_records": 1,
+          "establishments": [
+            {
+              "lin": "1-0000-0000-1",
+              "srn": "0000000",
+              "address": "apt 00x flat 00, demo road, sample city, state - 000000",
+              "pincode": "000000",
+              "inspections": 0,
+              "mobileNumber": "987654xxxx",
+              "establishmentName": "EXAMPLE PRIVATE LIMITED",
+              "epfoRegistrationNo": "DEMO0000000000"
+            }
+          ]
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/gst/gst-to-contact",
+  "title": "GST Number To Contact Details",
+  "description": "Retrieve registered email and mobile number linked to the provided GSTIN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/gst-to-contact' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"gst_number\": \"29ABCDE123xxxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "29ABCDE123xxxxx data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "document_type": "GSTIN",
+            "email": "contact@example.com",
+            "mobile": "987654xxxx"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/inspect/esic-advance",
+  "title": "ESIC Advance",
+  "description": "Retrieve advanced ESIC details for an employee using the ESIC number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/inspect/esic-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"esic_number\": \"536xxxxxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "536xxxxxxx data updated"
+        },
+        "responseData": {
+          "data": {
+            "person_details": {
+              "name": "John Doe",
+              "esic_number": "536xxxxxxx",
+              "uhid_number": "",
+              "date_of_birth": "01/01/1995",
+              "gender": "Male",
+              "father_or_husband_name": "Richard Doe",
+              "marital_status": "Unmarried",
+              "is_disabled": "No",
+              "type_of_disability": "",
+              "mobile_number": "987654xxxx",
+              "email": "",
+              "uan": "",
+              "branch_office": "BO - Example Nagar",
+              "is_dead": "Alive",
+              "death_date": "",
+              "registration_date": "16/09/2020",
+              "updated_on": "16/09/2020 01:36:35 PM"
+            },
+            "employment": {
+              "employer_code": "12345678900000001",
+              "first_date_of_appointment": "14/09/2020",
+              "current_date_of_appointment": "",
+              "last_working_date": "",
+              "registration_date": "16-09-2020",
+              "id_type_for_identification": "Other",
+              "id_number": "",
+              "updated_on": "16/09/2020 01:36:35 PM"
+            },
+            "present_address": {
+              "address_line_1": "123 Example Street",
+              "address_line_2": "Sample City, State",
+              "address_line_3": "",
+              "full_address": "123 Example Street, Sample City, State",
+              "pin_code": "",
+              "district": "Sample District",
+              "state": "Sample State",
+              "updated_on": "16/09/2020 01:36:35 PM"
+            },
+            "permanent_address": {
+              "address_line_1": "123 Example Street",
+              "address_line_2": "Sample City, State",
+              "address_line_3": "",
+              "full_address": "123 Example Street, Sample City, State",
+              "pin_code": "",
+              "district": "Sample District",
+              "state": "Sample State",
+              "updated_on": "16/09/2020 01:36:35 PM"
+            },
+            "dispensary": {
+              "name": "Example City, State (ESIC Disp.)",
+              "address": "ESI Dispensary, Sector-4, Industrial Area, Example City",
+              "district": "Sample District",
+              "state": "Sample State",
+              "updated_on": "16/09/2020 01:36:35 PM"
+            },
+            "nominees": [
+              {
+                "name": "Richard Doe",
+                "relationship": "Dependant father",
+                "address_line_1": "123 Example Street",
+                "address_line_2": "Sample City, State",
+                "address_line_3": "",
+                "full_address": "123 Example Street, Sample City, State",
+                "pin_code": "",
+                "district": "Sample District",
+                "state": "Sample State",
+                "phone_number": "",
+                "mobile_number": "",
+                "updated_on": "16/09/2020 01:36:35 PM"
+              }
+            ],
+            "family_members": [],
+            "bank_accounts": [
+              {
+                "account_no": "00000000000",
+                "account_type": "Savings",
+                "bank": "EXAMPLE BANK",
+                "branch": "MAIN BRANCH",
+                "ifsc_code": "EXMP0001234",
+                "micr_code": "",
+                "updated_on": "16/09/2020 01:36:35 PM"
+              }
+            ],
+            "benefits": {
+              "period": "Current Period",
+              "report_generated_on": "24/09/2026 10:43:15 Hrs",
+              "benefit_period_eligibility": [],
+              "eligibility_to_esic_benefits": [
+                {
+                  "benefit_type": "Medical Benefit",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "IP/IW not in insurable employment and contributory conditions are not met in the corresponding Contribution Period"
+                },
+                {
+                  "benefit_type": "Maternity Benefit",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "* Not an IW. * Less than 9 months of insurable employment on EDD / Date of delivery."
+                },
+                {
+                  "benefit_type": "Sickness Benefit",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "* Less than 9 months of Insurable employment from the date of first appointment."
+                },
+                {
+                  "benefit_type": "Extended Sickness Benefit",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "* Not suffering from any of the listed 34 diseases."
+                },
+                {
+                  "benefit_type": "Enhanced Sickness Benefit",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "Not Entitled for Sickness Benefit."
+                },
+                {
+                  "benefit_type": "Super Specialty For IP",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "* Not completed six months of service from Date of registration."
+                },
+                {
+                  "benefit_type": "Super Specialty For Family",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "* Not completed one year of service from date of registration."
+                },
+                {
+                  "benefit_type": "Temporary Disablement Benefit",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "Disablement not due to Employment Injury or Occupational Disease as per the ESI Act."
+                },
+                {
+                  "benefit_type": "Permanent Disablment Benefit",
+                  "entitlement_status": "Yes",
+                  "probable_reasons_for_non_entitlement": "Disablement not due to Employment Injury or Occupational Disease as per the ESI Act."
+                },
+                {
+                  "benefit_type": "Dependent Benefit",
+                  "entitlement_status": "Yes",
+                  "probable_reasons_for_non_entitlement": "Death of the Insured person is not due to Employment Injury or Occupational Disease as per the ESI Act."
+                },
+                {
+                  "benefit_type": "R.G.S.K.Y",
+                  "entitlement_status": "No",
+                  "probable_reasons_for_non_entitlement": "* Not an IP/IW on the date of loss of Insurable Employment."
+                },
+                {
+                  "benefit_type": "Ward of IP' certificate as on 31-10-2018",
+                  "entitlement_status": "Yes",
+                  "probable_reasons_for_non_entitlement": "* *"
+                }
+              ],
+              "notes": [
+                "This eligibility status is based only on the date of Online Registration in the System.",
+                "The list is not exhaustive. For further details please visit nearest Branch Office or www.esic.nic.in."
+              ]
+            },
+            "contributions": {
+              "2023": [
+                { "month": "October", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "November", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "December", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" }
+              ],
+              "2024": [
+                { "month": "January", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "February", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "March", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "April", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "May", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "June", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "July", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "August", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "September", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "October", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "November", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" },
+                { "month": "December", "total_wages": "0.00", "days_paid": "0", "employee_contribution": "0.00" }
+              ]
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/gst/mobile-to-gst",
+  "title": "Mobile To GST",
+  "description": "Retrieve all GSTIN numbers registered against the provided mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/mobile-to-gst' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "987654xxxx data fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "document_type": "GSTIN",
+              "document_id": "29ABCDE123xxxxx",
+              "status": "Active"
+            },
+            {
+              "document_type": "GSTIN",
+              "document_id": "27AABCX567xxxxx",
+              "status": "Active"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/gst/din-to-contact",
+  "title": "DIN To Contact",
+  "description": "Fetch registered email and mobile number linked to the provided DIN.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/din-to-contact' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"din_number\": \"01234567\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "01234567 data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "email": "contact@example.com",
+            "mobile": "987654xxxx",
+            "din": "01234567"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/uan/uan-to-employment-history-v0",
+  "title": "UAN To Employment History V0",
+  "description": "Retrieve employment history linked to the provided UAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-to-employment-history-v0' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"101904xxxxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "101904xxxxxx data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "profile_details": {
+              "uan": "101904xxxxxx",
+              "name": "John Doe",
+              "gender": "Male",
+              "mobile_number": "7********3",
+              "relation_with_member": "Father",
+              "father_or_husband_name": "Richard Doe"
+            },
+            "employment_history": [
+              {
+                "company_details": {
+                  "est_id": "PYBOM0000000000",
+                  "est_type": "7 - JOINT STOCK COMPANIES",
+                  "est_status": "1 - LIVE ESTABLISHMENT",
+                  "company_name": "EXAMPLE HR SERVICES LIMITED",
+                  "company_email": "R*****.S*****@C*****.C**",
+                  "company_address": "SITE NO 000, 00TH MAIN, SAMPLE LAYOUT, SECTOR 1, BANGALORE, BENGALURU (BANGALORE) URBAN, 560102",
+                  "company_mobile_number": "8********4"
+                },
+                "employee_detail": {
+                  "lcm": "",
+                  "doe_epf": "31-JAN-2023",
+                  "doe_eps": "31-JAN-2023",
+                  "doj_epf": "11-DEC-2022",
+                  "doj_eps": "11-DEC-2022",
+                  "member_id": "PYBOM00000000000000000",
+                  "claim_status": "",
+                  "benefit_taken": "",
+                  "uan_linked_by": "",
+                  "balance_status": "Data N/A",
+                  "reason_of_leaving": "CESSATION (SHORT SERVICE) - Any other reason",
+                  "previous_employment": "N",
+                  "is_north_east_member": ""
+                }
+              }
+            ]
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/mobile/mobile365",
+  "title": "Mobile 365",
+  "description": "Fetch a complete 360° intelligence profile for a mobile number — identity, contact, banking, UPI handles, social footprint, breach exposure, and more. Every linked data source is aggregated in one response.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile365' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "987654xxxx data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "nbfc_profile": {
+              "data": {
+                "IDAndContactInfo": {
+                  "PersonalInfo": {
+                    "Name": {
+                      "FullName": "John Doe",
+                      "FirstName": "John",
+                      "MiddleName": "",
+                      "LastName": "Doe"
+                    },
+                    "AliasName": {},
+                    "DateOfBirth": "01-01-1995",
+                    "Gender": "MALE",
+                    "Age": { "Age": "30" },
+                    "PlaceOfBirthInfo": {},
+                    "IncomeRange": "4,00,001 - 6,00,000",
+                    "Occupation": "Others"
+                  },
+                  "IdentityInfo": {
+                    "PANId": [
+                      { "seq": "1", "ReportedDate": "01-01-2025", "IdNumber": "ABCDE1234F" }
+                    ],
+                    "NationalIDCard": [],
+                    "OtherId": [
+                      { "seq": "1", "ReportedDate": "01-01-2024", "IdNumber": "XXXXXXXX0000" }
+                    ]
+                  },
+                  "AddressInfo": [
+                    {
+                      "Seq": "1",
+                      "ReportedDate": "01-01-2025",
+                      "Address": "123 Example Street, Sample City",
+                      "State": "DL",
+                      "Postal": "000000",
+                      "Type": ""
+                    }
+                  ],
+                  "PhoneInfo": [
+                    { "seq": "1", "typeCode": "H", "ReportedDate": "01-01-2025", "Number": "987654xxxx" }
+                  ],
+                  "EmailAddressInfo": [
+                    { "seq": "1", "ReportedDate": "01-01-2025", "EmailAddress": "j***@*******" }
+                  ]
+                }
+              },
+              "changes": []
+            },
+            "whatsapp_profile": {
+              "data": {
+                "about": " ",
+                "is_new": true,
+                "image_url": "https://example.com/whatsapp_profile.png",
+                "last_seen": "",
+                "timestamp": "2026-01-01T00:00:00.000Z",
+                "image_hash": "00000000000000000000000000000000",
+                "mobile_number": "987654xxxx"
+              },
+              "changes": []
+            },
+            "mobile_to_account_v3": {
+              "data": {
+                "vpa_details": {
+                  "vpa": "johndoe@okicici",
+                  "account_holder_name": "JOHN DOE",
+                  "platform": "Google Pay",
+                  "upi_handle": "@okicici",
+                  "icon_url": "https://example.com/icons/gpay.png"
+                },
+                "account_details": {
+                  "account_ifsc": "EXMP0001234",
+                  "account_type": "SAVINGS ACCOUNT",
+                  "account_priority": "PRIMARY ACCOUNT",
+                  "account_number": "00000000000000"
+                },
+                "bank_details": {
+                  "ADDRESS": "123 Example Street, Sample City",
+                  "CENTRE": "EXAMPLE",
+                  "CITY": "SAMPLE CITY",
+                  "ISO3166": "IN-DL",
+                  "STATE": "DELHI",
+                  "CONTACT": "+91000000000000",
+                  "BRANCH": "EXAMPLE BRANCH",
+                  "RTGS": true,
+                  "MICR": "000000000",
+                  "NEFT": true,
+                  "DISTRICT": "EXAMPLE",
+                  "UPI": true,
+                  "SWIFT": null,
+                  "IMPS": true,
+                  "BANK": "Example Bank",
+                  "BANKCODE": "EXMP",
+                  "IFSC": "EXMP0001234"
+                },
+                "transaction_details": { "utr": "000000000000" }
+              },
+              "changes": []
+            },
+            "mobile_to_verify_upi_id_list": {
+              "data": [
+                {
+                  "upi": "johndoe@ptyes",
+                  "name": "John Doe",
+                  "platform": "Paytm",
+                  "upi_handle": "@ptyes",
+                  "primary": false,
+                  "icon_url": "https://example.com/icons/paytm.png",
+                  "status": "active"
+                },
+                {
+                  "upi": "johndoe@okicici",
+                  "name": "JOHN DOE",
+                  "platform": "Google Pay",
+                  "upi_handle": "@okicici",
+                  "primary": true,
+                  "icon_url": "https://example.com/icons/gpay.png",
+                  "status": "active"
+                }
+              ],
+              "changes": []
+            },
+            "mobile_to_rc": null,
+            "mobile_number_to_rc_list": null,
+            "mobile_to_challan": null,
+            "trucaller": {
+              "data": {
+                "status": true,
+                "message": "Success",
+                "timestamp": 1700000000000,
+                "data": [
+                  {
+                    "name": "John Doe",
+                    "prefix": "91",
+                    "number": "987654xxxx",
+                    "spamCounter": 0,
+                    "spam": false,
+                    "names": []
+                  }
+                ]
+              },
+              "changes": []
+            },
+            "mobile_to_gst": null,
+            "mobile_to_company_details": null,
+            "mobile_to_pan": {
+              "data": {
+                "full_name": "JOHN DOE",
+                "last_name": "DOE",
+                "first_name": "JOHN",
+                "pan_number": "ABCDE1234F",
+                "middle_name": "",
+                "date_of_birth": ""
+              },
+              "changes": []
+            },
+            "mobile_to_uan_numbers": null,
+            "mobile_to_udyam_numbers": null,
+            "mobile_to_esic": null,
+            "mobile_to_fb_details": {
+              "data": [
+                {
+                  "id": "00000000000000000000000000000000",
+                  "name": "+91987654xxxx",
+                  "profile_image_url": "https://example.com/fb_profile.jpg",
+                  "platform": "FACEBOOK",
+                  "linked": ["j***@*******", "+91987654xxxx"]
+                }
+              ],
+              "changes": []
+            },
+            "cyber_suspect": {
+              "data": {
+                "message": "No! 987654xxxx is not a suspect.",
+                "is_suspect": false
+              },
+              "changes": []
+            },
+            "leak_data": {
+              "data": [
+                { "source": "No results found", "count": 1, "records": [{}] }
+              ],
+              "changes": []
+            }
           },
           "changes": []
         }

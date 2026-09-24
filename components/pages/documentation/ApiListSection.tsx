@@ -26,8 +26,6 @@ import { getApiDocumentation } from "@/lib/api-docs";
 import ViewDocumentation from "./ViewDocumentation";
 import { cn } from "@/lib/utils";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 interface ApiDetail {
   id: string;
   api_name: string;
@@ -35,7 +33,6 @@ interface ApiDetail {
   method: string;
   price: number;
   status: boolean;
-  /** Whether *this* user has access — drives the locked/disabled UI. */
   status_for_user: boolean;
 }
 
@@ -44,16 +41,12 @@ interface ApiResponseEnvelope<T> {
   responseData: T;
 }
 
-// ─── Blocklist ──────────────────────────────────────────────────────────────
-// Endpoints listed here are hidden from the UI entirely (not just disabled).
 const BLOCKED_ENDPOINTS: string[] = [
   "/api/v1/map/route-data",
   "/api/v1/map/location-data",
   "/api/v1/uan/get-uan-no",
   "/api/v1/uan/uan-to-employment-profile-lookup",
-  "/api/v1/mobile/mobile-to-profile-advance", // UAN API is temporarily disabled for all users
-
-  // Add more endpoints here that you want to HIDE
+  "/api/v1/mobile/mobile-to-profile-advance",
 ];
 
 interface ApiCategory {
@@ -100,13 +93,8 @@ const matchesCategory = (api: ApiDetail, category: ApiCategory) => {
   return category.keywords.some((kw) => haystack.includes(kw.toLowerCase()));
 };
 
-// ─── Description lookup (JSON → fallback) ────────────────────────────────────
-// Reads the per-endpoint documentation JSON and returns its description.
-// Falls back to a generic sentence so a card never shows an empty line.
-// Wrapped in try/catch so a malformed or missing docs entry for one
-// endpoint can never take down the whole grid.
 const FALLBACK_DESCRIPTION = (api: ApiDetail) =>
-  `Securely execute ${api.api_name} and retrieve data instantly via our commercial portal.`;
+  `Documentation coming soon for ${api.api_name}.`;
 
 const getApiDescription = (api: ApiDetail): string => {
   try {
@@ -119,8 +107,6 @@ const getApiDescription = (api: ApiDetail): string => {
     return FALLBACK_DESCRIPTION(api);
   }
 };
-
-// ─── API call ───────────────────────────────────────────────────────────────
 
 async function fetchAllApisDetails(): Promise<{
   total: number;
@@ -146,8 +132,6 @@ async function fetchAllApisDetails(): Promise<{
     throw new Error(message);
   }
 }
-
-// ─── UI constants & helpers ─────────────────────────────────────────────────
 
 const METHOD_STYLES: Record<string, string> = {
   GET: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
@@ -184,8 +168,6 @@ function ApiCardSkeleton() {
   );
 }
 
-// ─── API card ───────────────────────────────────────────────────────────────
-
 function ApiCard({
   api,
   description,
@@ -198,6 +180,7 @@ function ApiCard({
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const isActive = api.status_for_user;
+  const isFallbackDescription = description === FALLBACK_DESCRIPTION(api);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -225,7 +208,6 @@ function ApiCard({
           : "hover:border-red-500/40 hover:shadow-[0_15px_40px_-12px_rgba(239,68,68,0.35)]",
       )}
     >
-      {/* Mouse-Follow Spotlight Effect */}
       <div
         className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         style={{
@@ -239,7 +221,6 @@ function ApiCard({
         }}
       />
 
-      {/* Top-right ambient glow on hover */}
       <div
         className={cn(
           "pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-2xl transition-all duration-500",
@@ -249,9 +230,7 @@ function ApiCard({
         )}
       />
 
-      {/* Content Wrapper */}
       <div className="relative flex h-full flex-col">
-        {/* Header: Name & Status Badge */}
         <div className="flex items-start justify-between gap-2">
           <h3
             className={cn(
@@ -277,15 +256,16 @@ function ApiCard({
           )}
         </div>
 
-        {/* Description — pulled from docs JSON, falls back to a generic line */}
         <p
-          className="mt-2.5 line-clamp-2 min-h-[30px] text-[11px] leading-4 text-slate-400 sm:mt-3 sm:min-h-[32px] sm:text-xs sm:leading-5"
+          className={cn(
+            "mt-2.5 line-clamp-2 min-h-[30px] text-[11px] leading-4 sm:mt-3 sm:min-h-[32px] sm:text-xs sm:leading-5",
+            isFallbackDescription ? "text-amber-400" : "text-slate-400",
+          )}
           title={description}
         >
           {description}
         </p>
 
-        {/* Footer: method + price on the left, action pill on the right — always visible */}
         <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
             <Badge
@@ -332,7 +312,6 @@ function ApiCard({
         </div>
       </div>
 
-      {/* Animated Bottom Border on Hover */}
       <div
         className={cn(
           "absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100",
@@ -343,8 +322,6 @@ function ApiCard({
   );
 }
 
-// Shared shell used by every non-grid state (error / empty) so the block
-// never looks or sizes differently depending on which state is active.
 function ResultsPlaceholder({
   icon: Icon,
   iconClassName,
@@ -376,13 +353,6 @@ function ResultsPlaceholder({
     </div>
   );
 }
-
-// ─── Category chip row ───────────────────────────────────────────────────
-// A single horizontally-scrollable row on mobile (swipe, no layout jump)
-// that opens up into a natural wrapping cloud from `sm:` up. Same visual
-// language as the date-range presets elsewhere in the app — quiet pill by
-// default, emerald outline + tint when active — with a small check dot for
-// extra affordance and a red "Clear" pill at the end when filtering.
 
 function CategoryChips({
   active,
@@ -421,7 +391,6 @@ function CategoryChips({
         );
       })}
 
-      {/* Clear pill only when a category is active */}
       {active && (
         <button
           type="button"
@@ -435,8 +404,6 @@ function CategoryChips({
     </div>
   );
 }
-
-// ─── Main component ─────────────────────────────────────────────────────────
 
 export default function ApiListSection() {
   const [apis, setApis] = useState<ApiDetail[]>([]);
@@ -464,8 +431,6 @@ export default function ApiListSection() {
     }
   };
 
-  // Only enabled (non-disabled) APIs open the docs viewer; disabled ones
-  // show the "contact support" popup instead.
   const handleApiClick = (api: ApiDetail) => {
     if (api.status_for_user) setSelectedApi(api);
     else setRestrictedApi(api);
@@ -480,9 +445,6 @@ export default function ApiListSection() {
     setSearchQuery("");
   };
 
-  // Resolved once per `apis` change (not on every render/keystroke) so the
-  // docs-JSON lookup never repeats for the same endpoint unnecessarily.
-  // Cards and the search filter both read from this single map.
   const descriptionsByEndpoint = useMemo(() => {
     const map = new Map<string, string>();
     apis.forEach((api) => {
@@ -510,7 +472,6 @@ export default function ApiListSection() {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return visibleApis;
 
-    // Search across name, endpoint, method, and the resolved JSON description.
     return visibleApis.filter((api) => {
       const description = (
         descriptionsByEndpoint.get(api.endpoint) ?? FALLBACK_DESCRIPTION(api)
@@ -545,7 +506,6 @@ export default function ApiListSection() {
 
   return (
     <div className="flex w-full flex-col gap-5">
-      {/* Header & Search */}
       <div className="flex shrink-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10">
@@ -575,14 +535,12 @@ export default function ApiListSection() {
         </div>
       </div>
 
-      {/* Category quick filters */}
       <CategoryChips
         active={activeCategory}
         onSelect={handleSelectCategory}
         onClear={clearFilters}
       />
 
-      {/* API Count */}
       {!isLoading && !error && (
         <p className="shrink-0 text-xs text-slate-500" aria-live="polite">
           Showing{" "}
@@ -603,7 +561,6 @@ export default function ApiListSection() {
         </p>
       )}
 
-      {/* Results Area with stable min-height */}
       <div className="min-h-[240px] sm:min-h-[280px]">
         {isLoading && (
           <div className="grid grid-cols-2 gap-2.5 xs:gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
@@ -664,7 +621,6 @@ export default function ApiListSection() {
         )}
       </div>
 
-      {/* Documentation Dialog — enabled APIs only */}
       <Dialog
         open={!!selectedApi}
         onOpenChange={(open) => !open && setSelectedApi(null)}
@@ -686,7 +642,6 @@ export default function ApiListSection() {
         </DialogContent>
       </Dialog>
 
-      {/* Access Restricted Dialog — disabled APIs */}
       <Dialog
         open={!!restrictedApi}
         onOpenChange={(open) => !open && setRestrictedApi(null)}

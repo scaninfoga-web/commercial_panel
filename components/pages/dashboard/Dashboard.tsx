@@ -1103,86 +1103,116 @@ export default function DashboardPage() {
         open={!!selectedTransaction}
         onOpenChange={(open) => !open && setSelectedTransaction(null)}
       >
-        <DialogContent className="max-h-[86vh] overflow-hidden rounded-2xl border-slate-800 bg-slate-900 p-0 sm:max-w-3xl">
-          <div className="border-b border-slate-800 px-5 pb-4 pt-5">
-            <DialogHeader>
-              <DialogTitle className="text-lg font-semibold text-white">
+        <DialogContent
+          className={cn(
+            // Base
+            "flex flex-col gap-0 overflow-hidden border-slate-800 bg-slate-900 p-0 shadow-2xl shadow-black/50",
+            // Mobile: near full-screen sheet
+            "h-[95dvh] w-[95vw] max-w-[95vw] rounded-2xl",
+            // Tablet & up: centered modal
+            "sm:h-auto sm:max-h-[86vh] sm:w-full sm:max-w-2xl sm:rounded-2xl",
+            // Desktop: slightly wider
+            "md:max-w-3xl",
+          )}
+        >
+          {/* ── Header ─────────────────────────────────────── */}
+          <div className="shrink-0 border-b border-slate-800 bg-slate-900/95 px-4 pb-3.5 pt-4 backdrop-blur sm:px-5 sm:pb-4 sm:pt-5">
+            <DialogHeader className="space-y-2 text-left">
+              <DialogTitle className="text-base font-semibold text-white sm:text-lg">
                 Transaction Details
               </DialogTitle>
-              <DialogDescription className="flex flex-wrap items-center gap-2 pt-1 text-zinc-400">
-                Transaction ID:{" "}
-                <span className="font-mono text-zinc-300">
-                  {selectedTransaction?.txn_id}
-                </span>
-                {selectedTransaction?.txn_id && (
-                  <button
-                    onClick={() => handleCopyTxnId(selectedTransaction.txn_id)}
-                    className="inline-flex h-6 w-6 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-slate-800 hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                    title="Copy Transaction ID"
-                    aria-label="Copy Transaction ID"
-                  >
-                    {copiedTxnId === selectedTransaction.txn_id ? (
-                      <Check className="h-3.5 w-3.5 text-emerald-400" />
-                    ) : (
-                      <Copy className="h-3.5 w-3.5" />
-                    )}
-                  </button>
-                )}
+
+              <DialogDescription asChild>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-400 sm:gap-2 sm:text-sm">
+                  <span className="shrink-0">Transaction ID:</span>
+                  <span className="truncate font-mono text-[11px] text-zinc-300 sm:text-xs">
+                    {selectedTransaction?.txn_id}
+                  </span>
+                  {selectedTransaction?.txn_id && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleCopyTxnId(selectedTransaction.txn_id)
+                      }
+                      className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-slate-800 hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                      title="Copy Transaction ID"
+                      aria-label="Copy Transaction ID"
+                    >
+                      {copiedTxnId === selectedTransaction.txn_id ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-400" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  )}
+                </div>
               </DialogDescription>
             </DialogHeader>
           </div>
 
-          <div className="max-h-[calc(86vh-120px)] overflow-y-auto px-5 py-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* ── Scrollable Body ────────────────────────────── */}
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
             {selectedTransaction && (
-              <div className="space-y-5">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 backdrop-blur-sm">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+              <div className="space-y-4 sm:space-y-5">
+                {/* Info grid */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {/* Amount */}
+                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-3.5 backdrop-blur-sm sm:p-4">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-[11px] sm:tracking-[0.18em]">
                       Amount
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-emerald-400">
+                    <p className="mt-1.5 text-sm font-semibold text-emerald-400 sm:mt-2">
                       {formatCurrency(selectedTransaction.amount)}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 backdrop-blur-sm">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+
+                  {/* Key Type */}
+                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-3.5 backdrop-blur-sm sm:p-4">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-[11px] sm:tracking-[0.18em]">
                       Key Type
                     </p>
-                    <p className="mt-2 text-sm text-white">
+                    <p className="mt-1.5 truncate text-sm text-white sm:mt-2">
                       {selectedTransaction.key_type || "—"}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 backdrop-blur-sm">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+
+                  {/* Status */}
+                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-3.5 backdrop-blur-sm sm:p-4">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-[11px] sm:tracking-[0.18em]">
                       Status
                     </p>
-                    <div className="mt-2">
+                    <div className="mt-1.5 sm:mt-2">
                       <StatusBadge status={selectedTransaction.status} />
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 backdrop-blur-sm">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+
+                  {/* Type */}
+                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-3.5 backdrop-blur-sm sm:p-4">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-[11px] sm:tracking-[0.18em]">
                       Type
                     </p>
-                    <div className="mt-2">
+                    <div className="mt-1.5 sm:mt-2">
                       <TypeBadge type={selectedTransaction.type} />
                     </div>
                   </div>
-                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 backdrop-blur-sm">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">
+
+                  {/* Created At — full width on mobile, spans 2 on sm */}
+                  <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-3.5 backdrop-blur-sm sm:col-span-2 sm:p-4">
+                    <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-[11px] sm:tracking-[0.18em]">
                       Created At
                     </p>
-                    <p className="mt-2 text-sm text-white">
+                    <p className="mt-1.5 text-sm text-white sm:mt-2">
                       {formatDate(selectedTransaction.created_at)}
                     </p>
                   </div>
                 </div>
 
+                {/* Endpoint */}
                 <div>
-                  <p className="mb-2 text-sm font-medium text-zinc-400">
+                  <p className="mb-2 text-xs font-medium text-zinc-400 sm:text-sm">
                     Endpoint
                   </p>
-                  <pre className="overflow-auto rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-sm text-white break-all [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <pre className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] leading-relaxed text-white break-all whitespace-pre-wrap sm:rounded-2xl sm:p-4 sm:text-sm">
                     {selectedTransaction.endpoint}
                   </pre>
                 </div>

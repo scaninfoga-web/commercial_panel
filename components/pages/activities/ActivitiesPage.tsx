@@ -365,76 +365,111 @@ function ActivityDetailsDialog({
   onClose: () => void;
 }) {
   return (
-    <Dialog open={!!activity} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[86vh] flex-col overflow-hidden rounded-2xl border-slate-800 bg-slate-900 p-0 sm:max-w-3xl">
-        <div className="border-b border-slate-800 px-5 pb-4 pt-5">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-white">
-              Activity Details
-            </DialogTitle>
-            <DialogDescription className="flex flex-wrap items-center gap-2 pt-1 text-zinc-400">
-              <span>Transaction ID:</span>
-              <span className="break-all font-mono text-sm text-emerald-400">
-                {activity?.txn_id}
-              </span>
-              {activity?.txn_id && (
-                <CopyIdButton
-                  id={activity.txn_id}
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-slate-800 hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                />
-              )}
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+   <Dialog open={!!activity} onOpenChange={(open) => !open && onClose()}>
+  <DialogContent
+    className={cn(
+      // Base
+      "flex flex-col gap-0 overflow-hidden border-slate-800 bg-slate-900 p-0 shadow-2xl shadow-black/50",
+      // Mobile: near full-screen sheet
+      "h-[95dvh] w-[95vw] max-w-[95vw] rounded-2xl",
+      // Tablet & up: centered modal
+      "sm:h-auto sm:max-h-[86vh] sm:w-full sm:max-w-2xl sm:rounded-2xl",
+      // Desktop: slightly wider
+      "md:max-w-3xl",
+    )}
+  >
+    {/* ── Header (sticky) ────────────────────────────── */}
+    <div className="shrink-0 border-b border-slate-800 bg-slate-900/95 px-4 pb-3.5 pt-4 backdrop-blur sm:px-5 sm:pb-4 sm:pt-5">
+      <DialogHeader className="space-y-2 text-left">
+        <DialogTitle className="text-base font-semibold text-white sm:text-lg">
+          Activity Details
+        </DialogTitle>
 
-        <div
-          className={cn(
-            "min-h-0 flex-1 overflow-y-auto px-5 py-4",
-            HIDE_SCROLLBAR,
-          )}
-        >
-          {activity && (
-            <div className="space-y-5">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <DetailCard
-                  label="Endpoint"
-                  valueClassName="break-all font-mono"
-                >
-                  {activity.endpoint}
-                </DetailCard>
-                <DetailCard
-                  label="Amount"
-                  valueClassName="font-semibold text-emerald-400"
-                >
-                  {formatCurrency(getActivityAmount(activity))}
-                </DetailCard>
-                <DetailCard label="Page">{activity.page || "—"}</DetailCard>
-                <DetailCard label="Method & Status">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <MethodBadge method={activity.method} />
-                    <StatusBadge code={activity.status_code} />
-                  </div>
-                </DetailCard>
-                <DetailCard label="Duration">{activity.duration} ms</DetailCard>
-                <DetailCard label="Timestamp">
-                  {formatDate(activity.timestamp)}
-                </DetailCard>
+        <DialogDescription asChild>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-zinc-400 sm:gap-2 sm:text-sm">
+            <span className="shrink-0">Transaction ID:</span>
+            <span className="min-w-0 truncate font-mono text-[11px] text-emerald-400 sm:text-xs">
+              {activity?.txn_id}
+            </span>
+            {activity?.txn_id && (
+              <CopyIdButton
+                id={activity.txn_id}
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-slate-800 hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+              />
+            )}
+          </div>
+        </DialogDescription>
+      </DialogHeader>
+    </div>
+
+    {/* ── Scrollable Body ────────────────────────────── */}
+    <div
+      className={cn(
+        "min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5",
+        HIDE_SCROLLBAR,
+      )}
+    >
+      {activity && (
+        <div className="space-y-4 sm:space-y-5">
+          {/* Detail grid */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Endpoint — full width on mobile, normal on sm+ */}
+            <DetailCard
+              label="Endpoint"
+              valueClassName="break-all font-mono text-xs sm:text-sm"
+            >
+              {activity.endpoint}
+            </DetailCard>
+
+            {/* Amount */}
+            <DetailCard
+              label="Amount"
+              valueClassName="font-semibold text-emerald-400"
+            >
+              {formatCurrency(getActivityAmount(activity))}
+            </DetailCard>
+
+            {/* Page */}
+            <DetailCard label="Page">
+              <span className="truncate">{activity.page || "—"}</span>
+            </DetailCard>
+
+            {/* Method & Status */}
+            <DetailCard label="Method & Status">
+              <div className="flex flex-wrap items-center gap-2">
+                <MethodBadge method={activity.method} />
+                <StatusBadge code={activity.status_code} />
               </div>
+            </DetailCard>
 
-              <PayloadBlock
-                title="Request Payload"
-                data={activity.request_payload}
-              />
-              <PayloadBlock
-                title="Response Payload"
-                data={activity.response_payload}
-                className="text-zinc-200"
-              />
-            </div>
-          )}
+            {/* Duration */}
+            <DetailCard label="Duration">
+              {activity.duration} ms
+            </DetailCard>
+
+            {/* Timestamp */}
+            <DetailCard label="Timestamp">
+              {formatDate(activity.timestamp)}
+            </DetailCard>
+          </div>
+
+          {/* Payload blocks — stack on mobile, full width always */}
+          <div className="space-y-4 sm:space-y-5">
+            <PayloadBlock
+              title="Request Payload"
+              data={activity.request_payload}
+            />
+            <PayloadBlock
+              title="Response Payload"
+              data={activity.response_payload}
+              className="text-zinc-200"
+            />
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </div>
+  </DialogContent>
+</Dialog>
   );
 }
 
