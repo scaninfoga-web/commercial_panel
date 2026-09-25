@@ -234,7 +234,7 @@ function ApiCard({
         <div className="flex items-start justify-between gap-2">
           <h3
             className={cn(
-              "truncate text-xs font-semibold text-white transition-colors sm:text-sm",
+              "line-clamp-2 break-words text-xs font-semibold leading-snug text-white transition-colors sm:text-sm",
               isActive
                 ? "group-hover:text-emerald-300"
                 : "group-hover:text-red-300",
