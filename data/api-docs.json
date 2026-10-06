@@ -4185,5 +4185,158 @@
       }
     }
   }
+},
+{
+  "endpoint": "/api/v1/mobile/mobile-to-lpg-details",
+  "title": "Mobile To LPG Details",
+  "description": "Fetch LPG connection details linked to the provided mobile number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-to-lpg-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"884985xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "884985xxxx data fetched successfully"
+        },
+        "responseData": {
+          "data": [
+            {
+              "consumer_number": "1234567890",
+              "name": "John Doe",
+              "mobile_number": "884985xxxx",
+              "connection_type": "Domestic",
+              "distributor_name": "Example Gas Agency",
+              "distributor_code": "0000000",
+              "company_name": "Example Gas Limited",
+              "address": "123 Example Street, Sample City",
+              "city": "Sample City",
+              "state": "Sample State",
+              "pincode": "000000",
+              "status": "Active"
+            }
+          ],
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/mobile/mobile-to-advance-profile",
+  "title": "Mobile To Advance Profile",
+  "description": "Fetch advanced profile details linked to the provided mobile number — PAN-Aadhaar linkage, personal info, addresses, phone, email, and bank account details.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-to-advance-profile' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "987654xxxx data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "document_details": {
+              "message": "ABCDE1234F is linked with 123456789012",
+              "pan_number": "ABCDE1234F",
+              "aadhaar_number": "123456789012"
+            },
+            "nbfc_data": {
+              "PersonalInfo": {
+                "Name": {
+                  "FullName": "John Doe",
+                  "FirstName": "John",
+                  "MiddleName": "",
+                  "LastName": "Doe"
+                },
+                "AliasName": {},
+                "DateOfBirth": "01-01-1995",
+                "Gender": "MALE",
+                "Age": { "Age": "30" },
+                "PlaceOfBirthInfo": {},
+                "IncomeRange": "4,00,001 - 6,00,000",
+                "Occupation": "Others"
+              },
+              "IdentityInfo": {
+                "PANId": [
+                  { "seq": "1", "ReportedDate": "01-01-2025", "IdNumber": "ABCDE1234F" }
+                ],
+                "NationalIDCard": [],
+                "OtherId": [
+                  { "seq": "1", "ReportedDate": "01-01-2024", "IdNumber": "XXXXXXXX0000" }
+                ]
+              },
+              "AddressInfo": [
+                {
+                  "Seq": "1",
+                  "ReportedDate": "01-01-2025",
+                  "Address": "123 Example Street, Sample City",
+                  "State": "DL",
+                  "Postal": "000000",
+                  "Type": ""
+                },
+                {
+                  "Seq": "2",
+                  "ReportedDate": "01-08-2024",
+                  "Address": "456 Sample Avenue, Sample City",
+                  "State": "DL",
+                  "Postal": "000000",
+                  "Type": ""
+                }
+              ],
+              "PhoneInfo": [
+                { "seq": "1", "typeCode": "H", "ReportedDate": "01-01-2025", "Number": "987654xxxx" },
+                { "seq": "2", "typeCode": "H", "ReportedDate": "01-01-2024", "Number": "987654xxxx" }
+              ],
+              "EmailAddressInfo": [
+                { "seq": "1", "ReportedDate": "01-01-2025", "EmailAddress": "j***@*******" }
+              ]
+            },
+            "bank_details": {
+              "vpa_details": {
+                "vpa": "johndoe@okicici",
+                "account_holder_name": "JOHN DOE",
+                "platform": "Google Pay",
+                "upi_handle": "@okicici",
+                "icon_url": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=256&url=https://pay.google.com"
+              },
+              "account_details": {
+                "account_ifsc": "EXMP0001234",
+                "account_type": "SAVINGS ACCOUNT",
+                "account_priority": "PRIMARY ACCOUNT",
+                "account_number": "00000000000000"
+              },
+              "bank_details": {
+                "NEFT": true,
+                "SWIFT": null,
+                "CITY": "SAMPLE CITY",
+                "MICR": "000000000",
+                "UPI": true,
+                "CENTRE": "EXAMPLE",
+                "ADDRESS": "123 Example Street, Sample City",
+                "CONTACT": "+91000000000000",
+                "IMPS": true,
+                "STATE": "DELHI",
+                "RTGS": true,
+                "BRANCH": "EXAMPLE BRANCH",
+                "ISO3166": "IN-DL",
+                "DISTRICT": "EXAMPLE",
+                "BANK": "Example Bank",
+                "BANKCODE": "EXMP",
+                "IFSC": "EXMP0001234"
+              },
+              "transaction_details": {
+                "utr": "000000000000"
+              }
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
 }
 ]
