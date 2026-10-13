@@ -4338,5 +4338,271 @@
       }
     }
   }
+},
+{
+  "endpoint": "/api/v1/mobile/mobile-details",
+  "title": "Mobile Details",
+  "description": "Retrieve mobile number information — network, connection status, and SIM details.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/mobile/mobile-details' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"mobile_number\": \"987654xxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "987654xxxx data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "service_type": "GSM",
+            "main_language": "Hindi",
+            "mobile_number": "987654xxxx",
+            "current_network": "EXAMPLE",
+            "original_network": "DEMO",
+            "connection_status": "LIVE - Active",
+            "telecom_circle_state": "Sample State",
+            "telecom_circle_capital": "Sample City",
+            "sim_card_distributed_at": "Sample City, Sample Area, Sample Locality"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/uan/uan-365",
+  "title": "UAN 365",
+  "description": "Advanced UAN 365 — full EPFO profile with personal details, Aadhaar, PAN, bank, employment history, claims, and linked UANs.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/uan/uan-365' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"uan_number\": \"101904xxxxxx\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "101904xxxxxx data fetched successfully"
+        },
+        "responseData": {
+          "data": {
+            "uan": "101904xxxxxx",
+            "personal_details": {
+              "name": "John Doe",
+              "gender": "F",
+              "dob": "0*-A**-**7*",
+              "father_or_husband_name": "Richard Doe",
+              "relation_with_member": "F",
+              "marital_status": "M",
+              "physically_handicap": "N",
+              "international_worker": "N",
+              "uan_allotment_date": "25-NOV-2016 00:11:00",
+              "registered_on_portal": "YES",
+              "address": ""
+            },
+            "contact_details": {
+              "mobile_number": "987654xxxx",
+              "mobile_kyc_seed_date": "29-JAN-2019",
+              "email_id": "j***@*******"
+            },
+            "aadhaar_details": {
+              "aadhaar": "XXXXXXXXXXXX",
+              "aadhaar_masked": "**** **** 0000",
+              "name_as_on_aadhaar": "John Doe",
+              "kyc_seed_date": "24-NOV-2017",
+              "demo_verification_status": "Success ( Verified )",
+              "demo_verification_date": "05-APR-2024"
+            },
+            "pan_details": {
+              "pan": "ABCDE1234F",
+              "name_as_on_pan": "JOHN DOE",
+              "kyc_seed_date": "24-NOV-2017"
+            },
+            "bank_details": {
+              "bank_acc_no": "000000000000",
+              "bank_ifsc": "EXMP0001234",
+              "name_as_on_bank": "John Doe",
+              "kyc_seed_date": "24-NOV-2017"
+            },
+            "employment_history": [
+              {
+                "employee_detail": {
+                  "member_id": "DLCPM00000000000000000",
+                  "doj_epf": "01-APR-2020",
+                  "doj_eps": "01-APR-2020",
+                  "doe_epf": "",
+                  "doe_eps": "",
+                  "reason_of_leaving": "",
+                  "previous_employment": "Y",
+                  "benefit_taken": "",
+                  "claim_status": "",
+                  "balance_status": "Data N/A",
+                  "lcm": "",
+                  "is_north_east_member": "",
+                  "uan_linked_by": ""
+                },
+                "company_details": {
+                  "est_id": "DLCPM0000000000",
+                  "company_name": "EXAMPLE EDUCATION (INDIA) PRIVATE LIMITED",
+                  "company_address": "P-00, EXAMPLE PARK EXTENSION, NEW DELHI 000 DL 110000"
+                }
+              },
+              {
+                "employee_detail": {
+                  "member_id": "MRNOI00000000000000000",
+                  "doj_epf": "01-JUL-2016",
+                  "doj_eps": "01-JUL-2016",
+                  "doe_epf": "31-MAR-2020",
+                  "doe_eps": "31-MAR-2020",
+                  "reason_of_leaving": "CESSATION (SHORT SERVICE) - Any other reason",
+                  "previous_employment": "N",
+                  "benefit_taken": "",
+                  "claim_status": "Form-13 (Transfer Out) - Settled on : 20-MAY-2024",
+                  "balance_status": "Data N/A",
+                  "lcm": "",
+                  "is_north_east_member": "",
+                  "uan_linked_by": ""
+                },
+                "company_details": {
+                  "est_id": "MRNOI0000000000",
+                  "company_name": "EXAMPLE EDUCATION (INDIA) PRIVATE LIMITED",
+                  "company_address": "EXAMPLE TECHSPACE 0TH FLOOR TOWER 0, IT PARK PLOT NO B-0 SECTOR 00, NOIDA 000 UP 200000"
+                }
+              }
+            ],
+            "claims": [
+              {
+                "receipt_date": "2024-07-30",
+                "status": "Settled",
+                "claim_id": "DLCPM000000000000",
+                "member_id": "DLCPM00000000000000000",
+                "form_type": "Form-31",
+                "para_details": "Construction of House",
+                "ee_amount": "443700",
+                "er_amount": "240600",
+                "total_amount": "684300",
+                "dispatch_date": "2024-08-24",
+                "online": "Online",
+                "pending_days": "",
+                "transfer_member_id": "",
+                "reject_reason": ""
+              },
+              {
+                "receipt_date": "2024-06-13",
+                "status": "Returned",
+                "claim_id": "DLCPM000000000000",
+                "member_id": "DLCPM00000000000000000",
+                "form_type": "Form-31",
+                "para_details": "Purchase of House / Flat / Construction including acquisition if site from agency",
+                "ee_amount": "",
+                "er_amount": "",
+                "total_amount": "0",
+                "dispatch_date": "2024-06-27",
+                "online": "Online",
+                "pending_days": "",
+                "transfer_member_id": "",
+                "reject_reason": "1) AGENCY BANK DETAILS NOT ATTACHED HENCE CLAIM CANNOT BE PROCESSED UNDER SAID PARA 2) RETURNED FOR UPLOADING READABLE CANCELLED CHEQUE LEAF WITH MATCHING MEMBERS NAME AND BANK ACCOUNT."
+              },
+              {
+                "receipt_date": "2024-05-13",
+                "status": "Settled",
+                "claim_id": "MRNOI000000000000",
+                "member_id": "MRNOI00000000000000000",
+                "form_type": "Form-13 (Transfer Out) [ WITHOUT-MONEY  ]",
+                "para_details": "Transfer (Unexempted to Unexempted in other region or to Exempted Establishments)",
+                "ee_amount": "14",
+                "er_amount": "14",
+                "total_amount": "28",
+                "dispatch_date": "2024-05-20",
+                "online": "Online",
+                "pending_days": "",
+                "transfer_member_id": "DLCPM00000000000000000",
+                "reject_reason": ""
+              },
+              {
+                "receipt_date": "2023-11-13",
+                "status": "Rejected",
+                "claim_id": "DLCPM000000000000",
+                "member_id": "DLCPM00000000000000000",
+                "form_type": "Form-31",
+                "para_details": "Additions / Alterations of House",
+                "ee_amount": "",
+                "er_amount": "",
+                "total_amount": "0",
+                "dispatch_date": "2023-11-17",
+                "online": "Online",
+                "pending_days": "",
+                "transfer_member_id": "",
+                "reject_reason": "1) INSUFFICIENT MEMBER SERVICE 2) NOT ELIGIBLE -  INSUFFICIENT SERVICE."
+              }
+            ],
+            "freeze_de_freeze": [],
+            "joint_declarations": [
+              {
+                "member_id": "MRNOI00000000000000000",
+                "request_generated_on": "2024-04-05 17:28",
+                "status": "Approved by Field Office",
+                "changes_in": "MARITAL_STATUS, DOJ_EPF, DOJ_EPS,",
+                "remark": "Not Available",
+                "last_updated_on": "2024-05-04 14:50"
+              }
+            ],
+            "other_uans_linked": [
+              {
+                "uan": "100000000000",
+                "kyc": "MOBILE",
+                "name": "John Doe",
+                "linked_member_ids": "1"
+              },
+              {
+                "uan": "100000000000",
+                "kyc": "AADHAAR",
+                "name": "John Doe",
+                "linked_member_ids": "1"
+              },
+              {
+                "uan": "100000000000",
+                "kyc": "PAN",
+                "name": "John Doe",
+                "linked_member_ids": "1"
+              }
+            ],
+            "abry": []
+          },
+          "changes": []
+        }
+      }
+    }
+  }
+},
+{
+  "endpoint": "/api/v1/financial/pan-account-validate",
+  "title": "Pan Account Validate",
+  "description": "Validate whether a bank account is linked to the provided PAN number.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/pan-account-validate' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"pan_number\": \"ABCDE1234F\", \"account_number\": \"0000000000\", \"ifsc_code\": \"EXMP0001234\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "message": "PAN ABCDE1234F is not linked with account 0000000000 (EXMP0001234)"
+        },
+        "responseData": {
+          "data": {
+            "pan_number": "ABCDE1234F",
+            "pan_name": "John Doe",
+            "account_number": "0000000000",
+            "ifsc_code": "EXMP0001234",
+            "account_holder_name": "EXAMPLE SOLUTIONS PRIVATE LIMITED",
+            "message": "PAN ABCDE1234F is not linked with account 0000000000 (EXMP0001234)"
+          },
+          "changes": []
+        }
+      }
+    }
+  }
 }
 ]
