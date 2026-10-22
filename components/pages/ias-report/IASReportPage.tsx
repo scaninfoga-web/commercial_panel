@@ -12,16 +12,10 @@ import {
   AlertTriangle,
   Clock,
   FileSpreadsheet,
-  File as FileIcon,
   RotateCcw,
   Copy,
   Info,
   ChevronDown,
-  Activity,
-  IndianRupee,
-  ArrowLeftRight,
-  TrendingUp,
-  Inbox,
   BadgeCheck,
   Hash,
   CalendarRange,
@@ -46,104 +40,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { post } from "@/lib/api";
-import { formatCurrency, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import type { IASReport } from "@/types/ias-report";
 
-// ─── Types ──────────────────────────────────────────────────────────────
-type ReportFormat = "BOTH" | "PDF" | "XLSX";
+type ReportFormat = IASReport["request"]["format"];
+type IASReportFilters = IASReport["request"];
+type IASReportApiResponse = IASReport["response"];
+type IASReportResponseData = IASReport["response"]["responseData"];
+type ReportFile = IASReportResponseData["file_details"][number];
+const REPORT_FORMAT: ReportFormat = "XLSX";
 
-interface EndpointUsage {
-  endpoint: string;
-  hits: number;
-  success: number;
-  spent: number;
-  share: number;
-}
-
-interface ApiUsage {
-  api_name: string;
-  endpoint: string;
-  transactions: number;
-  completed: number;
-  debit: number;
-  credit: number;
-  share: number;
-  debit_share: number;
-}
-
-interface ActivityOverview {
-  total: number;
-  success: number;
-  failed: number;
-  success_rate: number;
-  total_spent: number;
-  avg_duration: number;
-  unique_endpoints: number;
-  endpoint_usage: EndpointUsage[];
-}
-
-interface TransactionOverview {
-  total: number;
-  credit: number;
-  debit: number;
-  net: number;
-  completed: number;
-  pending: number;
-  failed: number;
-  reversed: number;
-  unique_apis: number;
-  api_usage: ApiUsage[];
-}
-
-interface ReportFile {
-  kind: "ACTIVITY" | "TRANSACTION";
-  file_type: "XLSX" | "PDF";
-  label: string;
-  file_name: string;
-  size_bytes: number;
-  url: string;
-}
-
-interface IASReportResponseData {
-  report_id: string;
-  format: ReportFormat;
-  generated_at: string;
-  generated_at_label: string;
-  period: {
-    from: string;
-    to: string;
-    from_label: string;
-    to_label: string;
-    label: string;
-    days: number;
-  };
-  overview_stats: {
-    activity: ActivityOverview;
-    transaction: TransactionOverview;
-  };
-  records: {
-    activities_total: number;
-    activities_in_report: number;
-    activities_truncated: boolean;
-    transactions_total: number;
-    transactions_in_report: number;
-    transactions_truncated: boolean;
-  };
-  files: {
-    activity: {
-      xlsx_url: string;
-      pdf_url: string;
-    };
-    transaction: {
-      xlsx_url: string;
-      pdf_url: string;
-    };
-  };
-  file_details: ReportFile[];
-  link_expires_in_hours: number;
-  link_expires_at: string;
-  email_queued: boolean;
-  failed_files: string[];
-}
+const FORMAT_OPTIONS: ReadonlyArray<{ value: ReportFormat; label: string }> = [
+  { value: "XLSX", label: "XLSX (Excel)" },
+];
 
 // ─── Date helpers ───────────────────────────────────────────────────────
 const MONTH_NAMES = [
@@ -180,11 +89,15 @@ function isSameCalendarDay(a?: Date, b?: Date): boolean {
   );
 }
 
-// ─── DatePicker Component ──────────────────────────────────────────────
-// Styled to match the app's console chrome: slate-950 surface, slate-800
-// borders, a single emerald accent reserved for the selected/today state
-// rather than tinting the whole panel. Popover width is clamped so it
-// never overflows very narrow (≤360px) phone viewports.
+// ─── Error helper ───────────────────────────────────────────────────────
+function getErrorMessage(err: unknown, fallback: string): string {
+  const e = err as {
+    response?: { data?: { responseStatus?: { message?: string } } };
+    message?: string;
+  } | null;
+  return e?.response?.data?.responseStatus?.message || e?.message || fallback;
+}
+
 function DatePicker({
   value,
   onChange,
@@ -386,8 +299,6 @@ function DatePicker({
   );
 }
 
-// ─── Small shared building blocks ───────────────────────────────────────
-
 function IconBadge({
   icon: Icon,
   tone = "emerald",
@@ -426,35 +337,6 @@ function IconBadge({
   );
 }
 
-function StatCard({
-  icon,
-  tone,
-  label,
-  value,
-  hint,
-}: {
-  icon: typeof Activity;
-  tone: "emerald" | "red" | "sky" | "amber";
-  label: string;
-  value: string;
-  hint?: string;
-}) {
-  return (
-    <Card className="rounded-2xl border border-slate-800 bg-slate-900/50 backdrop-blur-xl transition-colors hover:border-slate-700">
-      <CardContent className="flex items-start gap-3 p-4 sm:p-5">
-        <IconBadge icon={icon} tone={tone} size="sm" />
-        <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
-            {label}
-          </p>
-          <p className="mt-1 truncate text-xl font-bold text-white sm:text-2xl">{value}</p>
-          {hint && <p className="mt-0.5 truncate text-xs text-zinc-500">{hint}</p>}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function FileRow({
   file,
   onCopy,
@@ -462,7 +344,6 @@ function FileRow({
   file: ReportFile;
   onCopy: (url: string, label: string) => void;
 }) {
-  const isPdf = file.file_type === "PDF";
   return (
     <div className="group flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-950/40 p-3 transition-all hover:border-emerald-500/40 hover:bg-slate-900/60 hover:shadow-[0_0_20px_-8px_rgba(16,185,129,0.35)] sm:gap-3 sm:p-4">
       <a
@@ -471,7 +352,7 @@ function FileRow({
         rel="noopener noreferrer"
         className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3"
       >
-        <IconBadge icon={isPdf ? FileIcon : FileSpreadsheet} tone={isPdf ? "sky" : "emerald"} size="sm" />
+        <IconBadge icon={FileSpreadsheet} tone="emerald" size="sm" />
         <div className="min-w-0">
           <p className="truncate text-sm font-medium text-white">{file.label}</p>
           <p className="truncate font-mono text-[11px] text-zinc-500">
@@ -506,7 +387,7 @@ function formatFileSize(bytes: number) {
   if (!bytes || bytes <= 0) return "0 B";
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
@@ -514,7 +395,7 @@ function formatFileSize(bytes: number) {
 export default function IASReportPage() {
   const [fromDate, setFromDate] = useState<Date | undefined>();
   const [toDate, setToDate] = useState<Date | undefined>();
-  const [format, setFormat] = useState<ReportFormat>("BOTH");
+  const [format, setFormat] = useState<ReportFormat>(REPORT_FORMAT);
   const [sendEmail, setSendEmail] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [report, setReport] = useState<IASReportResponseData | null>(null);
@@ -591,13 +472,15 @@ export default function IASReportPage() {
   const handleReset = () => {
     setFromDate(undefined);
     setToDate(undefined);
-    setFormat("BOTH");
+    setFormat(REPORT_FORMAT);
     setSendEmail(true);
     setReport(null);
     setError(null);
   };
 
   const handleGenerate = async () => {
+    if (isGenerating) return;
+
     if (!fromDate || !toDate) {
       toast.error("Please select both From and To dates");
       return;
@@ -607,26 +490,28 @@ export default function IASReportPage() {
       return;
     }
 
-    const dateRange = `${formatDDMMYYYY(fromDate)} to ${formatDDMMYYYY(toDate)}`;
+    const body: IASReportFilters = {
+      date_range: `${formatDDMMYYYY(fromDate)} to ${formatDDMMYYYY(toDate)}`,
+      format: FORMAT_OPTIONS.some((o) => o.value === format) ? format : REPORT_FORMAT,
+      send_email: sendEmail,
+    };
+
     setIsGenerating(true);
     setError(null);
     setReport(null);
 
     try {
-      const response = await post("/api/v1/user/get-ias-report", {
-        date_range: dateRange,
-        format,
-        send_email: sendEmail,
-      });
+      const response = await post("/api/v1/user/get-ias-report", body);
 
       const payload =
-        (response as { responseData?: unknown } | null)?.responseData ?? response;
+        (response as Partial<IASReportApiResponse> | null)?.responseData ?? response;
 
-      if (!payload) {
-        throw new Error("Empty response received from the server");
+      const reportData = payload as IASReportResponseData | null;
+
+      if (!reportData || !reportData.report_id || !reportData.overview_stats) {
+        throw new Error("Invalid response received from the server");
       }
 
-      const reportData = payload as IASReportResponseData;
       setReport(reportData);
       toast.success("IAS report generated successfully");
 
@@ -640,11 +525,11 @@ export default function IASReportPage() {
           } could not be generated`,
         );
       }
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.responseStatus?.message ||
-        err?.message ||
-        "Failed to generate IAS report. Please try again.";
+    } catch (err: unknown) {
+      const message = getErrorMessage(
+        err,
+        "Failed to generate IAS report. Please try again.",
+      );
       setError(message);
       toast.error(message);
     } finally {
@@ -665,8 +550,7 @@ export default function IASReportPage() {
     () =>
       report?.file_details?.filter(
         (f: ReportFile) =>
-          f.kind === "ACTIVITY" &&
-          (report.format === "BOTH" || f.file_type === report.format),
+          f.kind === "ACTIVITY" && f.file_type === "XLSX",
       ) ?? [],
     [report],
   );
@@ -674,12 +558,12 @@ export default function IASReportPage() {
     () =>
       report?.file_details?.filter(
         (f: ReportFile) =>
-          f.kind === "TRANSACTION" &&
-          (report.format === "BOTH" || f.file_type === report.format),
+          f.kind === "TRANSACTION" && f.file_type === "XLSX",
       ) ?? [],
     [report],
   );
   const failedFiles = report?.failed_files ?? [];
+
   const hasTruncatedData =
     !!report?.records?.activities_truncated || !!report?.records?.transactions_truncated;
 
@@ -756,33 +640,18 @@ export default function IASReportPage() {
                     <SelectValue placeholder="Select format" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-700 bg-slate-900">
-                    <SelectItem
-                      value="BOTH"
-                      className="text-slate-300 focus:bg-emerald-500/10 focus:text-emerald-400"
-                    >
-                      <span className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-zinc-500" />
-                        Both (PDF + XLSX)
-                      </span>
-                    </SelectItem>
-                    <SelectItem
-                      value="PDF"
-                      className="text-slate-300 focus:bg-emerald-500/10 focus:text-emerald-400"
-                    >
-                      <span className="flex items-center gap-2">
-                        <FileIcon className="h-4 w-4 text-sky-400" />
-                        PDF Only
-                      </span>
-                    </SelectItem>
-                    <SelectItem
-                      value="XLSX"
-                      className="text-slate-300 focus:bg-emerald-500/10 focus:text-emerald-400"
-                    >
-                      <span className="flex items-center gap-2">
-                        <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
-                        XLSX Only
-                      </span>
-                    </SelectItem>
+                    {FORMAT_OPTIONS.map((opt) => (
+                      <SelectItem
+                        key={opt.value}
+                        value={opt.value}
+                        className="text-slate-300 focus:bg-emerald-500/10 focus:text-emerald-400"
+                      >
+                        <span className="flex items-center gap-2">
+                          <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
+                          {opt.label}
+                        </span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -977,38 +846,6 @@ export default function IASReportPage() {
             </div>
           )}
 
-          {/* Overview Stats */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              icon={Activity}
-              tone="emerald"
-              label="Total Activities"
-              value={report.overview_stats.activity.total.toLocaleString()}
-              hint={`${report.overview_stats.activity.success_rate}% success rate`}
-            />
-            <StatCard
-              icon={IndianRupee}
-              tone="emerald"
-              label="Total Spent"
-              value={formatCurrency(report.overview_stats.activity.total_spent)}
-              hint={`${report.overview_stats.activity.unique_endpoints} unique endpoints`}
-            />
-            <StatCard
-              icon={ArrowLeftRight}
-              tone="sky"
-              label="Total Transactions"
-              value={report.overview_stats.transaction.total.toLocaleString()}
-              hint={`${report.overview_stats.transaction.unique_apis} unique APIs`}
-            />
-            <StatCard
-              icon={TrendingUp}
-              tone="emerald"
-              label="Net Balance Change"
-              value={formatCurrency(report.overview_stats.transaction.net)}
-              hint={`Credit: ${formatCurrency(report.overview_stats.transaction.credit)}`}
-            />
-          </div>
-
           {/* File Downloads */}
           <Card className="rounded-2xl border border-slate-800 bg-slate-900/50 shadow-[0_20px_60px_rgba(15,23,42,0.45)] backdrop-blur-xl">
             <CardHeader className="pb-2">
@@ -1029,46 +866,45 @@ export default function IASReportPage() {
                 </div>
               )}
 
-              {activityFiles.length > 0 && (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div className="space-y-3">
                   <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                     Activity Statement
                   </p>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {activityFiles.map((file) => (
+                  {activityFiles.length > 0 ? (
+                    activityFiles.map((file) => (
                       <FileRow
                         key={`${file.kind}-${file.file_type}-${file.file_name}`}
                         file={file}
                         onCopy={handleCopyLink}
                       />
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 p-4 text-center text-xs text-zinc-500">
+                      Not available
+                    </p>
+                  )}
                 </div>
-              )}
 
-              {transactionFiles.length > 0 && (
                 <div className="space-y-3">
                   <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                     Transaction Statement
                   </p>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {transactionFiles.map((file) => (
+                  {transactionFiles.length > 0 ? (
+                    transactionFiles.map((file) => (
                       <FileRow
                         key={`${file.kind}-${file.file_type}-${file.file_name}`}
                         file={file}
                         onCopy={handleCopyLink}
                       />
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-slate-700 bg-slate-950/40 p-4 text-center text-xs text-zinc-500">
+                      Not available
+                    </p>
+                  )}
                 </div>
-              )}
-
-              {activityFiles.length === 0 && transactionFiles.length === 0 && (
-                <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-700 bg-slate-950/40 py-10 text-center">
-                  <Inbox className="h-8 w-8 text-zinc-600" />
-                  <p className="text-sm text-zinc-500">No files are available for this report.</p>
-                </div>
-              )}
+              </div>
 
               <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-800 pt-4 text-xs text-zinc-500">
                 <Clock className="h-3.5 w-3.5" />
