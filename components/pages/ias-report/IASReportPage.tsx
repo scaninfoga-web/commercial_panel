@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
@@ -20,6 +20,9 @@ import {
   Hash,
   CalendarRange,
   Check,
+  Hourglass,
+  RefreshCw,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +42,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { post } from "@/lib/api";
+import { get, post } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { IASReport } from "@/types/ias-report";
 
@@ -47,9 +50,78 @@ type ReportFormat = IASReport["request"]["format"];
 type IASReportFilters = IASReport["request"];
 type IASReportApiResponse = IASReport["response"];
 type IASReportResponseData = IASReport["response"]["responseData"];
+type IASReportConflict = IASReport["conflict"];
+type IASReportStatusResponse = IASReport["status"]["response"];
 type ReportFile = IASReportResponseData["file_details"][number];
+
+type TrackingState = "processing" | "ready" | "timeout" | "failed";
+
+interface Tracking {
+  reportId: string;
+  message: string;
+  state: TrackingState;
+  progress?: number;
+}
+
+const POLL_INTERVAL_MS = 5_000;
+const MAX_POLL_MS = 15 * 60 * 1000; // stop auto-checking after 15 minutes
+const MAX_POLL_ERRORS = 5;
+
+const COMPLETED_STATUSES = new Set([
+  "COMPLETED", "COMPLETE", "READY", "SUCCESS", "SUCCEEDED", "DONE", "GENERATED",
+]);
+const FAILED_STATUSES = new Set(["FAILED", "FAILURE", "ERROR", "CANCELLED", "CANCELED"]);
+
+const TRACKING_UI: Record<TrackingState, { card: string; icon: string; title: string }> = {
+  processing: {
+    card: "border-sky-500/30 bg-sky-500/5",
+    icon: "text-sky-400",
+    title: "Your report is being generated",
+  },
+  ready: {
+    card: "border-emerald-500/30 bg-emerald-500/5",
+    icon: "text-emerald-400",
+    title: "Your report is ready",
+  },
+  timeout: {
+    card: "border-amber-500/30 bg-amber-500/5",
+    icon: "text-amber-400",
+    title: "Still generating",
+  },
+  failed: {
+    card: "border-red-500/30 bg-red-500/5",
+    icon: "text-red-400",
+    title: "Report generation failed",
+  },
+};
+
+/** Detects the HTTP 409 "report already being generated" response, whether it is
+ *  thrown (axios-style error) or returned as a normal response body. */
+function extractConflict(source: unknown): { reportId: string; message: string } | null {
+  const src = source as {
+    response?: { status?: number; data?: Partial<IASReportConflict> };
+  } & Partial<IASReportConflict> | null;
+
+  const body: Partial<IASReportConflict> | null | undefined = src?.response?.data ?? src;
+  const statusCode = src?.response?.status ?? body?.responseStatus?.statusCode;
+  const reportId = body?.responseData?.report_id;
+
+  if (statusCode === 409 && reportId) {
+    return {
+      reportId,
+      message:
+        body?.responseStatus?.message ||
+        "A report is already being generated. Its links will be emailed when ready.",
+    };
+  }
+  return null;
+}
+
+// Backend only supports XLSX now ("format must be XLSX — PDF reports are no longer available").
+// The request body always uses this constant, so stale component state can never send another value.
 const REPORT_FORMAT: ReportFormat = "XLSX";
 
+// Only these values can be selected / sent. Add more here if the backend supports them again.
 const FORMAT_OPTIONS: ReadonlyArray<{ value: ReportFormat; label: string }> = [
   { value: "XLSX", label: "XLSX (Excel)" },
 ];
@@ -299,6 +371,8 @@ function DatePicker({
   );
 }
 
+// ─── Small shared building blocks ───────────────────────────────────────
+
 function IconBadge({
   icon: Icon,
   tone = "emerald",
@@ -400,6 +474,10 @@ export default function IASReportPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [report, setReport] = useState<IASReportResponseData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tracking, setTracking] = useState<Tracking | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
+  const startedAtRef = useRef(0);
+  const pollErrorsRef = useRef(0);
 
   const todayEnd = useMemo(() => endOfDay(new Date()), []);
 
@@ -419,7 +497,10 @@ export default function IASReportPage() {
     return null;
   }, [fromDate, toDate]);
 
-  const canGenerate = Boolean(fromDate && toDate && !dateRangeError && !isGenerating);
+  const isTracking = tracking?.state === "processing";
+  const canGenerate = Boolean(
+    fromDate && toDate && !dateRangeError && !isGenerating && !isTracking,
+  );
 
   const presetRanges = useMemo(() => {
     const ref = todayEnd;
@@ -476,10 +557,168 @@ export default function IASReportPage() {
     setSendEmail(true);
     setReport(null);
     setError(null);
+    setTracking(null);
+  };
+
+  const completeReport = useCallback((data: IASReportResponseData) => {
+    setTracking(null);
+    setReport(data);
+    toast.success("IAS report generated successfully");
+
+    if (data.email_queued) {
+      toast.info("Report has been emailed to your registered email");
+    }
+    if (data.failed_files?.length) {
+      toast.warning(
+        `${data.failed_files.length} file${
+          data.failed_files.length > 1 ? "s" : ""
+        } could not be generated`,
+      );
+    }
+  }, []);
+
+  const startTracking = useCallback((reportId: string, message: string) => {
+    startedAtRef.current = Date.now();
+    pollErrorsRef.current = 0;
+    setTracking({ reportId, message, state: "processing" });
+    toast.info(message);
+  }, []);
+
+  /** One status check. Resolves to the resulting state; throws on network errors. */
+  const checkStatus = useCallback(
+    async (reportId: string): Promise<"completed" | "failed" | "processing"> => {
+      const res = await get(
+        `/api/v1/user/get-ias-report-status?report_id=${encodeURIComponent(reportId)}`,
+      );
+      const body = res as Partial<IASReportStatusResponse> | null;
+      const data = (body?.responseData ?? res) as IASReportStatusResponse["responseData"] | null;
+      const apiMessage = data?.message || body?.responseStatus?.message;
+
+      if (!data) return "processing";
+
+      const status = String(data.status ?? "").toUpperCase();
+
+      if (FAILED_STATUSES.has(status)) {
+        setTracking((t) =>
+          t && {
+            ...t,
+            state: "failed",
+            message: apiMessage || "Report generation failed. Please try again.",
+          },
+        );
+        return "failed";
+      }
+
+      const hasFullReport = Boolean(data.overview_stats && data.file_details?.length);
+      if (COMPLETED_STATUSES.has(status) || hasFullReport) {
+        if (hasFullReport) {
+          completeReport(data as IASReportResponseData);
+        } else {
+          setTracking((t) =>
+            t && {
+              ...t,
+              state: "ready",
+              message:
+                apiMessage ||
+                "Your report is ready. The download links have been emailed to you.",
+            },
+          );
+          toast.success("Your IAS report is ready");
+        }
+        return "completed";
+      }
+
+      setTracking((t) =>
+        t && {
+          ...t,
+          message: apiMessage || t.message,
+          progress: typeof data.progress === "number" ? data.progress : t.progress,
+        },
+      );
+      return "processing";
+    },
+    [completeReport],
+  );
+
+  // Auto-poll while a report is being generated.
+  const trackingId = tracking?.reportId;
+  const trackingState = tracking?.state;
+  useEffect(() => {
+    if (!trackingId || trackingState !== "processing") return;
+
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const tick = async () => {
+      try {
+        const result = await checkStatus(trackingId);
+        pollErrorsRef.current = 0;
+        if (cancelled || result !== "processing") return;
+      } catch {
+        pollErrorsRef.current += 1;
+        if (pollErrorsRef.current >= MAX_POLL_ERRORS) {
+          if (!cancelled) {
+            setTracking((t) =>
+              t && {
+                ...t,
+                state: "timeout",
+                message:
+                  "We couldn't check the status right now. Your report links will be emailed when ready.",
+              },
+            );
+          }
+          return;
+        }
+      }
+
+      if (cancelled) return;
+
+      if (Date.now() - startedAtRef.current > MAX_POLL_MS) {
+        setTracking((t) =>
+          t && {
+            ...t,
+            state: "timeout",
+            message:
+              "This is taking longer than usual. Your report links will be emailed when ready.",
+          },
+        );
+        return;
+      }
+
+      timer = setTimeout(tick, POLL_INTERVAL_MS);
+    };
+
+    tick();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [trackingId, trackingState, checkStatus]);
+
+  const handleCheckNow = async () => {
+    if (!tracking || isChecking) return;
+    setIsChecking(true);
+    try {
+      const result = await checkStatus(tracking.reportId);
+      if (result === "processing") {
+        if (tracking.state === "timeout") {
+          // resume auto-checking
+          startedAtRef.current = Date.now();
+          pollErrorsRef.current = 0;
+          setTracking((t) => t && { ...t, state: "processing" });
+        }
+        toast.info("Your report is still being generated");
+      }
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Could not check report status. Please try again."));
+    } finally {
+      setIsChecking(false);
+    }
   };
 
   const handleGenerate = async () => {
-    if (isGenerating) return;
+    if (isGenerating || isTracking) return;
 
     if (!fromDate || !toDate) {
       toast.error("Please select both From and To dates");
@@ -490,6 +729,7 @@ export default function IASReportPage() {
       return;
     }
 
+    // Commercial panel: user_id is NOT sent, the backend resolves the user from the token.
     const body: IASReportFilters = {
       date_range: `${formatDDMMYYYY(fromDate)} to ${formatDDMMYYYY(toDate)}`,
       format: FORMAT_OPTIONS.some((o) => o.value === format) ? format : REPORT_FORMAT,
@@ -499,33 +739,42 @@ export default function IASReportPage() {
     setIsGenerating(true);
     setError(null);
     setReport(null);
+    setTracking(null);
 
     try {
       const response = await post("/api/v1/user/get-ias-report", body);
 
-      const payload =
-        (response as Partial<IASReportApiResponse> | null)?.responseData ?? response;
+      // A 409 can come back as a normal body depending on the api helper.
+      const conflict = extractConflict(response);
+      if (conflict) {
+        startTracking(conflict.reportId, conflict.message);
+        return;
+      }
 
-      const reportData = payload as IASReportResponseData | null;
+      const envelope = response as Partial<IASReportApiResponse> | null;
+      const data = (envelope?.responseData ?? response) as Partial<IASReportResponseData> | null;
 
-      if (!reportData || !reportData.report_id || !reportData.overview_stats) {
+      if (!data || !data.report_id) {
         throw new Error("Invalid response received from the server");
       }
 
-      setReport(reportData);
-      toast.success("IAS report generated successfully");
-
-      if (reportData.email_queued) {
-        toast.info("Report has been emailed to your registered email");
-      }
-      if (reportData.failed_files?.length) {
-        toast.warning(
-          `${reportData.failed_files.length} file${
-            reportData.failed_files.length > 1 ? "s" : ""
-          } could not be generated`,
+      // Large reports: accepted for background generation (no stats/files yet).
+      if (!data.overview_stats) {
+        startTracking(
+          data.report_id,
+          envelope?.responseStatus?.message ||
+            "Your report is being generated. Download links will be emailed when ready.",
         );
+        return;
       }
+
+      completeReport(data as IASReportResponseData);
     } catch (err: unknown) {
+      const conflict = extractConflict(err);
+      if (conflict) {
+        startTracking(conflict.reportId, conflict.message);
+        return;
+      }
       const message = getErrorMessage(
         err,
         "Failed to generate IAS report. Please try again.",
@@ -759,6 +1008,82 @@ export default function IASReportPage() {
         >
           <AlertTriangle className="h-5 w-5 shrink-0" />
           <span className="text-sm">{error}</span>
+        </motion.div>
+      )}
+
+      {/* Background generation status */}
+      {tracking && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          role="status"
+          aria-live="polite"
+          className={cn(
+            "rounded-2xl border p-4 backdrop-blur-xl sm:p-5",
+            TRACKING_UI[tracking.state].card,
+          )}
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className={cn("mt-0.5 shrink-0", TRACKING_UI[tracking.state].icon)}>
+                {tracking.state === "processing" && <Loader2 className="h-6 w-6 animate-spin" />}
+                {tracking.state === "ready" && <BadgeCheck className="h-6 w-6" />}
+                {tracking.state === "timeout" && <Hourglass className="h-6 w-6" />}
+                {tracking.state === "failed" && <AlertTriangle className="h-6 w-6" />}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-white sm:text-base">
+                  {TRACKING_UI[tracking.state].title}
+                </p>
+                <p className="mt-0.5 text-xs text-zinc-400">{tracking.message}</p>
+                <p className="mt-2 flex items-center gap-1.5 text-[11px] text-zinc-500">
+                  <Hash className="h-3 w-3 shrink-0" />
+                  <span className="truncate font-mono text-zinc-300">{tracking.reportId}</span>
+                </p>
+                {tracking.state === "processing" && (
+                  <p className="mt-1 text-[11px] text-zinc-500">
+                    Checking automatically every {POLL_INTERVAL_MS / 1000} seconds. You can also
+                    leave this page. The links will be emailed when ready.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2">
+              {(tracking.state === "processing" || tracking.state === "timeout") && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isChecking}
+                  onClick={handleCheckNow}
+                  className="touch-manipulation rounded-xl border-slate-700 bg-slate-900 text-zinc-300 hover:border-slate-600 hover:bg-slate-800 hover:text-white"
+                >
+                  <RefreshCw className={cn("mr-2 h-3.5 w-3.5", isChecking && "animate-spin")} />
+                  Check status
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Dismiss"
+                onClick={() => setTracking(null)}
+                className="h-8 w-8 rounded-lg text-zinc-500 hover:bg-slate-800 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {tracking.state === "processing" && typeof tracking.progress === "number" && (
+            <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+              <div
+                className="h-full rounded-full bg-sky-500 transition-all"
+                style={{ width: `${Math.min(Math.max(tracking.progress, 0), 100)}%` }}
+              />
+            </div>
+          )}
         </motion.div>
       )}
 

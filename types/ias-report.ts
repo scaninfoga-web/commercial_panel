@@ -98,4 +98,36 @@ export interface IASReport {
       failed_files: string[];
     };
   };
+
+  conflict: {
+    responseStatus: {
+      status: boolean;
+      statusCode: number;
+      statusMessage: string;
+      message: string;
+    };
+    responseData: {
+      report_id: string;
+    };
+  };
+
+  status: {
+    request: {
+      report_id: string;
+    };
+    response: {
+      responseStatus: {
+        status: boolean;
+        statusCode: number;
+        statusMessage: string;
+        message: string;
+      };
+      responseData: Partial<IASReport["response"]["responseData"]> & {
+        report_id: string;
+        status?: string;
+        message?: string;
+        progress?: number;
+      };
+    };
+  };
 }
