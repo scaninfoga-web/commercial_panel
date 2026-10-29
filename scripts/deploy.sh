@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────────────
-SSH_KEY="${SSH_KEY:-$HOME/.ssh/jatin.pem}"
+SSH_KEY="${SSH_KEY:-/Users/khushal/Downloads/jatin.pem}"
 SERVER_USER="ubuntu"
 SERVER_IP="13.234.26.49"
 SERVER_DIR="/home/ubuntu/frontend_deployed/commercial_panel"

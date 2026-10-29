@@ -4604,5 +4604,54 @@
       }
     }
   }
+},
+{
+  "endpoint": "/api/v1/financial/account-penny-drop",
+  "title": "Account Penny Drop",
+  "description": "Verify a bank account in real time by sending a ₹1 penny drop transfer and returning the beneficiary name, bank and branch details, and transaction status.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/account-penny-drop' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"account_number\": \"0000000000\", \"ifsc_code\": \"EXMP0001234\", \"realtime_data\": false, \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "response": {
+    "success": {
+      "status_code": 200,
+      "example": {
+        "responseStatus": {
+          "status": true,
+          "statusCode": 200,
+          "statusMessage": "OK — request succeeded",
+          "message": "Penny drop was successful for 0000000000",
+          "charged": true,
+          "beforeBalance": 1000.0,
+          "afterBalance": 990.0,
+          "apiPrice": 10,
+          "txnId": "TXN-xxxxxxxx-0000000000000000000000000000000x",
+          "duration": "7.53s"
+        },
+        "responseData": {
+          "data": {
+            "bank_details": {
+              "bank_address": "P-00, EXAMPLE PARK EXTENSION, NEW DELHI 110000",
+              "bank_name": "Example Bank",
+              "branch_name": "EXAMPLE BRANCH",
+              "micr_code": "110000000"
+            },
+            "additional_info": {
+              "transaction_id": "000000000000",
+              "transaction_status": "completed",
+              "utr": "pennydrop",
+              "transfer_type": "IMPS",
+              "verified": true,
+              "verified_at": "2026-01-01T10:00:00.000Z"
+            },
+            "account_details": {
+              "beneficiary_name": "JOHN DOE",
+              "account_number": "0000000000",
+              "account_ifsc": "EXMP0001234"
+            }
+          },
+          "changes": []
+        }
+      }
+    }
+  }
 }
 ]
