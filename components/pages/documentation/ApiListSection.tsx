@@ -41,12 +41,18 @@ interface ApiResponseEnvelope<T> {
   responseData: T;
 }
 
-const BLOCKED_ENDPOINTS: string[] = [
+const SKIP_ENDPOINTS: string[] = [
   "/api/v1/map/route-data",
   "/api/v1/map/location-data",
   "/api/v1/uan/get-uan-no",
   "/api/v1/uan/uan-to-employment-profile-lookup",
   "/api/v1/mobile/mobile-to-profile-advance",
+  "/api/v1/financial/cibil-v2",
+  "/api/v1/financial/cibil",
+  "/api/v1/gst/udyam-report",
+  "/api/v1/financial/panallinone",
+  "/api/v1/inspect/dl-advance-search",
+  ""
 ];
 
 interface ApiCategory {
@@ -458,7 +464,7 @@ export default function ApiListSection() {
 
   const filteredApis = useMemo(() => {
     let visibleApis = apis.filter(
-      (api) => !BLOCKED_ENDPOINTS.includes(api.endpoint),
+      (api) => !SKIP_ENDPOINTS.includes(api.endpoint),
     );
 
     if (activeCategory) {
@@ -487,7 +493,7 @@ export default function ApiListSection() {
 
   const visibleTotal = useMemo(
     () =>
-      apis.filter((api) => !BLOCKED_ENDPOINTS.includes(api.endpoint)).length,
+      apis.filter((api) => !SKIP_ENDPOINTS.includes(api.endpoint)).length,
     [apis],
   );
 

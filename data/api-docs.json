@@ -295,7 +295,7 @@
   "endpoint": "/api/v1/financial/cibil",
   "title": "Cibil",
   "description": "Retrieve comprehensive credit report and score using name and mobile number.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/cibil' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"name\": \"John Doe\", \"mobile_number\": \"9812345670\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/financial/cibil' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"username\": \"John Doe\", \"mobile_number\": \"9812345670\",\"pan_number\": \"ABCDE1234F\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -784,7 +784,7 @@
   "endpoint": "/api/v1/gst/din-to-mca",
   "title": "DIN To MCA",
   "description": "Retrieve MCA records and associated companies for a given DIN.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/din-to-mca' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"din\": \"01234567\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/din-to-mca' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"din_number\": \"01234567\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -3075,8 +3075,8 @@
  {
   "endpoint": "/api/v1/gst/udyam-advance",
   "title": "Udyam Advance",
-  "description": "Retrieve advanced Udyam registration details.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/udyam-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"udyam_registration_number\": \"UDYAM-MH-01-0000001\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "description": "Retrieve advanced Udyam registration details.TYPE must be MOBILE, EMAIL, PAN, UDYAM.",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/udyam-advance' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"type\": \"MOBILE\", \"value\": \"96022xxxxx\", \"realtime_data\": true, \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,
@@ -3117,7 +3117,7 @@
   "endpoint": "/api/v1/gst/udyam-report",
   "title": "Udyam Report",
   "description": "Retrieve comprehensive Udyam report.",
-  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/udyam-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"udyam_registration_number\": \"UDYAM-MH-01-0000001\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
+  "request_curl": "curl --location 'https://api.scaninfoga.com/api/v1/gst/udyam-report' --header 'Content-Type: application/json' --header 'api-key: YOUR_API_KEY' --data '{ \"udyam_number\": \"UDYAM-MH-01-0000001\", \"purpose\": \"verification\", \"consent\": \"I confirm that I have obtained user consent to access and process data for verification and compliance purposes.\" }'",
   "response": {
     "success": {
       "status_code": 200,

@@ -21,7 +21,7 @@ import ForgotMpinPanel from './sub/ForgotMpinPanel';
 const changeEmailSchema = z
   .object({
     newEmail: z.string().email('Please enter a valid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z.string().min(6, 'password must be at least 6 characters'),
     confirmPassword: z
       .string()
       .min(6, 'Password must be at least 6 characters'),
