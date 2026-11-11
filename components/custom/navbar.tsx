@@ -14,6 +14,8 @@ import {
   Loader2,
   ArrowDownLeft,
   ArrowUpRight,
+  Bell,
+  MessageCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { clearSession } from "@/lib/auth";
@@ -30,6 +32,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  useSupportNotifications,
+} from "@/hooks/useSupportNotifications";
 
 const VALID_ENVS = ["DEVELOPMENT", "PRODUCTION"] as const;
 
@@ -44,22 +49,30 @@ const Navbar: React.FC = () => {
   const [envChangeTarget, setEnvChangeTarget] = useState<string | null>(null);
 
   const [walletOpen, setWalletOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const {
+    notifications,
+    total: notificationTotal,
+    markAsRead,
+  } = useSupportNotifications(token);
 
   const wallet = useSelector((state: RootState) => state.wallet);
 
   const envRef = useRef<HTMLDivElement>(null);
   const walletRef = useRef<HTMLDivElement>(null);
-
+  const notificationsRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const raw = getCookie("accessToken");
-    if (raw) {
-      try {
-        setToken(typeof raw === "string" ? JSON.parse(raw) : null);
-      } catch {
-        setToken(typeof raw === "string" ? raw : null);
-      }
+    if (!raw) {
+      setToken(null);
+      return;
     }
-  }, []);
+    try {
+      setToken(typeof raw === "string" ? JSON.parse(raw) : null);
+    } catch {
+      setToken(typeof raw === "string" ? raw : null);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const saved = localStorage.getItem("environment");
@@ -109,6 +122,12 @@ const Navbar: React.FC = () => {
       ) {
         setWalletOpen(false);
       }
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(event.target as Node)
+      ) {
+        setNotificationsOpen(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -120,6 +139,7 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     setEnvOpen(false);
     setWalletOpen(false);
+    setNotificationsOpen(false);
   }, [pathname]);
 
   const handleEnvChange = (value: string) => {
@@ -168,7 +188,7 @@ const Navbar: React.FC = () => {
         <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
           {/* Environment Switcher */}
           {token && (
-            <div className="relative" ref={envRef}>
+            <div className="relative order-2" ref={envRef}>
               <button
                 onClick={() => setEnvOpen(!envOpen)}
                 className={cn(
@@ -237,9 +257,122 @@ const Navbar: React.FC = () => {
             </div>
           )}
 
+          {token && (
+            <div className="relative order-1" ref={notificationsRef}>
+              <button
+                type="button"
+                onClick={() => setNotificationsOpen((open) => !open)}
+                aria-label={
+                  notificationTotal > 0
+                    ? `${notificationTotal} unread support notifications`
+                    : "Notifications"
+                }
+                aria-expanded={notificationsOpen}
+                className={cn(
+                  "relative flex h-9 w-9 items-center justify-center rounded-xl border text-zinc-300 shadow-lg transition-all duration-200 hover:text-white",
+                  notificationTotal > 0
+                    ? "border-emerald-400/40 bg-gradient-to-br from-emerald-500/20 to-cyan-500/10 text-emerald-300 shadow-emerald-950/30 hover:border-emerald-300/70 hover:shadow-emerald-900/40"
+                    : "border-white/10 bg-white/[0.03] hover:border-emerald-500/40 hover:bg-emerald-500/10",
+                )}
+              >
+                <Bell
+                  className={cn(
+                    "h-4 w-4",
+                    notificationTotal > 0 && "animate-[wiggle_1.8s_ease-in-out_infinite]",
+                  )}
+                />
+                {notificationTotal > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 flex min-w-4 items-center justify-center rounded-full border-2 border-[#05070B] bg-gradient-to-br from-red-400 to-rose-600 px-1 text-[9px] font-bold leading-4 text-white shadow-lg shadow-red-950/50">
+                    +{notificationTotal > 99 ? "99+" : notificationTotal}
+                  </span>
+                )}
+              </button>
+
+              <AnimatePresence>
+                {notificationsOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    className="fixed left-2 right-2 top-16 z-50 overflow-hidden rounded-2xl border border-emerald-500/20 bg-[#0C0F16]/95 shadow-2xl shadow-black/60 backdrop-blur-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96"
+                  >
+                    <div className="flex items-center justify-between border-b border-slate-800 bg-gradient-to-r from-emerald-500/10 via-transparent to-cyan-500/5 px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white">
+                          Notifications
+                        </p>
+                        <p className="text-xs text-zinc-500">
+                          Unread support messages
+                        </p>
+                      </div>
+                      {notificationTotal > 0 && (
+                        <span className="rounded-full bg-red-500/15 px-2 py-1 text-[10px] font-semibold text-red-300">
+                          {notificationTotal} unread
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="max-h-96 overflow-y-auto p-2">
+                      {notifications.length === 0 ? (
+                        <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
+                          <Bell className="h-5 w-5 text-zinc-600" />
+                          <p className="text-sm text-zinc-400">
+                            No unread notifications
+                          </p>
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <button
+                            key={notification.id}
+                            type="button"
+                            onClick={() => {
+                              setNotificationsOpen(false);
+                              markAsRead(notification.id);
+                              router.push(`/get_support/${notification.id}`);
+                            }}
+                            className="group flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-white/[0.05]"
+                          >
+                            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                              <MessageCircle className="h-4 w-4" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center justify-between gap-2">
+                                <span className="truncate text-xs font-semibold text-white">
+                                  {notification.subject}
+                                </span>
+                                <span className="flex shrink-0 items-center gap-1.5">
+                                  {notification.ticketId && (
+                                    <span className="rounded-md bg-cyan-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-cyan-300 ring-1 ring-inset ring-cyan-400/20">
+                                      {notification.ticketId}
+                                    </span>
+                                  )}
+                                  {notification.totalMessages > 0 && (
+                                    <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-300 ring-1 ring-inset ring-red-400/20">
+                                      {notification.totalMessages}
+                                    </span>
+                                  )}
+                                </span>
+                              </span>
+                              <span className="mt-1 block line-clamp-2 text-xs leading-5 text-zinc-400">
+                                {notification.displayMessage}
+                              </span>
+                              <span className="mt-1 block text-[10px] font-medium text-emerald-400/80">
+                                Open conversation
+                              </span>
+                            </span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
           {/* Advanced Wallet Widget with Dropdown */}
           {token && (
-            <div className="relative" ref={walletRef}>
+            <div className="relative order-3" ref={walletRef}>
               <motion.button
                 onClick={() => setWalletOpen(!walletOpen)}
                 className="group flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 py-1 pl-2 pr-1 transition-all hover:border-emerald-500/60 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] sm:gap-2 sm:pl-3"
@@ -361,7 +494,7 @@ const Navbar: React.FC = () => {
           {token && (
             <button
               onClick={handleLogout}
-              className="flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-medium text-red-400 transition-colors hover:bg-red-500/10 sm:px-3 sm:text-[13px]"
+              className="order-4 flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-medium text-red-400 transition-colors hover:bg-red-500/10 sm:px-3 sm:text-[13px]"
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden md:inline">Logout</span>

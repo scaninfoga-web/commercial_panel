@@ -93,11 +93,19 @@ export const apiCall = async <T = any>(
 ): Promise<T> => {
   const token = getAuthToken();
   const clientInfo = await getClientInfo();
+  const isMultipart =
+    typeof FormData !== 'undefined' && payload instanceof FormData;
+  const isReportRequest = endpoint.startsWith('/api/v1/report/');
 
   const headers: Record<string, any> = {
     ...additionalConfig.headers,
     clientInfo: JSON.stringify(clientInfo),
   };
+
+  // Let Axios/browser set the multipart boundary for FormData requests.
+  if (isMultipart) {
+    headers['Content-Type'] = undefined;
+  }
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -115,16 +123,14 @@ export const apiCall = async <T = any>(
     payload !== null &&
     ['post', 'put', 'patch', 'delete'].includes(method.toLowerCase())
   ) {
-    let body_to_send = {};
-    if (!endpoint.includes('/auth')) {
+    let body_to_send = payload;
+    if (!isMultipart && !isReportRequest && !endpoint.includes('/auth')) {
       body_to_send = {
         ...payload,
         purpose: 'verification',
         consent:
           'I confirm that I have obtained user consent to access and process data for verification and compliance purposes.',
       };
-    } else {
-      body_to_send = payload;
     }
     config.data = body_to_send;
   }

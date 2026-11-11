@@ -67,7 +67,6 @@ const API_CATEGORIES: ApiCategory[] = [
     label: "Vehicle RC",
     keywords: ["vehicle", " rc", "rc advance", "rc verify"],
   },
-  { label: "PUCC", keywords: ["pucc"] },
   { label: "UAN", keywords: ["uan", "employment history"] },
   { label: "GST", keywords: ["gst"] },
   { label: "MCA", keywords: ["mca", "cin", "din"] },
@@ -92,6 +91,30 @@ const API_CATEGORIES: ApiCategory[] = [
     keywords: ["stealer", "breach", "dark web", "domain search"],
   },
   { label: "IndiaMART", keywords: ["indiamart"] },
+  {
+  label: "Financial",
+  keywords: [
+    "financial",
+    "penny drop",
+    "account validation",
+    "account-penny-drop",
+    "account-validation",
+    "ifsc to bank",
+    "upi to account",
+    "verify upi",
+    "mobile to account",
+    "cibil",
+    "crif",
+    "kra data",
+    "digital payment analyser",
+    "groww",
+    "pan-experian",
+    "pan-to-insurance",
+    "pan account validate",
+    "pan refund",
+    "pan track",
+  ],
+},
 ];
 
 const matchesCategory = (api: ApiDetail, category: ApiCategory) => {

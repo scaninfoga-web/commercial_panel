@@ -20,6 +20,7 @@ import {
   User,
   Crown,
   ShieldCheck,
+  MessageCircleQuestion,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -61,6 +62,11 @@ const sidebarGroups: SidebarGroup[] = [
         title: "MSI Agreement",
         icon: ShieldCheck,
         href: "/msi-agreement",
+      },
+      {
+        title: "Get Support",
+        icon: MessageCircleQuestion,
+        href: "/get_support",
       },
     ],
   },
