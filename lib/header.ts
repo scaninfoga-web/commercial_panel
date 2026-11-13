@@ -6,26 +6,13 @@ const SESSION_KEY = 'client_info_v2';
 const NA = 'N/A';
 
 export type ClientPage =
-  | 'DigitalIntelligence'
-  | '365Intelligence'
-  | 'Auth'
-  | 'Bulk Verifications';
+  | 'Commercial Panel';
 
-// Maps a route path → backend `page` enum. Keep in sync with the middleware
-// schema (client_info_schema.page) in the backend header middleware.
-const PAGE_BY_PATH: Record<string, ClientPage> = {
-  '/scaninfogaIntelligence': '365Intelligence',
-  '/digitalIntelligence': 'DigitalIntelligence',
-  '/auth': 'Auth',
-  '/bulkVerifications': 'Bulk Verifications',
-};
-
-// Reads the current route (client-side only) and maps it to the backend page.
-// Returns undefined for any path not in the map — the backend treats page as
-// optional for non-required tiers, so undefined is safe.
+// This application is the commercial panel, so all routes use the same
+// backend page classification.
 function getCurrentPage(): ClientPage | undefined {
   if (typeof window === 'undefined') return undefined;
-  return PAGE_BY_PATH[window.location.pathname] ?? 'Auth';
+  return 'Commercial Panel';
 }
 
 export interface ClientInfo {

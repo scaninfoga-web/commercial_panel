@@ -44,15 +44,10 @@ interface ApiResponseEnvelope<T> {
 const SKIP_ENDPOINTS: string[] = [
   "/api/v1/map/route-data",
   "/api/v1/map/location-data",
-  "/api/v1/uan/get-uan-no",
-  "/api/v1/uan/uan-to-employment-profile-lookup",
-  "/api/v1/mobile/mobile-to-profile-advance",
-  "/api/v1/financial/cibil-v2",
-  "/api/v1/financial/cibil",
   "/api/v1/gst/udyam-report",
-  "/api/v1/financial/panallinone",
   "/api/v1/inspect/dl-advance-search",
-  ""
+  "/api/v1/gst/gst-details",
+  "/api/v1/vehicle/name-to-challan-details",
 ];
 
 interface ApiCategory {
@@ -209,6 +204,8 @@ function ApiCard({
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const isActive = api.status_for_user;
+  const isSourceDown = !api.status;
+  const isAvailable = isActive && !isSourceDown;
   const isFallbackDescription = description === FALLBACK_DESCRIPTION(api);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
@@ -232,7 +229,7 @@ function ApiCard({
       }}
       className={cn(
         "group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50 p-3 backdrop-blur-xl transition-all duration-300 active:scale-[0.97] sm:rounded-2xl sm:p-4 sm:active:scale-[0.98] sm:hover:-translate-y-1.5 sm:hover:scale-[1.02] sm:hover:bg-slate-900/70",
-        isActive
+        isAvailable
           ? "hover:border-emerald-500/40 hover:shadow-[0_15px_40px_-12px_rgba(16,185,129,0.35)]"
           : "hover:border-red-500/40 hover:shadow-[0_15px_40px_-12px_rgba(239,68,68,0.35)]",
       )}
@@ -242,7 +239,7 @@ function ApiCard({
         style={{
           background: isHovering
             ? `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, ${
-                isActive
+                isAvailable
                   ? "rgba(16, 185, 129, 0.15)"
                   : "rgba(239, 68, 68, 0.15)"
               }, transparent 40%)`
@@ -253,7 +250,7 @@ function ApiCard({
       <div
         className={cn(
           "pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full blur-2xl transition-all duration-500",
-          isActive
+          isAvailable
             ? "bg-emerald-500/0 group-hover:bg-emerald-500/20"
             : "bg-red-500/0 group-hover:bg-red-500/20",
         )}
@@ -264,7 +261,7 @@ function ApiCard({
           <h3
             className={cn(
               "line-clamp-2 break-words text-xs font-semibold leading-snug text-white transition-colors sm:text-sm",
-              isActive
+              isAvailable
                 ? "group-hover:text-emerald-300"
                 : "group-hover:text-red-300",
             )}
@@ -272,7 +269,12 @@ function ApiCard({
           >
             {api.api_name || "Unnamed API"}
           </h3>
-          {isActive ? (
+          {isSourceDown ? (
+            <Badge className="shrink-0 gap-1 border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[8px] font-medium text-red-400 sm:px-2 sm:text-[9px]">
+              <span className="h-1.5 w-1.5 rounded-full bg-red-400" />{" "}
+              SOURCE DOWN
+            </Badge>
+          ) : isActive ? (
             <Badge className="shrink-0 gap-1 border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[8px] font-medium text-emerald-400 sm:px-2 sm:text-[9px]">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />{" "}
               LIVE
@@ -308,7 +310,7 @@ function ApiCard({
             <p
               className={cn(
                 "truncate text-xs font-bold sm:text-sm",
-                isActive ? "text-emerald-400" : "text-red-400",
+                isAvailable ? "text-emerald-400" : "text-red-400",
               )}
             >
               {formatPrice(api.price)}
@@ -322,19 +324,24 @@ function ApiCard({
             }}
             className={cn(
               "flex shrink-0 items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-semibold transition-all duration-200 sm:px-2.5 sm:py-1.5 sm:text-[11px]",
-              isActive
+              isAvailable
                 ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white group-hover:shadow-[0_4px_14px_-4px_rgba(16,185,129,0.6)]"
                 : "border-red-500/40 bg-red-500/10 text-red-400 group-hover:bg-red-500 group-hover:text-white group-hover:shadow-[0_4px_14px_-4px_rgba(239,68,68,0.6)]",
             )}
           >
-            {isActive ? (
+            {isSourceDown ? (
+              <>
+                Source Down{" "}
+                <AlertTriangle className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              </>
+            ) : isActive ? (
               <>
                 View{" "}
                 <ArrowUpRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 sm:h-3.5 sm:w-3.5" />
               </>
             ) : (
               <>
-                Locked <Lock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                Disable <Lock className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               </>
             )}
           </button>
@@ -344,7 +351,7 @@ function ApiCard({
       <div
         className={cn(
           "absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100",
-          isActive ? "via-emerald-500" : "via-red-500",
+          isAvailable ? "via-emerald-500" : "via-red-500",
         )}
       />
     </div>
@@ -461,7 +468,7 @@ export default function ApiListSection() {
   };
 
   const handleApiClick = (api: ApiDetail) => {
-    if (api.status_for_user) setSelectedApi(api);
+    if (api.status_for_user && api.status) setSelectedApi(api);
     else setRestrictedApi(api);
   };
 
@@ -677,19 +684,24 @@ export default function ApiListSection() {
       >
         <DialogContent className="w-[92vw] rounded-2xl border-slate-800 bg-slate-900/95 p-6 text-center backdrop-blur-xl sm:max-w-md">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">
-            <Lock className="h-6 w-6 text-red-400" />
+            {restrictedApi?.status ? (
+              <Lock className="h-6 w-6 text-red-400" />
+            ) : (
+              <AlertTriangle className="h-6 w-6 text-red-400" />
+            )}
           </div>
           <DialogHeader className="mt-4 items-center text-center">
             <DialogTitle className="text-lg font-semibold text-white">
-              API Not Enabled
+              {restrictedApi?.status ? "API Not Enabled" : "Source Down"}
             </DialogTitle>
           </DialogHeader>
           <p className="mt-1 text-sm leading-relaxed text-slate-400">
             <span className="font-medium text-slate-200">
               {restrictedApi?.api_name}
             </span>{" "}
-            is currently not enabled for your account. Please contact our
-            support team to get it enabled.
+            {restrictedApi?.status
+              ? "is currently not enabled for your account. Please contact our support team to get it enabled."
+              : "is currently unavailable because its source is down. Please try again later."}
           </p>
           <button
             onClick={() => setRestrictedApi(null)}
