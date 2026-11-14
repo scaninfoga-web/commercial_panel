@@ -19,7 +19,6 @@ export default function Page() {
 
   const handleListStateChange = useCallback((state: SupportListState) => {
     setListState(state);
-    if (!state.isLoading && !state.hasReports) setIsFormOpen(true);
   }, []);
 
   const handleCreated = useCallback(() => {
@@ -59,6 +58,7 @@ export default function Page() {
       <GetAllSupport
         refreshKey={refreshKey}
         onStateChange={handleListStateChange}
+        onRaiseTicket={() => setIsFormOpen(true)}
       />
 
       {isFormOpen && (

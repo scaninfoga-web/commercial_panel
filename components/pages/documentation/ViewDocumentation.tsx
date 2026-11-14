@@ -176,10 +176,18 @@ const STATUS_CODES = [
   {
     code: 404,
     title: "Not Found",
-    charged: true,
+    charged: false,
     card: "border-rose-500/30 bg-rose-500/5",
     badge: "bg-rose-500/20 text-rose-400",
     desc: "The requested resource could not be found. Please verify the endpoint, identifier, or reference number and try again.",
+  },
+  {
+    code: 429,
+    title: "Insufficient Wallet Balance",
+    charged: false,
+    card: "border-violet-500/30 bg-violet-500/5",
+    badge: "bg-violet-500/20 text-violet-400",
+    desc: "Your wallet balance is insufficient to process this request. Please add credits to your wallet and try again.",
   },
   {
     code: 500,
@@ -1064,24 +1072,26 @@ export default function ViewDocumentation({
           <CardContent className="space-y-2.5">
             {STATUS_CODES.map(({ code, title, charged, card, badge, desc }) => (
               <div key={code} className={cn("rounded-xl border p-3", card)}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={cn(
-                      "rounded-lg px-2.5 py-1 font-mono text-xs font-bold",
-                      badge,
-                    )}
-                  >
-                    {code}
-                  </span>
-                  <span className="text-sm font-semibold text-white">
-                    {title}
-                  </span>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-lg px-2.5 py-1 font-mono text-xs font-bold",
+                        badge,
+                      )}
+                    >
+                      {code}
+                    </span>
+                    <span className="min-w-0 text-sm font-semibold leading-5 text-white">
+                      {title}
+                    </span>
+                  </div>
                   {charged ? (
-                    <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-400">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-400">
                       <IndianRupee className="h-3 w-3" /> Charged
                     </span>
                   ) : (
-                    <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
                       <CheckCircle2 className="h-3 w-3" /> No Charge
                     </span>
                   )}

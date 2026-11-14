@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
 import {
@@ -9,6 +9,9 @@ import {
   Clock3,
   Loader2,
   RefreshCw,
+  Search,
+  Ticket,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +39,15 @@ function getErrorMessage(err: unknown): string {
     error?.response?.data?.message ||
     error?.message ||
     "Failed to load your support tickets."
+  );
+}
+
+function isEmptyReportsMessage(message: string) {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("not found") ||
+    normalized.includes("no report") ||
+    normalized.includes("report issue") && normalized.includes("empty")
   );
 }
 
@@ -83,6 +95,13 @@ const STATUS_ORDER: Record<string, number> = {
   RESOLVED: 2,
   CLOSED: 3,
 };
+const STATUS_FILTERS = [
+  { key: "ALL", label: "All tickets" },
+  { key: "OPEN", label: "Open" },
+  { key: "IN_PROGRESS", label: "In progress" },
+  { key: "RESOLVED", label: "Resolved" },
+  { key: "CLOSED", label: "Closed" },
+] as const;
 
 const STATUS_STYLES: Record<
   (typeof STATUS_STEPS)[number],
@@ -192,13 +211,18 @@ export interface SupportListState {
 export default function GetAllSupport({
   refreshKey = 0,
   onStateChange,
+  onRaiseTicket,
 }: {
   refreshKey?: number;
   onStateChange?: (state: SupportListState) => void;
+  onRaiseTicket?: () => void;
 }) {
   const [reports, setReports] = useState<IssueResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] =
+    useState<(typeof STATUS_FILTERS)[number]["key"]>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const { notifications, markAsRead } = useSupportNotifications(token, {
@@ -224,8 +248,13 @@ export default function GetAllSupport({
       setReports(extractIssues(await get(GET_ISSUES_ENDPOINT)));
     } catch (err: unknown) {
       const message = getErrorMessage(err);
-      setError(message);
-      toast.error(message);
+      if (isEmptyReportsMessage(message)) {
+        setReports([]);
+        setError(null);
+      } else {
+        setError(message);
+        toast.error(message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -238,6 +267,38 @@ export default function GetAllSupport({
   useEffect(() => {
     onStateChange?.({ hasReports: reports.length > 0, isLoading, error });
   }, [error, isLoading, onStateChange, reports.length]);
+
+  const orderedReports = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return reports
+      .filter((report) => {
+        const status = normalizedTicketStatus(report.status);
+        const matchesFilter =
+          activeFilter === "ALL" || status === activeFilter;
+        if (!matchesFilter) return false;
+        if (!query) return true;
+        return [
+          report.ticketId,
+          report.reportId,
+          report.subject,
+          report.description,
+          statusLabel(report.status),
+        ].some((value) => value.toLowerCase().includes(query));
+      })
+      .sort((a, b) => {
+        const statusDifference =
+          (STATUS_ORDER[normalizedTicketStatus(a.status)] ??
+            STATUS_STEPS.length) -
+          (STATUS_ORDER[normalizedTicketStatus(b.status)] ??
+            STATUS_STEPS.length);
+        if (statusDifference !== 0) return statusDifference;
+
+        return (
+          new Date(b.createdAt ?? "").getTime() -
+          new Date(a.createdAt ?? "").getTime()
+        );
+      });
+  }, [activeFilter, reports, searchQuery]);
 
   if (isLoading) {
     return (
@@ -315,22 +376,85 @@ export default function GetAllSupport({
     );
   }
 
-  if (reports.length === 0) return null;
-
-  const orderedReports = [...reports].sort((a, b) => {
-    const statusDifference =
-      (STATUS_ORDER[normalizedTicketStatus(a.status)] ?? STATUS_STEPS.length) -
-      (STATUS_ORDER[normalizedTicketStatus(b.status)] ?? STATUS_STEPS.length);
-    if (statusDifference !== 0) return statusDifference;
-
+  if (reports.length === 0) {
     return (
-      new Date(b.createdAt ?? "").getTime() -
-      new Date(a.createdAt ?? "").getTime()
+      <Card className="rounded-2xl border border-slate-800 bg-slate-900/50">
+        <CardContent className="flex min-h-[275px] flex-col items-center justify-center px-6 py-10 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+            <Ticket className="h-7 w-7" />
+          </div>
+          <h2 className="mt-5 text-xl font-semibold text-white">
+            How can we help?
+          </h2>
+          <p className="mt-2 max-w-lg text-sm leading-6 text-zinc-400">
+            You do not have any support tickets yet. If you are facing an
+            issue, contact our support team by raising a ticket.
+          </p>
+          <Button
+            type="button"
+            onClick={onRaiseTicket}
+            className="mt-5 rounded-xl bg-emerald-500 px-5 text-slate-950 hover:bg-emerald-400"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Raise a ticket
+          </Button>
+        </CardContent>
+      </Card>
     );
-  });
+  }
 
   return (
     <>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div
+          className="flex flex-wrap gap-2"
+          role="group"
+          aria-label="Filter support tickets"
+        >
+          {STATUS_FILTERS.map((filter) => {
+            const isActive = activeFilter === filter.key;
+            return (
+              <button
+                key={filter.key}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setActiveFilter(filter.key)}
+                className={cn(
+                  "rounded-xl border px-3.5 py-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60",
+                  isActive
+                    ? "border-emerald-500/70 bg-emerald-500/10 text-emerald-400"
+                    : "border-slate-700 bg-slate-900/50 text-zinc-400 hover:border-slate-600 hover:text-zinc-200",
+                )}
+              >
+                {filter.label}
+              </button>
+            );
+          })}
+        </div>
+        <label className="relative block w-full lg:max-w-sm">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500"
+          />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search ticket, subject or status"
+            aria-label="Search tickets"
+            className="h-10 w-full rounded-xl border border-slate-700 bg-slate-900/70 pl-9 pr-3 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40"
+          />
+        </label>
+      </div>
+
+      {orderedReports.length === 0 && (
+        <Card className="rounded-2xl border border-slate-800 bg-slate-900/50">
+          <CardContent className="p-8 text-center text-sm text-zinc-500">
+            No tickets match your search or selected status.
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3">
         {orderedReports.map((report) => {
           const { title } = parseSubject(report.subject);
